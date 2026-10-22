@@ -8,6 +8,8 @@ export type Subscription = {
   id: string;
   merchant: string;
   category: string;
+  kind?: "subscription" | "bill";
+  bill_category?: "internet" | "mobile" | "insurance" | "utility" | "gym" | null;
   cadence: string | null;
   amount: number | null;
   monthly_cost: number;
@@ -23,11 +25,46 @@ export type Subscription = {
 
 export type Summary = {
   subscriptions: number;
-  monthly_total: number;
+  subscriptions_total?: number;
+  bills?: number;
+  bills_total?: number;
+  monthly_total: number; // subscriptions + bills
   potential_monthly_savings: number;
   flagged: number;
+  owed_total?: number; // one-time money from open findings
+  owed_count?: number;
   recovered_total: number;
   recovered_note: string;
+};
+
+export type Finding = {
+  id: string;
+  category: "charges" | "refunds" | "settlements";
+  kind: "duplicate_charge" | "bank_fee" | "price_drop" | "flight_refund" | "flight_compensation" | "settlement";
+  merchant: string;
+  title: string;
+  message: string;
+  amount: number;
+  amount_note: string | null;
+  deadline: string | null;
+  deadline_label: string | null;
+  confidence: "high" | "medium" | "low";
+  evidence: string[];
+  rule: { name: string; summary: string; source_url: string } | null;
+  status: "open" | "dismissed" | "done";
+  found_on: string;
+};
+
+export type ActionPrep = {
+  title: string;
+  summary: string;
+  channel: "email" | "chat" | "phone" | "form" | "dispute" | "in_person";
+  steps: string[];
+  links: { label: string; url: string; verified: boolean }[];
+  message: { to: string | null; subject: string | null; body: string } | null;
+  script: string[] | null;
+  deadline: string | null;
+  missing: string[];
 };
 
 export type TraceStep = {
@@ -61,6 +98,19 @@ export type Alternatives = {
   options: { option: string; monthly_price: number | null; why: string; source_url: string }[];
   missing: string[];
 };
+
+export type Connection = {
+  configured: boolean;
+  connected: boolean;
+  account?: string | null; // email address
+  provider?: string | null; // google, microsoft, yahoo, icloud, imap
+  institution?: string | null; // bank name
+  last_sync: string | null;
+  error: string | null;
+  needs_reconnect?: boolean;
+};
+
+export type Connections = { mode: "demo" | "real"; email: Connection; plaid: Connection };
 
 export async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, { cache: "no-store", ...init });
