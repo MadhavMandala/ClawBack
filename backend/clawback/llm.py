@@ -12,13 +12,13 @@ Smoke test (one tiny call per tier):  python -m clawback.llm --check
 
 from __future__ import annotations
 
+import functools
 import json
 import re
 import time
 from dataclasses import dataclass
 
 from .config import settings
-from .missing import missing
 from .trace import record
 
 # One row per tier: which model, its backup tier, whether thinking may be on, and limits.
@@ -67,18 +67,29 @@ def available() -> bool:
     return bool(settings.nebius_api_key)
 
 
-def _client():
-    if not settings.nebius_api_key:
-        missing("llm-extraction", "set NEBIUS_API_KEY in backend/.env")
+class ThinkingNotAllowed(ValueError):
+    """Asked for thinking on a tier that must not think (Lightning)."""
+
+
+@functools.cache
+def _make_client(base_url: str, api_key: str):
     from openai import OpenAI
 
-    return OpenAI(base_url=settings.nebius_base_url, api_key=settings.nebius_api_key)
+    # The SDK retries twice by default; our own single retry is the only one, so a click can't hang for minutes.
+    return OpenAI(base_url=base_url, api_key=api_key, max_retries=0)
+
+
+def _client():
+    if not settings.nebius_api_key:
+        raise RuntimeError("NEBIUS_API_KEY is not set in backend/.env")
+    return _make_client(settings.nebius_base_url, settings.nebius_api_key)
 
 
 def _retryable(exc: Exception) -> bool:
+    """Retry once on rate limits, dropped connections and server errors. Not on timeouts: one is long enough."""
     import openai
 
-    if isinstance(exc, (openai.RateLimitError, openai.APITimeoutError, openai.APIConnectionError)):
+    if isinstance(exc, (openai.RateLimitError, openai.APIConnectionError)) and not isinstance(exc, openai.APITimeoutError):
         return True
     return isinstance(exc, openai.APIStatusError) and exc.status_code >= 500
 
@@ -96,7 +107,7 @@ def chat(
     """One model call (with one retry on rate limits / server errors), recorded in the trace."""
     tier = TIERS[role]
     if thinking and not tier.thinking_allowed:
-        raise ValueError(f"thinking is not allowed on the {role!r} tier ({tier.model})")
+        raise ThinkingNotAllowed(f"thinking is not allowed on the {role!r} tier ({tier.model})")
     kwargs: dict = {
         "model": tier.model,
         "messages": messages,
@@ -156,7 +167,7 @@ def chat_json(
             if isinstance(data, dict):
                 return data, res
             reason = "reply was not a JSON object"
-        except ValueError:
+        except ThinkingNotAllowed:
             raise
         except Exception as exc:
             reason = str(exc)[:200]

@@ -69,3 +69,31 @@ def test_check_reports_every_tier(fake_llm):
     rows = llm.check()
     assert {r["tier"] for r in rows} == set(llm.TIERS)
     assert all(r["ok"] for r in rows)
+
+
+def test_client_disables_sdk_retries(monkeypatch):
+    captured = {}
+
+    class Capture:
+        def __init__(self, **kw):
+            captured.update(kw)
+
+    monkeypatch.setattr(openai, "OpenAI", Capture)
+    monkeypatch.setattr(llm, "settings", type("S", (), {"nebius_api_key": "k", "nebius_base_url": "http://x/"})())
+    llm._make_client.cache_clear()
+    llm._client()
+    llm._make_client.cache_clear()
+    assert captured["max_retries"] == 0
+
+
+def test_timeout_is_not_retried(fake_llm):
+    timeout = openai.APITimeoutError(request=httpx.Request("POST", "http://x"))
+    fake_llm.script = {ULTRA: [timeout, '{"ok": true}']}
+    assert llm.chat_json("t", "alternatives", "reason", MSGS, SCHEMA) == (None, None)
+    assert len(fake_llm.calls) == 1
+
+
+def test_value_error_from_model_layer_falls_back(fake_llm):
+    fake_llm.script = {LIGHTNING: [UnicodeEncodeError("utf-8", "x", 0, 1, "bad")], NANO: ['{"kind": "trial"}']}
+    data, res = llm.chat_json("t", "extract", "fast", MSGS, SCHEMA)
+    assert data == {"kind": "trial"} and res.model == NANO

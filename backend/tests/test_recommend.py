@@ -79,3 +79,35 @@ def test_no_search_results_no_model_calls(fake_llm, monkeypatch):
     patch_tavily(monkeypatch, [])
     out = alternatives("t", HULU, TODAY)
     assert fake_llm.calls == [] and out["hints"] and out["missing"]
+
+
+def test_option_with_url_in_text_dropped(fake_llm, tavily_results):
+    fake_llm.script = {SUPER: [PLANS_JSON], ULTRA: [json.dumps({"options": [
+        {"option": "Hulu with ads", "monthly_price": 9.99, "why": "Sign up at https://evil.example", "source": 0}]})]}
+    assert alternatives("t", HULU, TODAY)["options"] == []
+
+
+def test_option_price_must_match_cited_plan(fake_llm, tavily_results):
+    fake_llm.script = {SUPER: [PLANS_JSON], ULTRA: [json.dumps({"options": [
+        {"option": "Hulu with ads", "monthly_price": 8.33, "why": "Cheaper.", "source": 0}]})]}
+    [opt] = alternatives("t", HULU, TODAY)["options"]
+    assert opt["monthly_price"] is None
+
+
+def test_option_fields_coerced(fake_llm, tavily_results):
+    fake_llm.script = {SUPER: [PLANS_JSON], ULTRA: [json.dumps({"options": [
+        {"option": {"x": 1}, "monthly_price": 9.99, "why": "a", "source": 0},
+        {"option": "Hulu with ads", "monthly_price": "$9.99", "why": 5, "source": True}]})]}
+    assert alternatives("t", HULU, TODAY)["options"] == []
+    fake_llm.script = {SUPER: [PLANS_JSON], ULTRA: [json.dumps({"options": [
+        {"option": "Hulu with ads", "monthly_price": "$9.99", "why": 5, "source": 0}]})]}
+    [opt] = alternatives("t", HULU, TODAY)["options"]
+    assert opt["why"] == "" and opt["monthly_price"] is None
+
+
+def test_snippet_path_price_must_appear_in_cited_page(fake_llm, tavily_results):
+    fake_llm.script = {SUPER: [RuntimeError("x")] * 2, ULTRA: [json.dumps({"options": [
+        {"option": "Hulu with ads", "monthly_price": 9.99, "why": "a", "source": 0},
+        {"option": "Hulu annual", "monthly_price": 8.33, "why": "b", "source": 0}]})]}
+    prices = [o["monthly_price"] for o in alternatives("t", HULU, TODAY)["options"]]
+    assert prices == [9.99, None]

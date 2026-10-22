@@ -13,6 +13,7 @@ MISSING [cancel-confirmation]: nothing checks that the charge actually stopped.
 
 from __future__ import annotations
 
+import re
 from datetime import date
 
 from .. import llm
@@ -62,21 +63,36 @@ def _facts(sub: Subscription) -> str:
     return "\n".join(lines)
 
 
-def _acceptable(subject: str, body: str) -> bool:
-    return PLACEHOLDER in body and "http" not in (subject + body).lower() and len(body) < 1500
+LINK = re.compile(r"https?://|www\.|\b[a-z0-9-]+\.(com|net|org|io|co|tv|app)\b", re.I)
+
+
+def _numbers(text: str) -> set[int]:
+    return {int(n) for n in re.findall(r"\d+", text)}
+
+
+def _acceptable(subject: str, body: str, facts: str) -> bool:
+    """Placeholder kept, no links of any form, and no numbers (dates, account numbers, prices) not in our facts."""
+    text = f"{subject}\n{body}"
+    return (
+        PLACEHOLDER in body
+        and not LINK.search(text)
+        and _numbers(text) <= _numbers(facts)
+        and len(body) < 1500
+    )
 
 
 def write_email(user_id: str, sub: Subscription) -> dict:
     """Ultra writes the cancellation email from code-computed facts; the template is the fallback."""
     if not llm.available():
         return _template(sub)
+    facts = _facts(sub)
     data, res = llm.chat_json(
         user_id, "cancel_email", "reason",
-        [{"role": "user", "content": EMAIL_PROMPT.format(merchant=sub.merchant, facts=_facts(sub), placeholder=PLACEHOLDER)}],
+        [{"role": "user", "content": EMAIL_PROMPT.format(merchant=sub.merchant, facts=facts, placeholder=PLACEHOLDER)}],
         EMAIL_SCHEMA,
     )
     subject, body = (data or {}).get("subject"), (data or {}).get("body")
-    if not (isinstance(subject, str) and isinstance(body, str) and _acceptable(subject, body)):
+    if not (isinstance(subject, str) and isinstance(body, str) and _acceptable(subject, body, facts)):
         return _template(sub)
     return {"subject": subject.strip(), "body": body.strip(), "status": DRAFT_STATUS, "written_by": res.model}
 

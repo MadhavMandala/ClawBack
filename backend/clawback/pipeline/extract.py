@@ -124,17 +124,30 @@ def _extract_llm(user_id: str, email: Email) -> Fact | None:
     return fact
 
 
+def _plain_name(value) -> str | None:
+    """A merchant name from an email is untrusted: keep plain name characters, at most 60 of them."""
+    if not isinstance(value, str):
+        return None
+    cleaned = re.sub(r"\s+", " ", re.sub(r"[^A-Za-z0-9 &+'.\-]", " ", value)).strip()[:60].strip()
+    return cleaned or None
+
+
 def _known_merchant(model_name, kind: str, email: Email) -> str | None:
     """Map the model's merchant ("Chipotle", "Duolingo") to our merchant list's name, the way the rules do.
-    Usage and value code match subscriptions by exact name, so this must agree with recurring detection."""
+    Usage and value code match subscriptions by exact name, so this must agree with recurring detection.
+    App Store / Google Play receipts come from Apple or Google, so the app named in the receipt wins over the sender."""
     name = model_name if isinstance(model_name, str) and model_name.strip() else None
-    if m := match_sender(email.sender):
-        return m.name
+    sender = match_sender(email.sender)
+    if kind == "store_receipt" or (sender and sender.billed_by):
+        if name and (m := find_in_text(name)):
+            return m.name
+        if m := find_in_text(f"{email.subject}. {email.body_text}"):
+            return m.name
+    if sender:
+        return sender.name
     if name and (m := find_in_text(name)):
         return m.name
-    if kind == "store_receipt" and (m := find_in_text(f"{email.subject}. {email.body_text}")):
-        return m.name
-    return name
+    return _plain_name(name)
 
 
 def _num(v) -> float | None:
@@ -159,16 +172,20 @@ def extract_all(user_id: str, emails: list[Email]) -> list[Fact]:
         return facts
 
     cache = store.user(user_id).facts
+    fallbacks: dict[str, Fact] = {}
     todo = [e for e in emails if e.id not in cache]
     start = time.perf_counter()
     fell_back = 0
     if todo:
         with ThreadPoolExecutor(max_workers=8) as pool:
-            results = list(pool.map(lambda e: _extract_llm(user_id, e), todo))
+            results = list(pool.map(lambda e: _safe_extract(user_id, e), todo))
         for email, fact in zip(todo, results):
             if fact is None:
+                # Not cached: the email goes to the model again on the next run.
                 fact, fell_back = _extract_rules(email), fell_back + 1
-            cache[email.id] = fact
+                fallbacks[email.id] = fact
+            else:
+                cache[email.id] = fact
     record(
         user_id,
         "extract",
@@ -179,4 +196,13 @@ def extract_all(user_id: str, emails: list[Email]) -> list[Fact]:
         note=f"{len(emails)} emails: {len(todo) - fell_back} sent to Lightning, "
         f"{len(emails) - len(todo)} cached, {fell_back} used rules",
     )
-    return [cache[e.id] for e in emails]
+    return [cache.get(e.id) or fallbacks[e.id] for e in emails]
+
+
+def _safe_extract(user_id: str, email: Email) -> Fact | None:
+    """One odd email must not fail the whole run: any error means the rules handle it."""
+    try:
+        return _extract_llm(user_id, email)
+    except Exception as exc:
+        record(user_id, "extract", "tiers:fast", status="error", tier="fast", note=f"{email.id}: {str(exc)[:200]}")
+        return None

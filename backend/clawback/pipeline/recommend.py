@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from datetime import date
 
 from .. import llm
@@ -88,7 +89,42 @@ Suggest up to 3 cheaper options that fit how they actually use it: a cheaper tie
 a different service, or cancelling. Use only prices listed above, and set "source" to the source number
 of the price you used. Explain "why" in one plain sentence about their usage."""
 
-OPTION_KEYS = ("option", "monthly_price", "why", "source")
+URL = re.compile(r"https?://|www\.|\b[a-z0-9-]+\.(com|net|org|io|co|tv|app)\b", re.I)
+
+
+def _price(v) -> float | None:
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
+        return None
+    return round(float(v), 2)
+
+
+def _text(v, limit: int = 300) -> str:
+    return (v if isinstance(v, str) else "")[:limit]
+
+
+def _page_prices(content: str) -> set[float]:
+    return {round(float(n), 2) for n in re.findall(r"\d+(?:\.\d{1,2})?", content)}
+
+
+def _clean_option(opt, found: list[dict], plans: list[dict]) -> dict | None:
+    """Keep an option only if it cites a Tavily result and carries no link of its own. A price the cited page
+    (or Super's plan list for it) doesn't show is dropped, so the model can't do the money math."""
+    if not isinstance(opt, dict):
+        return None
+    src = opt.get("source")
+    if isinstance(src, bool) or not isinstance(src, int) or not 0 <= src < len(found):
+        return None  # no source, no option
+    option, why = _text(opt.get("option")), _text(opt.get("why"))
+    if not option or URL.search(option) or URL.search(why):
+        return None
+    price = _price(opt.get("monthly_price"))
+    if plans:
+        allowed = {_price(p.get("monthly_price")) for p in plans if p["source"] == src}
+    else:
+        allowed = _page_prices(found[src].get("content", ""))
+    if price not in (None, 0.0) and price not in allowed:
+        price = None
+    return {"option": option, "monthly_price": price, "why": why, "source": src, "source_url": found[src]["url"]}
 
 
 def _snippets(found: list[dict]) -> str:
@@ -118,11 +154,14 @@ def alternatives(user_id: str, sub: Subscription, today: date) -> dict:
     )
     plans = [
         p for p in (plans_data or {}).get("plans", [])
-        if isinstance(p, dict) and isinstance(p.get("source"), int) and 0 <= p["source"] < len(found)
+        if isinstance(p, dict) and isinstance(p.get("source"), int) and not isinstance(p.get("source"), bool)
+        and 0 <= p["source"] < len(found) and isinstance(p.get("name"), str)
     ]
+    for p in plans:
+        p["name"], p["monthly_price"] = p["name"][:80], _price(p.get("monthly_price"))
     if plans:
         offers = "Current plans (from the search results):\n" + "\n".join(
-            f"- {p['name']}: " + (f"${p['monthly_price']:.2f}/month" if isinstance(p.get("monthly_price"), (int, float)) else "price not monthly")
+            f"- {p['name']}: " + (f"${p['monthly_price']:.2f}/month" if p["monthly_price"] is not None else "price not monthly")
             + f" (source {p['source']}: {found[p['source']]['url']})"
             for p in plans
         )
@@ -142,10 +181,7 @@ def alternatives(user_id: str, sub: Subscription, today: date) -> dict:
     if data is None:
         result["missing"].append("Model call failed; showing hints only.")
         return result
-    for opt in data.get("options", []):
-        src = opt.get("source") if isinstance(opt, dict) else None
-        if isinstance(src, int) and 0 <= src < len(found):  # no source, no option
-            clean = {k: opt.get(k) for k in OPTION_KEYS}
-            clean["source_url"] = found[src]["url"]  # the link always comes from Tavily
+    for opt in data.get("options", []) if isinstance(data.get("options"), list) else []:
+        if clean := _clean_option(opt, found, plans):  # the link always comes from Tavily
             result["options"].append(clean)
     return result

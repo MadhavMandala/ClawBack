@@ -30,3 +30,19 @@ def test_bad_model_email_uses_template(fake_llm, body):
 
 def test_template_without_key():
     assert write_email("t", HULU)["written_by"] == "template"
+
+
+@pytest.mark.parametrize("body", [
+    "Please cancel; manage it at www.hulu.com/account. [your account email]",
+    "Please cancel; see hulu.com/cancel. [your account email]",
+    "Please cancel account #48213 effective October 31. [your account email]",
+])
+def test_model_email_with_bare_link_or_invented_numbers_uses_template(fake_llm, body):
+    fake_llm.script = {ULTRA: [json.dumps({"subject": "Cancel", "body": body})]}
+    assert write_email("t", HULU)["written_by"] == "template"
+
+
+def test_model_email_may_repeat_fact_numbers(fake_llm):
+    body = "Please cancel my plan ($18.99 a month). [your account email]"
+    fake_llm.script = {ULTRA: [json.dumps({"subject": "Cancel Hulu", "body": body})]}
+    assert write_email("t", HULU)["written_by"] == ULTRA
