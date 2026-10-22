@@ -1,0 +1,107 @@
+:root {
+  --bg: #f7f7f5;
+  --card: #ffffff;
+  --text: #1c1c1a;
+  --muted: #6b6b66;
+  --line: #e2e1dc;
+  --accent: #1f6f5c;
+  --high: #b3261e;
+  --medium: #a15c00;
+  --info: #3b5b8c;
+  --missing-bg: #fff6d9;
+  --missing-text: #8a5a00;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #151514;
+    --card: #1f1f1d;
+    --text: #ecebe6;
+    --muted: #a2a19b;
+    --line: #34332f;
+    --accent: #5cc2a6;
+    --high: #ff8a80;
+    --medium: #f0b45b;
+    --info: #9bb8e8;
+    --missing-bg: #3a3017;
+    --missing-text: #f0c86a;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.45;
+}
+
+main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { margin: 0; font-size: 28px; }
+h2 { font-size: 18px; margin: 0; }
+h3 { font-size: 15px; margin: 0 0 6px; }
+a { color: var(--accent); }
+code, pre { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+pre { white-space: pre-wrap; background: var(--bg); padding: 10px; border-radius: 6px; border: 1px solid var(--line); }
+
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.good { color: var(--accent); }
+.missingtext { color: var(--missing-text); }
+
+.top { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 16px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.spacer { flex: 1; }
+
+button, .button {
+  font: inherit; font-size: 13px; cursor: pointer;
+  background: var(--card); color: var(--text);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px;
+}
+button:hover, .button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag { font-size: 11px; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--line); color: var(--muted); font-weight: 500; vertical-align: middle; }
+.tag.missing { background: var(--missing-bg); color: var(--missing-text); border-color: transparent; }
+
+.banner { border-radius: 8px; padding: 10px 14px; margin: 12px 0; font-size: 14px; }
+.banner.error { background: #fde8e6; color: #8c1d18; }
+.banner.notice { background: var(--missing-bg); color: var(--missing-text); cursor: pointer; }
+.missingbox { background: var(--missing-bg); color: var(--text); }
+.missingbox summary { cursor: pointer; color: var(--missing-text); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+.stats > div { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 2px; }
+.stats b { font-size: 24px; }
+
+.list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.card.hot { border-left: 4px solid var(--high); }
+.row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.row p { margin: 2px 0 0; }
+
+.usage { font-size: 12px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; border: 1px solid var(--line); }
+.usage.none, .usage.low { color: var(--high); }
+.usage.normal { color: var(--accent); }
+.usage.unknown { color: var(--muted); }
+
+.flags { margin: 0; padding-left: 18px; font-size: 14px; }
+.flags li.high { color: var(--high); }
+.flags li.medium { color: var(--medium); }
+.flags li.info { color: var(--info); }
+
+.panel { border-top: 1px dashed var(--line); padding-top: 10px; font-size: 14px; }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr.missing td { color: var(--missing-text); }
+tr.error td { color: var(--high); }
+
+footer { margin-top: 32px; }
+
+@media (max-width: 600px) {
+  .row { flex-direction: column; }
+}
