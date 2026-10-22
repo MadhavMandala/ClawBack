@@ -108,15 +108,15 @@ A model never computes a date, a total or a deadline.
 | # | Stage | Engine | Runs on | Status |
 |---|---|---|---|---|
 | 1 | Triage: drop email that can't be about a subscription | Sender + keyword rules; Lightning for unknown senders | every email | [built] rules, [MISSING] Lightning fallback |
-| 2 | Extraction: email -> facts (kind, merchant, amount, savings, old/new price, trial days left) | **Nemotron 3.5 Lightning** (`nvidia/Nemotron-3_5-Lightning`) | triage survivors | [stub] (regexes stand in) |
+| 2 | Extraction: email -> facts (kind, merchant, amount, savings, old/new price, trial days left) | **Nemotron 3.5 Lightning** (`nvidia/Nemotron-3_5-Lightning`), Nano backup, regex fallback; cached per email | triage survivors | [built] |
 | 2b | Receipts as PDFs/images | **Nemotron 3.5 Super-VL** on rendered pages | attachments | [MISSING] |
 | 3 | Recurring detection | code: steady cadence + constant amount (or one lasting change) | all transactions | [built] |
 | 4 | App-store resolution | code: match receipt emails by amount | `APPLE.COM/BILL`, `GOOGLE *` | [built] demo only |
 | 5 | Usage signals | code (see §6) | each subscription | [built] |
 | 6 | Membership value | code: savings from receipts minus the fee | delivery memberships | [built]; other memberships [MISSING] |
 | 7 | Flags | code | each subscription | [built] |
-| 8 | Find cheaper | **Tavily** search, then **Nemotron 3 Ultra** (`nvidia/Nemotron-3-Ultra-550b-a55b`), then a code citation check | on request | [stub] |
-| 9 | Prepare cancel | Tavily for the cancel page, a template or Ultra for the email, Gmail `drafts.create` | on request | [stub] / [MISSING] draft |
+| 8 | Find cheaper | **Tavily** search, **Nemotron 3 Super** reads the plans, **Nemotron 3 Ultra** (thinking on) fits them to usage, then a code citation check | on request | [built] |
+| 9 | Prepare cancel | Tavily for the cancel page, **Ultra** writes the email (template fallback), Gmail `drafts.create` | on request | [built] / [MISSING] draft |
 
 The funnel matters for cost:
 
@@ -167,9 +167,18 @@ Rules:
 Source: the public catalog at `https://tokenfactory.nebius.com/api/public/models_info` (checked 2026-10-22).
 Nemotron 3 Nano Omni was removed on 2026-08-31.
 
-Not verified yet [MISSING]: whether Token Factory honours `response_format: json_schema` and
-`chat_template_kwargs.enable_thinking` for these models. The client asks for JSON in the prompt as well and parses
-defensively.
+Verified live on 2026-10-22 (one call per model; rerun with `python -m clawback.llm --check`):
+
+| Model | Strict JSON (`response_format: json_schema`) | Thinking on |
+|---|---|---|
+| Lightning | works | **breaks output**: reasoning is written into `content` with no tags. Never enabled. |
+| Nano | works | content stays clean |
+| Super | works, also with thinking on | reasoning in `message.reasoning_content` |
+| Ultra | works, also with thinking on | reasoning in `message.reasoning_content` |
+| Super-VL | works (text only tested) | reasoning in `message.reasoning_content` |
+
+Each tier has a backup (`fast` → `fast_fallback`) or a code fallback (regexes, template, hints), one retry on
+rate limits / server errors, and a timeout. See `backend/clawback/llm.py` (`TIERS`).
 
 **Zero Data Retention must be on** before any real user email is sent. Without it, Token Factory keeps inputs and
 outputs and logs them.

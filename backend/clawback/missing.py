@@ -107,22 +107,6 @@ REGISTRY: list[dict[str, str]] = [
         "note": "Keyword rules stand in for it. At a few users, Nemotron 3.5 Lightning on every email is cheaper than hosting it.",
     },
     {
-        "id": "llm-extraction",
-        "area": "Pipeline",
-        "priority": "P0",
-        "what": "Nemotron extraction of receipts / renewal / trial emails into structured facts",
-        "where": "backend/clawback/pipeline/extract.py",
-        "note": "Code exists but is untested against the live API (needs NEBIUS_API_KEY). Demo emails are parsed with regexes.",
-    },
-    {
-        "id": "json-schema-check",
-        "area": "Pipeline",
-        "priority": "P0",
-        "what": "Confirm Token Factory honours response_format=json_schema and chat_template_kwargs on Nemotron models",
-        "where": "backend/clawback/llm.py",
-        "note": "Unverified in the docs. Run one real call per model before relying on it.",
-    },
-    {
         "id": "pdf-receipts",
         "area": "Pipeline",
         "priority": "P2",
@@ -169,7 +153,7 @@ REGISTRY: list[dict[str, str]] = [
         "priority": "P0",
         "what": "'Find something cheaper': Tavily pulls current plans and prices, Nemotron Ultra matches them to your usage",
         "where": "backend/clawback/pipeline/recommend.py",
-        "note": "Code path exists but is untested without NEBIUS_API_KEY + TAVILY_API_KEY. Without keys it returns generic hints.",
+        "note": "Live: Tavily → Nemotron 3 Super (reads plans) → Nemotron 3 Ultra (fits usage). Without keys it returns code hints.",
     },
     {
         "id": "cancel-lookup",

@@ -1,7 +1,7 @@
 # Status: what works and what is MISSING
 
 **This is a rough prototype.** It runs end to end on **made-up demo data for one fake user**. It does not connect to
-any real bank or inbox yet, and no AI model has been called live yet.
+any real bank or inbox yet. With a Token Factory key set, the Nemotron model tiers make live calls.
 
 Every gap is marked with the word `MISSING`:
 - in the code (`grep -rn MISSING backend frontend/app`),
@@ -9,7 +9,7 @@ Every gap is marked with the word `MISSING`:
 - on the dashboard (the yellow "Prototype" banner lists everything below).
 
 The list below is generated from `backend/clawback/missing.py`, the single source of truth:
-`cd backend && .venv/Scripts/python -m clawback.missing`.
+`cd backend && .venv/bin/python -m clawback.missing`.
 
 ## Works today
 
@@ -22,13 +22,14 @@ The list below is generated from `backend/clawback/missing.py`, the single sourc
 | Flags | unused, membership losing money, two plans doing the same job, trial about to convert, price went up | `pipeline/flags.py` |
 | Free-trial detection from email | Finds trials before the first charge, with the end date computed in code | `pipeline/run.py` |
 | Apple-billed charges | Names an `APPLE.COM/BILL` charge by matching an Apple receipt email with the same amount (demo only) | `pipeline/recurring.py` |
-| Cancel prep | Link + steps + cancellation email text. Never cancels or sends anything | `pipeline/cancel.py` |
-| "Find cheaper" hints | Code-computed hints (e.g. break-even orders per month). The model + web search path is written but untested | `pipeline/recommend.py` |
+| Cancel prep | Link + steps + cancellation email written by Nemotron 3 Ultra (template fallback). Never cancels or sends anything | `pipeline/cancel.py` |
+| Email extraction | Nemotron 3.5 Lightning reads each email once (cached) into facts with a strict JSON schema; Nano and regexes as fallbacks | `pipeline/extract.py` |
+| "Find cheaper" | Tavily finds current plans, Nemotron 3 Super lists them, Nemotron 3 Ultra fits them to your usage; every option cites a Tavily page. Code hints without keys | `pipeline/recommend.py` |
 | Statement CSV upload | Real transactions without any bank approval | `sources/statements.py` |
-| Model trace | Every step logs its engine, time, tokens and cost. Shown on the dashboard | `trace.py` |
-| Token Factory client | Exact Nemotron model IDs, prices and cost tracking. Untested without a key | `llm.py` |
+| Model trace | Every step logs its tier, engine, time, tokens (incl. thinking) and cost. Click-time rows survive re-runs. Shown on the dashboard | `trace.py` |
+| Token Factory client | Five model tiers, verified live; strict JSON, fallbacks, retries, timeouts; `python -m clawback.llm --check` | `llm.py` |
 | Dashboard | One page: totals, subscription cards, check-ins, cancel / cheaper panels, trace, MISSING banner | `frontend/app/page.tsx` |
-| Tests | 8 backend tests on the demo data | `backend/tests/` |
+| Tests | Offline backend tests (fake model client) plus an opt-in live extraction test | `backend/tests/` |
 
 ## MISSING
 
@@ -41,8 +42,6 @@ P0 = needed for the hackathon demo. P1 = needed for a convincing submission. P2 
 | P0 | Actions | Find the merchant's real cancel page / support email with Tavily and cite it | `backend/clawback/pipeline/cancel.py` |
 | P0 | Data sources | Gmail connection (OAuth consent with gmail.readonly + gmail.compose) | `backend/clawback/sources/gmail.py` |
 | P0 | Data sources | Bank connection with Plaid Link (Sandbox first, then Trial for up to 10 real banks) | `backend/clawback/sources/plaid.py, frontend` |
-| P0 | Pipeline | Nemotron extraction of receipts / renewal / trial emails into structured facts | `backend/clawback/pipeline/extract.py` |
-| P0 | Pipeline | Confirm Token Factory honours response_format=json_schema and chat_template_kwargs on Nemotron models | `backend/clawback/llm.py` |
 | P0 | Safety | Turn on Zero Data Retention in Token Factory before any real user email is processed | `Token Factory profile settings` |
 | P0 | Storage | Real database (Supabase Postgres) with per-user row-level security; currently an in-memory dict that resets on restart | `backend/clawback/store.py` |
 | P0 | Storage | User accounts / login (Supabase Auth). Everything is one hard-coded 'demo' user right now | `backend/clawback/main.py` |

@@ -3,9 +3,11 @@
 Model IDs and prices come from the public Token Factory catalog, checked 2026-10-22:
 https://tokenfactory.nebius.com/api/public/models_info
 
-MISSING [json-schema-check]: not yet confirmed whether Token Factory honours `response_format` (JSON schema)
-and `chat_template_kwargs` (thinking on/off) for the Nemotron models. The code asks for JSON in the prompt as
-well, and parses defensively. Run one real call per model before relying on it.
+Verified live on 2026-10-22: all five models honour `response_format` (strict JSON schema) and
+`chat_template_kwargs.enable_thinking`. Lightning must never think: it writes its reasoning into `content`.
+Super, Ultra and Super-VL return reasoning separately in `reasoning_content`, which we never show.
+
+Smoke test (one tiny call per tier):  python -m clawback.llm --check
 """
 
 from __future__ import annotations
