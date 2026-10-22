@@ -87,9 +87,11 @@ class TraceStep(BaseModel):
     at: datetime
     stage: str
     engine: str  # model ID, "code", "tavily", or "rules"
-    status: str  # ok | missing | error
+    status: str  # ok | missing | error | fallback
+    tier: str = ""  # fast | fast_fallback | mid | reason | vision ("" for non-model steps)
     ms: float = 0.0
     input_tokens: int = 0
     output_tokens: int = 0
+    reasoning_tokens: int = 0
     cost_usd: float = 0.0
     note: str = ""
