@@ -62,3 +62,10 @@ def test_trace_row_has_tier_and_cost(fake_llm):
     llm.chat("t", "extract", "fast", MSGS)
     row = store.user("t").trace[-1]
     assert row.tier == "fast" and row.cost_usd == pytest.approx(100 / 1e6 * 0.06 + 20 / 1e6 * 0.24)
+
+
+def test_check_reports_every_tier(fake_llm):
+    fake_llm.default = '{"kind": "price_change", "merchant": "Spotify"}'
+    rows = llm.check()
+    assert {r["tier"] for r in rows} == set(llm.TIERS)
+    assert all(r["ok"] for r in rows)

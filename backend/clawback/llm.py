@@ -176,3 +176,54 @@ def parse_json(text: str) -> dict | list | None:
         return json.loads(match.group(1))
     except json.JSONDecodeError:
         return None
+
+
+CHECK_EMAIL = "From: no-reply@spotify.com\nSubject: Your price is changing\n\nPremium goes from $11.99 to $12.99 next month."
+CHECK_SCHEMA = {
+    "type": "object",
+    "properties": {"kind": {"type": "string"}, "merchant": {"type": "string"}},
+    "required": ["kind", "merchant"],
+    "additionalProperties": False,
+}
+
+
+def check(user_id: str = "check") -> list[dict]:
+    """One tiny strict-JSON call per tier, thinking off. Each tier is called directly (no fallback),
+    so a broken tier shows up as broken instead of being covered by its backup."""
+    rows = []
+    messages = [
+        {"role": "system", "content": "Report the subscription in this email as JSON with kind and merchant."},
+        {"role": "user", "content": CHECK_EMAIL},
+    ]
+    for role, tier in TIERS.items():
+        try:
+            res = chat(user_id, "check", role, messages, schema=CHECK_SCHEMA, max_tokens=100)
+            data = parse_json(res.text)
+            ok = isinstance(data, dict) and bool(data.get("merchant"))
+            rows.append({"tier": role, "model": tier.model, "ok": ok, "ms": round(res.ms),
+                         "cost_usd": res.cost_usd, "note": res.text[:80].replace("\n", " ")})
+        except Exception as exc:
+            rows.append({"tier": role, "model": tier.model, "ok": False, "ms": 0, "cost_usd": 0.0,
+                         "note": str(exc)[:80]})
+    return rows
+
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="ClawBack model tiers")
+    parser.add_argument("--check", action="store_true", help="make one live call per tier")
+    args = parser.parse_args()
+    if not args.check:
+        parser.print_help()
+        sys.exit(0)
+    if not available():
+        print("NEBIUS_API_KEY is not set (backend/.env).")
+        sys.exit(1)
+    results = check()
+    for r in results:
+        mark = "ok  " if r["ok"] else "FAIL"
+        print(f"{mark} {r['tier']:<14} {r['model']:<40} {r['ms']:>6} ms  ${r['cost_usd']:.6f}  {r['note']}")
+    print(f"total ${sum(r['cost_usd'] for r in results):.6f}")
+    sys.exit(0 if all(r["ok"] for r in results) else 1)
