@@ -206,15 +206,15 @@ export default function Home() {
 
       <section>
         <h2>What ran (model trace)</h2>
-        <p className="muted small">Every step records which engine ran it, how long it took and what it cost. Rows marked &quot;missing&quot; are stand-ins.</p>
+        <p className="muted small">Every step records which engine ran it, how long it took and what it cost. Rows marked &quot;missing&quot; are stand-ins. &quot;fallback&quot; rows are where a backup model took over.</p>
         <div className="tablewrap">
           <table>
-            <thead><tr><th>Stage</th><th>Engine</th><th>Status</th><th>ms</th><th>Tokens in/out</th><th>Cost</th><th>Note</th></tr></thead>
+            <thead><tr><th>Stage</th><th>Tier</th><th>Engine</th><th>Status</th><th>ms</th><th>Tokens in/out</th><th>Cost</th><th>Note</th></tr></thead>
             <tbody>
               {trace.map((t, i) => (
                 <tr key={i} className={t.status}>
-                  <td>{t.stage}</td><td><code>{t.engine}</code></td><td>{t.status}</td><td>{t.ms.toFixed(1)}</td>
-                  <td>{t.input_tokens}/{t.output_tokens}</td><td>${t.cost_usd.toFixed(5)}</td><td>{t.note}</td>
+                  <td>{t.stage}</td><td>{t.tier || "—"}</td><td><code>{t.engine}</code></td><td>{t.status}</td><td>{t.ms.toFixed(1)}</td>
+                  <td>{t.input_tokens}/{t.output_tokens}{t.reasoning_tokens > 0 ? ` (+${t.reasoning_tokens} thinking)` : ""}</td><td>${t.cost_usd.toFixed(5)}</td><td>{t.note}</td>
                 </tr>
               ))}
             </tbody>

@@ -99,6 +99,7 @@ table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 tr.missing td { color: var(--missing-text); }
 tr.error td { color: var(--high); }
+tr.fallback td { color: var(--missing-text); font-style: italic; }
 
 footer { margin-top: 32px; }
 
