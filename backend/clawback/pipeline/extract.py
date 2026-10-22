@@ -107,13 +107,12 @@ def _extract_llm(user_id: str, email: Email) -> Fact | None:
     if data is None:
         return None
     received = email.received_at.date()
-    sender_m = match_sender(email.sender)
-    kind = data.get("kind")
+    kind = data.get("kind") if data.get("kind") in KINDS else "other"
     fact = Fact(
         email_id=email.id,
         received=received,
-        kind=kind if kind in KINDS else "other",
-        merchant=data.get("merchant") if isinstance(data.get("merchant"), str) else (sender_m.name if sender_m else None),
+        kind=kind,
+        merchant=_known_merchant(data.get("merchant"), kind, email),
         amount=_num(data.get("amount")),
         saved_amount=_num(data.get("saved_amount")),
         old_price=_num(data.get("old_price")),
@@ -123,6 +122,19 @@ def _extract_llm(user_id: str, email: Email) -> Fact | None:
     if isinstance(days, int) and not isinstance(days, bool) and 0 <= days <= 365:
         fact.trial_end = received + timedelta(days=days)  # date math in code
     return fact
+
+
+def _known_merchant(model_name, kind: str, email: Email) -> str | None:
+    """Map the model's merchant ("Chipotle", "Duolingo") to our merchant list's name, the way the rules do.
+    Usage and value code match subscriptions by exact name, so this must agree with recurring detection."""
+    name = model_name if isinstance(model_name, str) and model_name.strip() else None
+    if m := match_sender(email.sender):
+        return m.name
+    if name and (m := find_in_text(name)):
+        return m.name
+    if kind == "store_receipt" and (m := find_in_text(f"{email.subject}. {email.body_text}")):
+        return m.name
+    return name
 
 
 def _num(v) -> float | None:

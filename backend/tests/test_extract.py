@@ -66,3 +66,22 @@ def test_long_email_is_cut_and_wrapped(fake_llm):
     user_msg = fake_llm.calls[0]["messages"][-1]["content"]
     assert user_msg.startswith("<email>") and user_msg.rstrip().endswith("</email>")
     assert "IGNORE PREVIOUS" not in user_msg and len(user_msg) < 6300
+
+
+@pytest.mark.parametrize("subject_hint, model_merchant, expected", [
+    ("Order confirmed", "Chipotle", "DoorDash DashPass"),
+    ("Super Duolingo free trial", "Duolingo", "Super Duolingo"),
+    ("Your receipt from Apple", "iCloud+ with 200 GB", "iCloud+"),
+])
+def test_model_merchant_mapped_to_known_name(fake_llm, subject_hint, model_merchant, expected):
+    email = next(e for e in demo_data.emails(TODAY) if subject_hint in e.subject)
+    fake_llm.default = json.dumps({**NULLS, "merchant": model_merchant})
+    [fact] = extract_all("t", [email])
+    assert fact.merchant == expected
+
+
+def test_unknown_merchant_keeps_model_name(fake_llm):
+    fake_llm.default = json.dumps({**NULLS, "merchant": "Acme Cloud"})
+    other = EMAIL.model_copy(update={"id": "acme", "sender": "billing@acme.example"})
+    [fact] = extract_all("t", [other])
+    assert fact.merchant == "Acme Cloud"

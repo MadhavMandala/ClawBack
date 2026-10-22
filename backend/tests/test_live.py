@@ -29,6 +29,8 @@ def test_lightning_matches_rules_on_demo_emails(live):
     problems = []
     for email, fact in zip(emails, facts):
         rule = _extract_rules(email)
+        if rule.merchant and fact.merchant != rule.merchant:
+            problems.append(f"{email.subject!r}: merchant {fact.merchant} != {rule.merchant}")
         if fact.kind != rule.kind:
             problems.append(f"{email.subject!r}: kind {fact.kind} != {rule.kind}")
         for field in NUMBERS:
