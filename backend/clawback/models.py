@@ -95,3 +95,17 @@ class TraceStep(BaseModel):
     reasoning_tokens: int = 0
     cost_usd: float = 0.0
     note: str = ""
+
+
+class Fact(BaseModel):
+    """What one email says about a subscription. Dates here are computed by code, never by a model."""
+
+    email_id: str
+    received: date
+    kind: str  # delivery_order | inactivity | engagement | price_change | trial | store_receipt | other
+    merchant: str | None = None
+    amount: float | None = None
+    saved_amount: float | None = None
+    old_price: float | None = None
+    new_price: float | None = None
+    trial_end: date | None = None

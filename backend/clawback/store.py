@@ -11,7 +11,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date
 
-from .models import Email, Subscription, TraceStep, Transaction
+from .models import Email, Fact, Subscription, TraceStep, Transaction
 
 
 @dataclass
@@ -26,6 +26,8 @@ class UserData:
     # Subscriptions the user started cancelling: id -> date. MISSING [cancel-confirmation]: never confirmed.
     cancel_pending: dict[str, date] = field(default_factory=dict)
     trace: list[TraceStep] = field(default_factory=list)
+    # Extracted facts by email id, so each email goes to a model once. Reset demo clears it.
+    facts: dict[str, Fact] = field(default_factory=dict)
 
 
 class MemoryStore:
