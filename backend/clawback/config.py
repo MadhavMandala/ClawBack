@@ -4,6 +4,14 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+
+def load_env_file(path: Path) -> None:
+    """Load KEY=value lines from a .env file. Variables already set in the shell win."""
+    load_dotenv(path, override=False)
 
 
 def _env(name: str) -> str | None:
@@ -42,4 +50,5 @@ class Settings:
         }
 
 
+load_env_file(Path(__file__).resolve().parents[1] / ".env")
 settings = Settings()
