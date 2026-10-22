@@ -8,7 +8,7 @@ from datetime import date
 from ..merchants import by_name
 from ..models import Cadence, Subscription
 from ..store import store
-from ..trace import timed
+from ..trace import start_run, timed
 from .extract import extract_all
 from .flags import flag_one, flag_overlaps
 from .recurring import detect, resolve_store_billed
@@ -20,7 +20,7 @@ from .value import membership_value
 def run(user_id: str, today: date | None = None) -> dict:
     today = today or date.today()
     u = store.user(user_id)
-    u.trace.clear()
+    start_run(user_id)
 
     candidates = triage(user_id, u.emails)
     facts = extract_all(user_id, candidates)
