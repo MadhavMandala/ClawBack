@@ -3,8 +3,8 @@ or synthetic data only. Run with:
 
     CLAWBACK_LIVE=1 .venv/Scripts/python -m pytest tests/test_live_findings.py -v -s
 
-They call Token Factory and Tavily (about 7 searches and extracts), about $0.012 of model calls a run. Each test prints what came back and
-what it cost, so a run doubles as the record of the live check."""
+They call Token Factory and Tavily (about 7 searches and extracts), about $0.012 of model calls a run. Each test
+prints what came back and what it cost, so a run doubles as the record of the live check."""
 
 import io
 import json
