@@ -11,6 +11,8 @@ _INVISIBLE = re.compile(r"[\u200b-\u200f\u034f\u00ad\u2060\ufeff]")
 
 # Inline styles that hide an element. Hidden text is a common place for instructions aimed at an AI reader, so it is
 # kept out of the body a model sees and returned separately for the prompt-injection screen (pipeline/guard.py).
+# TODO(clawback): text hidden by a <style> class, or white on white, still counts as visible. The screen and the
+# grounding checks still apply to it; only this extra separation misses it.
 _HIDDEN_STYLE = re.compile(
     r"display\s*:\s*none|visibility\s*:\s*hidden|mso-hide\s*:\s*all"
     r"|(?:font-size|opacity|max-height)\s*:\s*0(?:\.0+)?(?:px|pt|em|rem|%)?\s*(?:;|!|$)", re.I)
