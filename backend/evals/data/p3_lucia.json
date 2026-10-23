@@ -1,0 +1,2145 @@
+{
+ "synthetic": true,
+ "person": {
+  "id": "p3",
+  "name": "Lucía Romero (synthetic)",
+  "address": "lucia.romero@example.org",
+  "about": "Graduate student in Houston. Some receipts arrive in Spanish. A trip to Germany in October with a cancelled return flight."
+ },
+ "today": "2026-10-20",
+ "history_start": "2026-04-21",
+ "transactions": [
+  {
+   "id": "p3-t001",
+   "date": "2026-04-22",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 64.97
+  },
+  {
+   "id": "p3-t002",
+   "date": "2026-04-23",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 8.81
+  },
+  {
+   "id": "p3-t003",
+   "date": "2026-04-24",
+   "description": "CRUNCHYROLL*MEGA FAN",
+   "amount": 11.99
+  },
+  {
+   "id": "p3-t004",
+   "date": "2026-04-27",
+   "description": "SHELL OIL 12093",
+   "amount": 43.97
+  },
+  {
+   "id": "p3-t005",
+   "date": "2026-04-27",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 9.02
+  },
+  {
+   "id": "p3-t006",
+   "date": "2026-04-29",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 30.03
+  },
+  {
+   "id": "p3-t007",
+   "date": "2026-04-30",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t008",
+   "date": "2026-05-01",
+   "description": "ZELLE TO MARTINEZ PROPERTIES",
+   "amount": 1150.0
+  },
+  {
+   "id": "p3-t009",
+   "date": "2026-05-02",
+   "description": "CHEGG.COM 408-855-5700",
+   "amount": 19.95
+  },
+  {
+   "id": "p3-t010",
+   "date": "2026-05-02",
+   "description": "MINT MOBILE 800-683-7392",
+   "amount": 45.0
+  },
+  {
+   "id": "p3-t011",
+   "date": "2026-05-02",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 5.85
+  },
+  {
+   "id": "p3-t012",
+   "date": "2026-05-03",
+   "description": "TST* TACOS DONA LENA",
+   "amount": 14.54
+  },
+  {
+   "id": "p3-t013",
+   "date": "2026-05-05",
+   "description": "COMCAST CABLE COMM 800-COMCAST",
+   "amount": 50.0
+  },
+  {
+   "id": "p3-t014",
+   "date": "2026-05-06",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 82.11
+  },
+  {
+   "id": "p3-t015",
+   "date": "2026-05-07",
+   "description": "WHATABURGER 1047",
+   "amount": 11.1
+  },
+  {
+   "id": "p3-t016",
+   "date": "2026-05-09",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 5.99
+  },
+  {
+   "id": "p3-t017",
+   "date": "2026-05-11",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 8.08
+  },
+  {
+   "id": "p3-t018",
+   "date": "2026-05-12",
+   "description": "LEMONADE INSURANCE",
+   "amount": 12.5
+  },
+  {
+   "id": "p3-t019",
+   "date": "2026-05-13",
+   "description": "SHELL OIL 12093",
+   "amount": 38.26
+  },
+  {
+   "id": "p3-t020",
+   "date": "2026-05-14",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 57.75
+  },
+  {
+   "id": "p3-t021",
+   "date": "2026-05-14",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t022",
+   "date": "2026-05-15",
+   "description": "ONLINE TRANSFER TO SAV ...4471",
+   "amount": 100.0
+  },
+  {
+   "id": "p3-t023",
+   "date": "2026-05-16",
+   "description": "LYFT *RIDE SAT 11PM",
+   "amount": 14.8
+  },
+  {
+   "id": "p3-t024",
+   "date": "2026-05-17",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 10.99
+  },
+  {
+   "id": "p3-t025",
+   "date": "2026-05-18",
+   "description": "PLANET FITNESS CLUB FEES",
+   "amount": 10.0
+  },
+  {
+   "id": "p3-t026",
+   "date": "2026-05-20",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 5.36
+  },
+  {
+   "id": "p3-t027",
+   "date": "2026-05-20",
+   "description": "ZELLE TO ANA GARCIA",
+   "amount": 48.2
+  },
+  {
+   "id": "p3-t028",
+   "date": "2026-05-22",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 46.73
+  },
+  {
+   "id": "p3-t029",
+   "date": "2026-05-24",
+   "description": "CRUNCHYROLL*MEGA FAN",
+   "amount": 11.99
+  },
+  {
+   "id": "p3-t030",
+   "date": "2026-05-24",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 6.36
+  },
+  {
+   "id": "p3-t031",
+   "date": "2026-05-27",
+   "description": "TST* TACOS DONA LENA",
+   "amount": 15.96
+  },
+  {
+   "id": "p3-t032",
+   "date": "2026-05-28",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 51.54
+  },
+  {
+   "id": "p3-t033",
+   "date": "2026-05-28",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t034",
+   "date": "2026-05-30",
+   "description": "SHELL OIL 12093",
+   "amount": 43.44
+  },
+  {
+   "id": "p3-t035",
+   "date": "2026-06-01",
+   "description": "ZELLE TO MARTINEZ PROPERTIES",
+   "amount": 1150.0
+  },
+  {
+   "id": "p3-t036",
+   "date": "2026-06-02",
+   "description": "CHEGG.COM 408-855-5700",
+   "amount": 19.95
+  },
+  {
+   "id": "p3-t037",
+   "date": "2026-06-02",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 7.18
+  },
+  {
+   "id": "p3-t038",
+   "date": "2026-06-04",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 64.21
+  },
+  {
+   "id": "p3-t039",
+   "date": "2026-06-05",
+   "description": "COMCAST CABLE COMM 800-COMCAST",
+   "amount": 50.0
+  },
+  {
+   "id": "p3-t040",
+   "date": "2026-06-06",
+   "description": "ZELLE FROM CARMEN ROMERO",
+   "amount": -200.0
+  },
+  {
+   "id": "p3-t041",
+   "date": "2026-06-09",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 5.99
+  },
+  {
+   "id": "p3-t042",
+   "date": "2026-06-09",
+   "description": "WHATABURGER 1047",
+   "amount": 11.68
+  },
+  {
+   "id": "p3-t043",
+   "date": "2026-06-11",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 70.66
+  },
+  {
+   "id": "p3-t044",
+   "date": "2026-06-11",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t045",
+   "date": "2026-06-12",
+   "description": "LEMONADE INSURANCE",
+   "amount": 12.5
+  },
+  {
+   "id": "p3-t046",
+   "date": "2026-06-12",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 9.15
+  },
+  {
+   "id": "p3-t047",
+   "date": "2026-06-15",
+   "description": "ONLINE TRANSFER TO SAV ...4471",
+   "amount": 100.0
+  },
+  {
+   "id": "p3-t048",
+   "date": "2026-06-15",
+   "description": "SHELL OIL 12093",
+   "amount": 35.82
+  },
+  {
+   "id": "p3-t049",
+   "date": "2026-06-17",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 10.99
+  },
+  {
+   "id": "p3-t050",
+   "date": "2026-06-18",
+   "description": "PLANET FITNESS CLUB FEES",
+   "amount": 10.0
+  },
+  {
+   "id": "p3-t051",
+   "date": "2026-06-20",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 59.21
+  },
+  {
+   "id": "p3-t052",
+   "date": "2026-06-20",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 5.03
+  },
+  {
+   "id": "p3-t053",
+   "date": "2026-06-20",
+   "description": "ZELLE TO ANA GARCIA",
+   "amount": 61.75
+  },
+  {
+   "id": "p3-t054",
+   "date": "2026-06-24",
+   "description": "CRUNCHYROLL*MEGA FAN",
+   "amount": 11.99
+  },
+  {
+   "id": "p3-t055",
+   "date": "2026-06-24",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 7.79
+  },
+  {
+   "id": "p3-t056",
+   "date": "2026-06-25",
+   "description": "TST* TACOS DONA LENA",
+   "amount": 16.82
+  },
+  {
+   "id": "p3-t057",
+   "date": "2026-06-25",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t058",
+   "date": "2026-06-27",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 52.05
+  },
+  {
+   "id": "p3-t059",
+   "date": "2026-06-29",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 5.97
+  },
+  {
+   "id": "p3-t060",
+   "date": "2026-07-01",
+   "description": "ZELLE TO MARTINEZ PROPERTIES",
+   "amount": 1150.0
+  },
+  {
+   "id": "p3-t061",
+   "date": "2026-07-02",
+   "description": "CHEGG.COM 408-855-5700",
+   "amount": 19.95
+  },
+  {
+   "id": "p3-t062",
+   "date": "2026-07-02",
+   "description": "SHELL OIL 12093",
+   "amount": 35.77
+  },
+  {
+   "id": "p3-t063",
+   "date": "2026-07-03",
+   "description": "LYFT *RIDE FRI 11PM",
+   "amount": 19.65
+  },
+  {
+   "id": "p3-t064",
+   "date": "2026-07-05",
+   "description": "COMCAST CABLE COMM 800-COMCAST",
+   "amount": 50.0
+  },
+  {
+   "id": "p3-t065",
+   "date": "2026-07-05",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 58.25
+  },
+  {
+   "id": "p3-t066",
+   "date": "2026-07-08",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 6.31
+  },
+  {
+   "id": "p3-t067",
+   "date": "2026-07-09",
+   "description": "LEVOIT.COM",
+   "amount": 39.99
+  },
+  {
+   "id": "p3-t068",
+   "date": "2026-07-09",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 5.99
+  },
+  {
+   "id": "p3-t069",
+   "date": "2026-07-09",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t070",
+   "date": "2026-07-09",
+   "description": "WHATABURGER 1047",
+   "amount": 9.24
+  },
+  {
+   "id": "p3-t071",
+   "date": "2026-07-12",
+   "description": "LEMONADE INSURANCE",
+   "amount": 12.5
+  },
+  {
+   "id": "p3-t072",
+   "date": "2026-07-13",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 28.14
+  },
+  {
+   "id": "p3-t073",
+   "date": "2026-07-14",
+   "description": "SHELL OIL 12093",
+   "amount": 26.91
+  },
+  {
+   "id": "p3-t074",
+   "date": "2026-07-15",
+   "description": "ONLINE TRANSFER TO SAV ...4471",
+   "amount": 100.0
+  },
+  {
+   "id": "p3-t075",
+   "date": "2026-07-15",
+   "description": "TST* TACOS DONA LENA",
+   "amount": 24.46
+  },
+  {
+   "id": "p3-t076",
+   "date": "2026-07-17",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 10.99
+  },
+  {
+   "id": "p3-t077",
+   "date": "2026-07-17",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 8.07
+  },
+  {
+   "id": "p3-t078",
+   "date": "2026-07-18",
+   "description": "PLANET FITNESS CLUB FEES",
+   "amount": 10.0
+  },
+  {
+   "id": "p3-t079",
+   "date": "2026-07-19",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 67.75
+  },
+  {
+   "id": "p3-t080",
+   "date": "2026-07-20",
+   "description": "ZELLE TO ANA GARCIA",
+   "amount": 72.4
+  },
+  {
+   "id": "p3-t081",
+   "date": "2026-07-23",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t082",
+   "date": "2026-07-24",
+   "description": "CRUNCHYROLL*MEGA FAN",
+   "amount": 11.99
+  },
+  {
+   "id": "p3-t083",
+   "date": "2026-07-24",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 9.75
+  },
+  {
+   "id": "p3-t084",
+   "date": "2026-07-28",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 40.39
+  },
+  {
+   "id": "p3-t085",
+   "date": "2026-07-28",
+   "description": "PLANET FITNESS ANNUAL FEE",
+   "amount": 49.0
+  },
+  {
+   "id": "p3-t086",
+   "date": "2026-07-30",
+   "description": "SHELL OIL 12093",
+   "amount": 31.4
+  },
+  {
+   "id": "p3-t087",
+   "date": "2026-07-30",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 8.55
+  },
+  {
+   "id": "p3-t088",
+   "date": "2026-07-31",
+   "description": "TST* TACOS DONA LENA",
+   "amount": 19.29
+  },
+  {
+   "id": "p3-t089",
+   "date": "2026-08-01",
+   "description": "MINT MOBILE 800-683-7392",
+   "amount": 45.0
+  },
+  {
+   "id": "p3-t090",
+   "date": "2026-08-01",
+   "description": "ZELLE TO MARTINEZ PROPERTIES",
+   "amount": 1150.0
+  },
+  {
+   "id": "p3-t091",
+   "date": "2026-08-02",
+   "description": "CHEGG.COM 408-855-5700",
+   "amount": 19.95
+  },
+  {
+   "id": "p3-t092",
+   "date": "2026-08-03",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 7.46
+  },
+  {
+   "id": "p3-t093",
+   "date": "2026-08-03",
+   "description": "WHATABURGER 1047",
+   "amount": 10.84
+  },
+  {
+   "id": "p3-t094",
+   "date": "2026-08-04",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 66.34
+  },
+  {
+   "id": "p3-t095",
+   "date": "2026-08-05",
+   "description": "COMCAST CABLE COMM 800-COMCAST",
+   "amount": 50.0
+  },
+  {
+   "id": "p3-t096",
+   "date": "2026-08-06",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t097",
+   "date": "2026-08-07",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 5.65
+  },
+  {
+   "id": "p3-t098",
+   "date": "2026-08-09",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 5.99
+  },
+  {
+   "id": "p3-t099",
+   "date": "2026-08-10",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 90.89
+  },
+  {
+   "id": "p3-t100",
+   "date": "2026-08-12",
+   "description": "LEMONADE INSURANCE",
+   "amount": 12.5
+  },
+  {
+   "id": "p3-t101",
+   "date": "2026-08-12",
+   "description": "SHELL OIL 12093",
+   "amount": 42.85
+  },
+  {
+   "id": "p3-t102",
+   "date": "2026-08-14",
+   "description": "LUFTHANSA 2201234567890",
+   "amount": 1048.6
+  },
+  {
+   "id": "p3-t103",
+   "date": "2026-08-15",
+   "description": "ONLINE TRANSFER TO SAV ...4471",
+   "amount": 100.0
+  },
+  {
+   "id": "p3-t104",
+   "date": "2026-08-16",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 90.71
+  },
+  {
+   "id": "p3-t105",
+   "date": "2026-08-16",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 9.67
+  },
+  {
+   "id": "p3-t106",
+   "date": "2026-08-17",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 10.99
+  },
+  {
+   "id": "p3-t107",
+   "date": "2026-08-18",
+   "description": "PLANET FITNESS CLUB FEES",
+   "amount": 10.0
+  },
+  {
+   "id": "p3-t108",
+   "date": "2026-08-20",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t109",
+   "date": "2026-08-20",
+   "description": "ZELLE TO ANA GARCIA",
+   "amount": 69.95
+  },
+  {
+   "id": "p3-t110",
+   "date": "2026-08-22",
+   "description": "LYFT *RIDE SAT 11PM",
+   "amount": 11.3
+  },
+  {
+   "id": "p3-t111",
+   "date": "2026-08-24",
+   "description": "CRUNCHYROLL*MEGA FAN",
+   "amount": 11.99
+  },
+  {
+   "id": "p3-t112",
+   "date": "2026-08-24",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 71.69
+  },
+  {
+   "id": "p3-t113",
+   "date": "2026-08-24",
+   "description": "SHELL OIL 12093",
+   "amount": 28.99
+  },
+  {
+   "id": "p3-t114",
+   "date": "2026-08-24",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 7.05
+  },
+  {
+   "id": "p3-t115",
+   "date": "2026-08-24",
+   "description": "TST* TACOS DONA LENA",
+   "amount": 23.43
+  },
+  {
+   "id": "p3-t116",
+   "date": "2026-08-28",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 5.28
+  },
+  {
+   "id": "p3-t117",
+   "date": "2026-08-28",
+   "description": "WHATABURGER 1047",
+   "amount": 12.33
+  },
+  {
+   "id": "p3-t118",
+   "date": "2026-08-31",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 63.58
+  },
+  {
+   "id": "p3-t119",
+   "date": "2026-09-01",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 8.39
+  },
+  {
+   "id": "p3-t120",
+   "date": "2026-09-01",
+   "description": "ZELLE TO MARTINEZ PROPERTIES",
+   "amount": 1150.0
+  },
+  {
+   "id": "p3-t121",
+   "date": "2026-09-02",
+   "description": "CHEGG.COM 408-855-5700",
+   "amount": 19.95
+  },
+  {
+   "id": "p3-t122",
+   "date": "2026-09-03",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t123",
+   "date": "2026-09-05",
+   "description": "COMCAST CABLE COMM 800-COMCAST",
+   "amount": 70.0
+  },
+  {
+   "id": "p3-t124",
+   "date": "2026-09-06",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 87.57
+  },
+  {
+   "id": "p3-t125",
+   "date": "2026-09-06",
+   "description": "SHELL OIL 12093",
+   "amount": 40.03
+  },
+  {
+   "id": "p3-t126",
+   "date": "2026-09-09",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 5.99
+  },
+  {
+   "id": "p3-t127",
+   "date": "2026-09-11",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 8.85
+  },
+  {
+   "id": "p3-t128",
+   "date": "2026-09-12",
+   "description": "LEMONADE INSURANCE",
+   "amount": 12.5
+  },
+  {
+   "id": "p3-t129",
+   "date": "2026-09-13",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 39.71
+  },
+  {
+   "id": "p3-t130",
+   "date": "2026-09-15",
+   "description": "ONLINE TRANSFER TO SAV ...4471",
+   "amount": 100.0
+  },
+  {
+   "id": "p3-t131",
+   "date": "2026-09-17",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 10.99
+  },
+  {
+   "id": "p3-t132",
+   "date": "2026-09-17",
+   "description": "TST* TACOS DONA LENA",
+   "amount": 13.54
+  },
+  {
+   "id": "p3-t133",
+   "date": "2026-09-17",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t134",
+   "date": "2026-09-18",
+   "description": "PLANET FITNESS CLUB FEES",
+   "amount": 10.0
+  },
+  {
+   "id": "p3-t135",
+   "date": "2026-09-18",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 9.37
+  },
+  {
+   "id": "p3-t136",
+   "date": "2026-09-20",
+   "description": "SHELL OIL 12093",
+   "amount": 35.3
+  },
+  {
+   "id": "p3-t137",
+   "date": "2026-09-20",
+   "description": "ZELLE TO ANA GARCIA",
+   "amount": 58.1
+  },
+  {
+   "id": "p3-t138",
+   "date": "2026-09-22",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 49.13
+  },
+  {
+   "id": "p3-t139",
+   "date": "2026-09-22",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 6.3
+  },
+  {
+   "id": "p3-t140",
+   "date": "2026-09-24",
+   "description": "CRUNCHYROLL*MEGA FAN",
+   "amount": 11.99
+  },
+  {
+   "id": "p3-t141",
+   "date": "2026-09-26",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 9.03
+  },
+  {
+   "id": "p3-t142",
+   "date": "2026-09-26",
+   "description": "WHATABURGER 1047",
+   "amount": 14.79
+  },
+  {
+   "id": "p3-t143",
+   "date": "2026-09-29",
+   "description": "LYFT *RIDE TUE 8PM",
+   "amount": 23.4
+  },
+  {
+   "id": "p3-t144",
+   "date": "2026-09-29",
+   "description": "LYFT *RIDE TUE 8PM",
+   "amount": 23.4
+  },
+  {
+   "id": "p3-t145",
+   "date": "2026-10-01",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 33.36
+  },
+  {
+   "id": "p3-t146",
+   "date": "2026-10-01",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 6.56
+  },
+  {
+   "id": "p3-t147",
+   "date": "2026-10-01",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t148",
+   "date": "2026-10-01",
+   "description": "ZELLE TO MARTINEZ PROPERTIES",
+   "amount": 1150.0
+  },
+  {
+   "id": "p3-t149",
+   "date": "2026-10-02",
+   "description": "CHEGG.COM 408-855-5700",
+   "amount": 19.95
+  },
+  {
+   "id": "p3-t150",
+   "date": "2026-10-02",
+   "description": "REWE MARKT BERLIN",
+   "amount": 41.22
+  },
+  {
+   "id": "p3-t151",
+   "date": "2026-10-03",
+   "description": "FOREIGN TRANSACTION FEE",
+   "amount": 1.24
+  },
+  {
+   "id": "p3-t152",
+   "date": "2026-10-03",
+   "description": "LYFT *RIDE REFUND",
+   "amount": -23.4
+  },
+  {
+   "id": "p3-t153",
+   "date": "2026-10-05",
+   "description": "COMCAST CABLE COMM 800-COMCAST",
+   "amount": 70.0
+  },
+  {
+   "id": "p3-t154",
+   "date": "2026-10-05",
+   "description": "DB BAHN TICKET FRANKFURT",
+   "amount": 68.9
+  },
+  {
+   "id": "p3-t155",
+   "date": "2026-10-06",
+   "description": "FOREIGN TRANSACTION FEE",
+   "amount": 2.07
+  },
+  {
+   "id": "p3-t156",
+   "date": "2026-10-06",
+   "description": "SHELL OIL 12093",
+   "amount": 42.03
+  },
+  {
+   "id": "p3-t157",
+   "date": "2026-10-06",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 7.67
+  },
+  {
+   "id": "p3-t158",
+   "date": "2026-10-07",
+   "description": "ATM WITHDRAWAL BERLIN",
+   "amount": 108.35
+  },
+  {
+   "id": "p3-t159",
+   "date": "2026-10-07",
+   "description": "INTL ATM FEE",
+   "amount": 5.0
+  },
+  {
+   "id": "p3-t160",
+   "date": "2026-10-08",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 43.36
+  },
+  {
+   "id": "p3-t161",
+   "date": "2026-10-08",
+   "description": "WALMART.COM 8009256278",
+   "amount": 129.0
+  },
+  {
+   "id": "p3-t162",
+   "date": "2026-10-09",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 5.99
+  },
+  {
+   "id": "p3-t163",
+   "date": "2026-10-11",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 4.97
+  },
+  {
+   "id": "p3-t164",
+   "date": "2026-10-12",
+   "description": "LEMONADE INSURANCE",
+   "amount": 12.5
+  },
+  {
+   "id": "p3-t165",
+   "date": "2026-10-14",
+   "description": "H-E-B #455 HOUSTON TX",
+   "amount": 80.67
+  },
+  {
+   "id": "p3-t166",
+   "date": "2026-10-14",
+   "description": "TST* TACOS DONA LENA",
+   "amount": 19.43
+  },
+  {
+   "id": "p3-t167",
+   "date": "2026-10-15",
+   "description": "ONLINE TRANSFER TO SAV ...4471",
+   "amount": 100.0
+  },
+  {
+   "id": "p3-t168",
+   "date": "2026-10-15",
+   "description": "UNIV OF HOUSTON PAYROLL",
+   "amount": -1680.0
+  },
+  {
+   "id": "p3-t169",
+   "date": "2026-10-17",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 10.99
+  },
+  {
+   "id": "p3-t170",
+   "date": "2026-10-18",
+   "description": "PLANET FITNESS CLUB FEES",
+   "amount": 10.0
+  },
+  {
+   "id": "p3-t171",
+   "date": "2026-10-20",
+   "description": "SHELL OIL 12093",
+   "amount": 35.98
+  },
+  {
+   "id": "p3-t172",
+   "date": "2026-10-20",
+   "description": "STARBUCKS STORE 23011",
+   "amount": 8.41
+  },
+  {
+   "id": "p3-t173",
+   "date": "2026-10-20",
+   "description": "ZELLE TO ANA GARCIA",
+   "amount": 44.35
+  }
+ ],
+ "emails": [
+  {
+   "received_at": "2026-07-09T19:00:00+00:00",
+   "from": "support@levoit.com",
+   "from_name": "Levoit",
+   "subject": "Your Levoit order #LV100482231 is confirmed",
+   "body": "Thanks for shopping with Levoit.\n\nCore 300 True HEPA Replacement Filter (2-Pack)  $39.99\nShipping  $0.00\nTotal  $39.99",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Levoit",
+    "names": [
+     "levoit"
+    ],
+    "note": null
+   },
+   "id": "p3-e01"
+  },
+  {
+   "received_at": "2026-07-14T12:00:00+00:00",
+   "from": "noreply@planetfitness.com",
+   "from_name": "Planet Fitness",
+   "subject": "Your annual fee is coming up",
+   "body": "Hi Lucia,\n\nA friendly reminder that your Planet Fitness annual membership fee of $49.00 will be charged on or around July 28.\n\nSee you at the gym!",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Planet Fitness",
+    "names": [
+     "planet fitness"
+    ],
+    "note": null
+   },
+   "id": "p3-e02"
+  },
+  {
+   "received_at": "2026-07-20T14:00:00+00:00",
+   "from": "online.communications@alerts.comcast.net",
+   "from_name": "Xfinity",
+   "subject": "An update on your Xfinity Internet pricing",
+   "body": "Hi Lucia,\n\nYour Xfinity Internet promotion ends on August 31, 2026. Your monthly price for Xfinity Internet 400 Mbps will change from $50.00 to $70.00 starting with your September statement.\n\nTo review your options, visit xfinity.com/myaccount.",
+   "format": "text",
+   "label": {
+    "kind": "price_change",
+    "merchant": "Xfinity",
+    "names": [
+     "xfinity",
+     "comcast"
+    ],
+    "note": null
+   },
+   "id": "p3-e03"
+  },
+  {
+   "received_at": "2026-08-14T16:30:00+00:00",
+   "from": "online@booking-lufthansa.com",
+   "from_name": "Lufthansa",
+   "subject": "Your booking confirmation - booking code R7TQ4N",
+   "body": "Dear Ms Romero,\n\nThank you for booking with Lufthansa.\n\nBooking code: R7TQ4N\n\nOutbound: Flight LH 441, Houston (IAH) to Frankfurt (FRA), 1 October 2026, departure 17:55\nReturn: Flight LH 440, Frankfurt (FRA) to Houston (IAH), 12 October 2026, departure 10:15\n\nPassenger: Lucia Romero\nTotal price: USD 1,048.60\n\nWe look forward to welcoming you on board.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Lufthansa",
+    "names": [
+     "lufthansa"
+    ],
+    "note": null
+   },
+   "id": "p3-e04"
+  },
+  {
+   "received_at": "2026-09-03T15:00:00+00:00",
+   "from": "noreply@planetfitness.com",
+   "from_name": "Planet Fitness",
+   "subject": "Black Card perks you might love",
+   "body": "Bring a guest every visit, use any of 2,600+ clubs and relax in the HydroMassage chairs. Upgrade in the app.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Planet Fitness",
+    "names": [
+     "planet fitness"
+    ],
+    "note": "Promotion from a subscribed merchant."
+   },
+   "id": "p3-e05"
+  },
+  {
+   "received_at": "2026-09-18T17:00:00+00:00",
+   "from": "hello@crunchyroll.com",
+   "from_name": "Crunchyroll",
+   "subject": "The Fall 2026 simulcast lineup",
+   "body": "Here's everything coming this season, from new series to returning favorites. Add them to your watchlist.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Crunchyroll",
+    "names": [
+     "crunchyroll"
+    ],
+    "note": "Newsletter from a subscribed merchant."
+   },
+   "id": "p3-e06"
+  },
+  {
+   "received_at": "2026-09-24T06:15:00+00:00",
+   "from": "hello@crunchyroll.com",
+   "from_name": "Crunchyroll",
+   "subject": "Your Crunchyroll Mega Fan receipt",
+   "body": "Thanks for being a Mega Fan.\n\nCrunchyroll Mega Fan (monthly)  $11.99\nBilled Sep 24, 2026 to Visa ending 2290.\nNext billing date: Oct 24, 2026.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Crunchyroll",
+    "names": [
+     "crunchyroll"
+    ],
+    "note": null
+   },
+   "id": "p3-e07"
+  },
+  {
+   "received_at": "2026-09-29T13:00:00+00:00",
+   "from": "noreply@chegg.com",
+   "from_name": "Chegg",
+   "subject": "Your weekly study recap",
+   "body": "Hi Lucía,\n\nThis week you viewed 9 expert solutions in Chegg Study and used the math solver 4 times.",
+   "format": "text",
+   "label": {
+    "kind": "engagement",
+    "merchant": "Chegg Study",
+    "names": [
+     "chegg"
+    ],
+    "note": null
+   },
+   "id": "p3-e08"
+  },
+  {
+   "received_at": "2026-09-30T02:05:00+00:00",
+   "from": "no-reply@lyftmail.com",
+   "from_name": "Lyft",
+   "subject": "Your ride with Lyft",
+   "body": "Thanks for riding with Lyft, Lucía.\n\nTue, Sep 29, 8:12 PM\nMontrose to Rice Village\n\nTotal $23.40\nVisa ending 2290",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Lyft",
+    "names": [
+     "lyft"
+    ],
+    "note": null
+   },
+   "id": "p3-e09"
+  },
+  {
+   "received_at": "2026-10-01T10:00:00+00:00",
+   "from": "online.communications@alerts.comcast.net",
+   "from_name": "Xfinity",
+   "subject": "Your Xfinity bill is ready",
+   "body": "Your bill of $70.00 is ready and will be paid automatically on Oct 5.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Xfinity",
+    "names": [
+     "xfinity",
+     "comcast"
+    ],
+    "note": null
+   },
+   "id": "p3-e10"
+  },
+  {
+   "received_at": "2026-10-01T16:00:00+00:00",
+   "from": "no-reply@lyftmail.com",
+   "from_name": "Lyft",
+   "subject": "We've refunded your duplicate charge",
+   "body": "Hi Lucía,\n\nWe noticed you were charged twice for your ride on Sep 29. We've refunded $23.40 to your Visa ending in 2290. It can take a few business days to appear.\n\nThe Lyft team",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Lyft",
+    "names": [
+     "lyft"
+    ],
+    "note": "The double charge was already refunded."
+   },
+   "id": "p3-e11"
+  },
+  {
+   "received_at": "2026-10-01T18:00:00+00:00",
+   "from": "hello@crunchyroll.com",
+   "from_name": "Crunchyroll",
+   "subject": "We miss you, Lucía!",
+   "body": "It's been a while since you watched anything on Crunchyroll. The fall season just started and more than 40 new simulcasts are waiting for you.\n\nStart watching\n\nCrunchyroll, LLC | Unsubscribe",
+   "format": "text",
+   "label": {
+    "kind": "inactivity",
+    "merchant": "Crunchyroll",
+    "names": [
+     "crunchyroll"
+    ],
+    "note": null
+   },
+   "id": "p3-e12"
+  },
+  {
+   "received_at": "2026-10-02T09:00:00+00:00",
+   "from": "noreply@chegg.com",
+   "from_name": "Chegg",
+   "subject": "Your Chegg Study subscription receipt",
+   "body": "Chegg Study monthly subscription  $19.95\nCharged Oct 2, 2026 to Visa ending 2290.\nRenews Nov 2, 2026.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Chegg Study",
+    "names": [
+     "chegg"
+    ],
+    "note": null
+   },
+   "id": "p3-e13"
+  },
+  {
+   "received_at": "2026-10-04T01:00:00+00:00",
+   "from": "alerts@bayoucitycu.example",
+   "from_name": "Bayou City CU",
+   "subject": "Foreign transaction fee charged",
+   "body": "A foreign transaction fee of $1.24 posted to your Visa ending 2290 for a purchase at REWE MARKT BERLIN.\n\nBayou City Credit Union (synthetic)",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p3-e14"
+  },
+  {
+   "received_at": "2026-10-07T06:40:00+00:00",
+   "from": "online@booking-lufthansa.com",
+   "from_name": "Lufthansa",
+   "subject": "Flight cancellation: LH 440 on 12 October 2026",
+   "body": "Dear Ms Romero,\n\nWe regret to inform you that your flight LH 440 from Frankfurt (FRA) to Houston (IAH) on 12 October 2026 has been cancelled for operational reasons.\n\nWe have rebooked you on flight LH 440 on 13 October 2026, departing 10:15. You have confirmed your new booking in the Lufthansa app.\n\nWe apologise for the inconvenience. Information about your passenger rights is available at lufthansa.com.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Lufthansa",
+    "names": [
+     "lufthansa"
+    ],
+    "note": null
+   },
+   "id": "p3-e15"
+  },
+  {
+   "received_at": "2026-10-07T16:00:00+00:00",
+   "from": "noreply@chegg.com",
+   "from_name": "Chegg",
+   "subject": "Get 20% off Chegg Study Pack",
+   "body": "Upgrade to Chegg Study Pack and get 20% off your first 3 months. Math solver, writing help and more.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Chegg Study",
+    "names": [
+     "chegg"
+    ],
+    "note": "Promotion from a subscribed merchant."
+   },
+   "id": "p3-e16"
+  },
+  {
+   "received_at": "2026-10-08T20:00:00+00:00",
+   "from": "help@walmart.com",
+   "from_name": "Walmart.com",
+   "subject": "Your Walmart.com order was placed",
+   "body": "Thanks for your order, Lucia.\n\nOrder# 2000134-55821\n\nonn. 32\" Class HD LED Roku Smart TV  $129.00\nSubtotal  $129.00\nTotal  $129.00\n\nArrives Oct 11.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Walmart",
+    "names": [
+     "walmart"
+    ],
+    "note": null
+   },
+   "id": "p3-e17"
+  },
+  {
+   "received_at": "2026-10-09T07:10:00+00:00",
+   "from": "no-reply@spotify.com",
+   "from_name": "Spotify",
+   "subject": "Tu recibo de Spotify",
+   "body": "Hola, Lucía:\n\nGracias por tu pago.\n\nPremium para Estudiantes\nPeríodo: 9 oct. 2026 - 8 nov. 2026\nTotal: $5.99\nMétodo de pago: Visa •••• 2290\n\nPuedes administrar tu plan en spotify.com/account.\n\nSpotify USA Inc.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Spotify",
+    "names": [
+     "spotify"
+    ],
+    "note": "A Spanish receipt from the merchant itself."
+   },
+   "id": "p3-e18"
+  },
+  {
+   "received_at": "2026-10-11T12:00:00+00:00",
+   "from": "starbucks@e.starbucks.com",
+   "from_name": "Starbucks",
+   "subject": "Your Stars expire soon",
+   "body": "You have 160 Stars expiring on Oct 31. Redeem them for a handcrafted drink.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p3-e19"
+  },
+  {
+   "received_at": "2026-10-12T09:00:00+00:00",
+   "from": "help@lemonade.com",
+   "from_name": "Lemonade",
+   "subject": "Your renters policy at a glance",
+   "body": "Your Lemonade renters policy is active. Monthly premium: $12.50. Coverage: $20,000 personal property.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Lemonade",
+    "names": [
+     "lemonade"
+    ],
+    "note": null
+   },
+   "id": "p3-e20"
+  },
+  {
+   "received_at": "2026-10-12T14:00:00+00:00",
+   "from": "no-reply@spotify.com",
+   "from_name": "Spotify",
+   "subject": "Lucía, esta semana escuchaste 11 horas de música",
+   "body": "Tus canciones más escuchadas esta semana:\n1. Ojitos Lindos - Bad Bunny\n2. La Bachata - Manuel Turizo\n3. Despechá - ROSALÍA\n\nEscuchaste 11 horas en total. Abre tu lista Tus Top Canciones Semanales.",
+   "format": "text",
+   "label": {
+    "kind": "engagement",
+    "merchant": "Spotify",
+    "names": [
+     "spotify"
+    ],
+    "note": "Spanish usage summary."
+   },
+   "id": "p3-e21"
+  },
+  {
+   "received_at": "2026-10-13T13:00:00+00:00",
+   "from": "noreply@chegg.com",
+   "from_name": "Chegg",
+   "subject": "Your weekly study recap",
+   "body": "Hi Lucía,\n\nThis week you viewed 6 expert solutions and asked 2 questions in Chegg Study. Your most viewed subject: Thermodynamics.\n\nKeep it up!",
+   "format": "text",
+   "label": {
+    "kind": "engagement",
+    "merchant": "Chegg Study",
+    "names": [
+     "chegg"
+    ],
+    "note": null
+   },
+   "id": "p3-e22"
+  },
+  {
+   "received_at": "2026-10-14T15:00:00+00:00",
+   "from": "gradoffice@uh.example.edu",
+   "from_name": "Graduate Office",
+   "subject": "Seminar schedule for November",
+   "body": "The Thermal Sciences seminar meets Thursdays at 3 PM in Room 2-112. Speakers are posted on the department site.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p3-e23"
+  },
+  {
+   "received_at": "2026-10-15T06:00:00+00:00",
+   "from": "heb@email.heb.com",
+   "from_name": "H-E-B",
+   "subject": "Your digital coupons this week",
+   "body": "Clip coupons for 2x points on H-E-B brand coffee and $3 off fall baking.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p3-e24"
+  },
+  {
+   "received_at": "2026-10-16T22:00:00+00:00",
+   "from": "paramountplus@mail.paramountplus.com",
+   "from_name": "Paramount+",
+   "subject": "Welcome to Paramount+",
+   "body": "Hi Lucía,\n\nWelcome to Paramount+! Your 7-day free trial has started. It ends on October 23, 2026. After your trial, your Paramount+ Essential plan will be $7.99/month unless you cancel.\n\nStart watching",
+   "format": "text",
+   "label": {
+    "kind": "trial",
+    "merchant": "Paramount+",
+    "names": [
+     "paramount"
+    ],
+    "note": null
+   },
+   "id": "p3-e25"
+  },
+  {
+   "received_at": "2026-10-17T08:31:00+00:00",
+   "from": "no_reply@email.apple.com",
+   "from_name": "Apple",
+   "subject": "Tu recibo de Apple",
+   "body": "Recibo\n\nCUENTA DE APPLE  lucia.romero@example.org\nFACTURADO A  Visa •••• 2290\nFECHA  17 oct. 2026\nID DE PEDIDO  MV4W8ZQ1RT\nN.º DE DOCUMENTO  190044281736\n\nApple Music\nApple Music (Mensual)\nSe renueva el 17 nov. 2026\n$10.99\n\nSubtotal  $10.99\nImpuesto  $0.00\nTOTAL  $10.99\n\nCuenta de Apple | Condiciones de venta | Política de privacidad",
+   "format": "text",
+   "label": {
+    "kind": "store_receipt",
+    "merchant": "Apple Music",
+    "names": [
+     "apple music"
+    ],
+    "note": "Non-English (Spanish) Apple receipt."
+   },
+   "id": "p3-e26"
+  },
+  {
+   "received_at": "2026-10-17T23:00:00+00:00",
+   "from": "carmen.romero@example.com",
+   "from_name": "Mamá",
+   "subject": "¿Cómo estás, mija?",
+   "body": "Hola mija, ¿cómo te fue en Alemania? Tu papá quiere ver las fotos. Llámanos el domingo. Besos.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p3-e27"
+  },
+  {
+   "received_at": "2026-10-18T11:00:00+00:00",
+   "from": "hello@mintmobile.com",
+   "from_name": "Mint Mobile",
+   "subject": "Your plan renews on November 1",
+   "body": "Hi Lucia,\n\nAuto-recharge is on. We'll charge $45.00 on November 1 for another 3 months of Unlimited. Nothing to do if you want to keep your plan.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Mint Mobile",
+    "names": [
+     "mint mobile",
+     "mint"
+    ],
+    "note": "Quarterly plan renewal notice."
+   },
+   "id": "p3-e28"
+  },
+  {
+   "received_at": "2026-10-19T17:00:00+00:00",
+   "from": "diego.p@example.org",
+   "from_name": "Diego P.",
+   "subject": "study group thursday",
+   "body": "same place as last week? I'll bring the problem set 4 solutions",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p3-e29"
+  },
+  {
+   "received_at": "2026-10-20T07:30:00+00:00",
+   "from": "alerts@bayoucitycu.example",
+   "from_name": "Bayou City CU",
+   "subject": "Zelle payment sent",
+   "body": "You sent $44.35 to ANA GARCIA. Memo: luz y agua octubre.\n\nBayou City Credit Union (synthetic)",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p3-e30"
+  },
+  {
+   "received_at": "2026-10-20T09:00:00+00:00",
+   "from": "paramountplus@mail.paramountplus.com",
+   "from_name": "Paramount+",
+   "subject": "Your free trial ends in 3 days",
+   "body": "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\"\ncontent=\"width=device-width\"><title>Paramount+</title><style type=\"text/css\">body{margin:0;padding:0;background:#0b0f1a}\n.wrap{max-width:600px;margin:0 auto}.hdr td{padding:24px 0;text-align:center}.cta a{background:#0064ff;color:#fff;\npadding:14px 28px;border-radius:4px;text-decoration:none;font-weight:700}@media only screen and (max-width:480px){\n.wrap{width:100%!important}.hero h1{font-size:24px!important}}</style></head><body>\n<span style=\"display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;max-height:0;\noverflow:hidden\">Keep streaming Star Trek, SpongeBob and live sports.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n&nbsp;&zwnj;&nbsp;&zwnj;</span>\n<table role=\"presentation\" class=\"wrap\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td>\n<table role=\"presentation\" class=\"hdr\" width=\"100%\"><tr><td><img src=\"https://img.example/pplus/logo.png\" width=\"160\"\nalt=\"Paramount+\"></td></tr></table>\n<table role=\"presentation\" class=\"hero\" width=\"100%\"><tr><td style=\"padding:0 32px;color:#ffffff;font-family:\nHelvetica,Arial,sans-serif\"><h1 style=\"font-size:32px;margin:0 0 16px\">Your free trial ends in 3 days</h1>\n<p style=\"font-size:16px;line-height:24px\">Hi Lucía,</p><p style=\"font-size:16px;line-height:24px\">We hope you're\nenjoying Paramount+. Your free trial ends in 3 days. After October 23, 2026, your Paramount+ Essential plan will be\n<strong>$7.99/month</strong>, charged to the card on file, unless you cancel before then.</p></td></tr></table>\n<table role=\"presentation\" width=\"100%\"><tr><td class=\"cta\" style=\"padding:24px 32px\"><a\nhref=\"https://www.paramountplus.com/account/\">Manage plan</a></td></tr></table>\n<table role=\"presentation\" width=\"100%\"><tr><td style=\"padding:8px 32px;color:#9aa3b2;font-size:12px;font-family:\nHelvetica,Arial,sans-serif\">Trending now: <a href=\"https://www.paramountplus.com/\">Lioness</a> &middot;\n<a href=\"https://www.paramountplus.com/\">Tulsa King</a> &middot; <a href=\"https://www.paramountplus.com/\">NFL on CBS</a>\n</td></tr></table>\n<table role=\"presentation\" width=\"100%\"><tr><td style=\"padding:24px 32px;color:#5c6577;font-size:11px;\nfont-family:Helvetica,Arial,sans-serif\">You are receiving this email because you signed up for Paramount+.\n<a href=\"https://www.paramountplus.com/\">Unsubscribe</a> | <a href=\"https://www.paramountplus.com/\">Privacy</a><br>\nParamount Streaming, 1515 Broadway, New York, NY 10036</td></tr></table>\n<img src=\"https://px.example/open?u=8812&amp;c=trial3\" width=\"1\" height=\"1\" alt=\"\" style=\"display:block\">\n</td></tr></table></body></html>",
+   "format": "html",
+   "label": {
+    "kind": "trial",
+    "merchant": "Paramount+",
+    "names": [
+     "paramount"
+    ],
+    "note": "HTML-heavy email: hidden preheader, nested tables, inline styles, tracking pixel."
+   },
+   "id": "p3-e31"
+  }
+ ],
+ "simulated_prices": [
+  {
+   "store": "Walmart",
+   "item_contains": "smart tv",
+   "price_now": 98.0
+  }
+ ],
+ "labels": {
+  "subscriptions": [
+   {
+    "id": "spotify",
+    "merchant": "Spotify",
+    "names": [
+     "spotify"
+    ],
+    "kind": "subscription",
+    "category": "music",
+    "cadence": "monthly",
+    "amount": 5.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [
+     "overlap"
+    ],
+    "usage": "used",
+    "bank": [
+     "SPOTIFY USA"
+    ],
+    "evidence_emails": [],
+    "note": "Student plan; two music services (with Apple Music)."
+   },
+   {
+    "id": "apple-music",
+    "merchant": "Apple Music",
+    "names": [
+     "apple music"
+    ],
+    "kind": "subscription",
+    "category": "music",
+    "cadence": "monthly",
+    "amount": 10.99,
+    "variable": false,
+    "billed_by": "apple",
+    "status": "active",
+    "flags": [
+     "overlap"
+    ],
+    "usage": "unknown",
+    "bank": [
+     "APPLE.COM/BILL"
+    ],
+    "evidence_emails": [
+     "p3-e26"
+    ],
+    "note": "Apple-billed; the only receipt is in Spanish. Two music services (with Spotify)."
+   },
+   {
+    "id": "crunchyroll",
+    "merchant": "Crunchyroll",
+    "names": [
+     "crunchyroll"
+    ],
+    "kind": "subscription",
+    "category": "video_streaming",
+    "cadence": "monthly",
+    "amount": 11.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [
+     "unused"
+    ],
+    "usage": "unused",
+    "bank": [
+     "CRUNCHYROLL"
+    ],
+    "evidence_emails": [
+     "p3-e12"
+    ],
+    "note": "A 'we miss you' email."
+   },
+   {
+    "id": "chegg",
+    "merchant": "Chegg Study",
+    "names": [
+     "chegg"
+    ],
+    "kind": "subscription",
+    "category": "education",
+    "cadence": "monthly",
+    "amount": 19.95,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "used",
+    "bank": [
+     "CHEGG"
+    ],
+    "evidence_emails": [],
+    "note": ""
+   },
+   {
+    "id": "paramount",
+    "merchant": "Paramount+",
+    "names": [
+     "paramount"
+    ],
+    "kind": "subscription",
+    "category": "video_streaming",
+    "cadence": "monthly",
+    "amount": 7.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "trial",
+    "flags": [
+     "trial_ending"
+    ],
+    "usage": "unknown",
+    "bank": [],
+    "evidence_emails": [
+     "p3-e25",
+     "p3-e31"
+    ],
+    "note": "Seven-day trial ends Oct 23, 2026, then $7.99 a month. Email only, no charge yet."
+   },
+   {
+    "id": "planet-fitness",
+    "merchant": "Planet Fitness",
+    "names": [
+     "planet fitness"
+    ],
+    "kind": "bill",
+    "category": "gym",
+    "cadence": "monthly",
+    "amount": 10.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "unknown",
+    "bank": [
+     "PLANET FITNESS CLUB"
+    ],
+    "evidence_emails": [],
+    "note": "A $49 annual fee on Jul 28 shares the merchant name with the monthly charge."
+   },
+   {
+    "id": "xfinity",
+    "merchant": "Xfinity",
+    "names": [
+     "xfinity",
+     "comcast"
+    ],
+    "kind": "bill",
+    "category": "internet",
+    "cadence": "monthly",
+    "amount": 70.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [
+     "bill_increase"
+    ],
+    "usage": "unknown",
+    "bank": [
+     "COMCAST"
+    ],
+    "evidence_emails": [],
+    "note": "$50 to $70 in September after the promotion ended (+40%)."
+   },
+   {
+    "id": "mint",
+    "merchant": "Mint Mobile",
+    "names": [
+     "mint mobile",
+     "mint"
+    ],
+    "kind": "bill",
+    "category": "mobile",
+    "cadence": "quarterly",
+    "amount": 45.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "unknown",
+    "bank": [
+     "MINT MOBILE"
+    ],
+    "evidence_emails": [],
+    "note": "Charged every 3 months (May 2, Aug 1); next on Nov 1."
+   },
+   {
+    "id": "lemonade",
+    "merchant": "Lemonade",
+    "names": [
+     "lemonade"
+    ],
+    "kind": "bill",
+    "category": "insurance",
+    "cadence": "monthly",
+    "amount": 12.5,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "unknown",
+    "bank": [
+     "LEMONADE"
+    ],
+    "evidence_emails": [],
+    "note": "Renters insurance."
+   }
+  ],
+  "findings": [
+   {
+    "id": "fee-fx-1",
+    "kind": "bank_fee",
+    "merchant": "Bayou City CU",
+    "names": [],
+    "amount": 1.24,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "p3-t151"
+     ],
+     "emails": []
+    },
+    "note": ""
+   },
+   {
+    "id": "fee-fx-2",
+    "kind": "bank_fee",
+    "merchant": "Bayou City CU",
+    "names": [],
+    "amount": 2.07,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "p3-t155"
+     ],
+     "emails": []
+    },
+    "note": ""
+   },
+   {
+    "id": "fee-atm",
+    "kind": "bank_fee",
+    "merchant": "Bayou City CU",
+    "names": [],
+    "amount": 5.0,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "p3-t159"
+     ],
+     "emails": []
+    },
+    "note": ""
+   },
+   {
+    "id": "flight-lh-eu261",
+    "kind": "flight_compensation",
+    "merchant": "Lufthansa",
+    "names": [
+     "lufthansa"
+    ],
+    "amount": 600.0,
+    "currency": "EUR",
+    "evidence": {
+     "transactions": [
+      "p3-t102"
+     ],
+     "emails": [
+      "p3-e04",
+      "p3-e15"
+     ]
+    },
+    "note": "LH 440 FRA to IAH (about 8,400 km) cancelled 5 days before departure: EUR 600 under EU261. She accepted the rebooking, so no cash refund of the fare is owed."
+   }
+  ],
+  "not_subscriptions": [
+   {
+    "id": "rent",
+    "what": "Rent by Zelle",
+    "names": [
+     "zelle",
+     "martinez"
+    ],
+    "bank": [
+     "ZELLE TO MARTINEZ"
+    ]
+   },
+   {
+    "id": "roommate",
+    "what": "Roommate's share of utilities by Zelle",
+    "names": [
+     "zelle",
+     "ana garcia"
+    ],
+    "bank": [
+     "ZELLE TO ANA"
+    ]
+   },
+   {
+    "id": "savings",
+    "what": "Transfer to savings",
+    "names": [
+     "transfer",
+     "online transfer"
+    ],
+    "bank": [
+     "TRANSFER TO SAV"
+    ]
+   },
+   {
+    "id": "groceries",
+    "what": "Groceries",
+    "names": [
+     "h e b",
+     "heb"
+    ],
+    "bank": [
+     "H-E-B"
+    ]
+   },
+   {
+    "id": "gas",
+    "what": "Gas",
+    "names": [
+     "shell"
+    ],
+    "bank": [
+     "SHELL OIL"
+    ]
+   },
+   {
+    "id": "coffee",
+    "what": "Coffee",
+    "names": [
+     "starbucks"
+    ],
+    "bank": [
+     "STARBUCKS"
+    ]
+   },
+   {
+    "id": "dining",
+    "what": "Restaurants",
+    "names": [
+     "tacos",
+     "whataburger"
+    ],
+    "bank": [
+     "TACOS",
+     "WHATABURGER"
+    ]
+   },
+   {
+    "id": "rides",
+    "what": "Lyft rides",
+    "names": [
+     "lyft"
+    ],
+    "bank": [
+     "LYFT"
+    ]
+   },
+   {
+    "id": "travel",
+    "what": "Trip purchases",
+    "names": [
+     "lufthansa",
+     "rewe",
+     "db bahn",
+     "atm"
+    ],
+    "bank": [
+     "LUFTHANSA",
+     "REWE",
+     "DB BAHN",
+     "ATM WITHDRAWAL"
+    ]
+   },
+   {
+    "id": "shopping",
+    "what": "One-off shopping",
+    "names": [
+     "levoit",
+     "walmart"
+    ],
+    "bank": [
+     "LEVOIT",
+     "WALMART"
+    ]
+   },
+   {
+    "id": "payroll",
+    "what": "Payroll and family transfers (money in)",
+    "names": [
+     "payroll",
+     "zelle from"
+    ],
+    "bank": [
+     "PAYROLL",
+     "ZELLE FROM"
+    ]
+   }
+  ],
+  "traps": [
+   {
+    "id": "p3-non-english",
+    "kind": "non_english_receipt",
+    "description": "The Apple Music receipt is in Spanish. It is still an App Store receipt, and it names the APPLE.COM/BILL charge.",
+    "checks": [
+     {
+      "type": "email_kind",
+      "email": "p3-e26",
+      "allowed": [
+       "store_receipt"
+      ]
+     },
+     {
+      "type": "email_merchant",
+      "email": "p3-e26",
+      "names": [
+       "apple music"
+      ]
+     },
+     {
+      "type": "sub_found",
+      "sub": "apple-music"
+     }
+    ]
+   },
+   {
+    "id": "p3-html",
+    "kind": "html_heavy",
+    "description": "The Paramount+ 'trial ends in 3 days' email is heavy HTML. The trial should still be found.",
+    "checks": [
+     {
+      "type": "email_kind",
+      "email": "p3-e31",
+      "allowed": [
+       "trial"
+      ]
+     },
+     {
+      "type": "sub_flag",
+      "sub": "paramount",
+      "kind": "trial_ending",
+      "present": true
+     }
+    ]
+   },
+   {
+    "id": "p3-refunded",
+    "kind": "refunded_charge",
+    "description": "Lyft charged twice on Sep 29 and refunded one on Oct 3. Nothing is left to dispute.",
+    "checks": [
+     {
+      "type": "no_finding",
+      "kind": "duplicate_charge",
+      "names": [
+       "lyft"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "p3-quarterly",
+    "kind": "quarterly_plan",
+    "description": "Mint Mobile bills every 3 months; it is still a bill.",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "mint"
+     }
+    ]
+   },
+   {
+    "id": "p3-annual-fee",
+    "kind": "one_off_from_subscription_merchant",
+    "description": "Planet Fitness charges a $49 annual fee under the same name as the $10 monthly fee. The monthly membership should still be found.",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "planet-fitness"
+     }
+    ]
+   },
+   {
+    "id": "p3-settlement-period",
+    "kind": "settlement_outside_class_period",
+    "description": "The Levoit filter was bought in July 2026; the Levoit HEPA settlement covers 2019 to Aug 2023 purchases only.",
+    "checks": [
+     {
+      "type": "no_finding",
+      "kind": "settlement",
+      "names": [
+       "levoit",
+       "vesync"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "p3-no-adjust",
+    "kind": "store_does_not_adjust",
+    "description": "The Walmart TV is cheaper now, but Walmart does not adjust prices.",
+    "checks": [
+     {
+      "type": "no_finding",
+      "kind": "price_drop",
+      "names": [
+       "walmart"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "p3-accepted-rebooking",
+    "kind": "accepted_rebooking",
+    "description": "Lufthansa cancelled LH 440 and she accepted the rebooking: EU261 compensation is owed, a cash refund of the fare is not.",
+    "checks": [
+     {
+      "type": "finding_found",
+      "finding": "flight-lh-eu261"
+     },
+     {
+      "type": "no_finding",
+      "kind": "flight_refund",
+      "names": [
+       "lufthansa"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "p3-transfers",
+    "kind": "noise",
+    "description": "Rent by Zelle and the monthly transfer to savings are not subscriptions.",
+    "checks": [
+     {
+      "type": "not_sub",
+      "ref": "rent"
+     },
+     {
+      "type": "not_sub",
+      "ref": "savings"
+     }
+    ]
+   },
+   {
+    "id": "p3-noise",
+    "kind": "noise",
+    "description": "Groceries, gas and coffee are not subscriptions.",
+    "checks": [
+     {
+      "type": "not_sub",
+      "ref": "groceries"
+     },
+     {
+      "type": "not_sub",
+      "ref": "gas"
+     },
+     {
+      "type": "not_sub",
+      "ref": "coffee"
+     }
+    ]
+   }
+  ]
+ }
+}
