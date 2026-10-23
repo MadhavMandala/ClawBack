@@ -1,14 +1,20 @@
-"""Load the synthetic people in evals/data and check that their labels hang together."""
+"""Load the synthetic people in evals/data (the main set) or evals/holdout (the held-out set) and check that their
+labels hang together."""
 
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections import Counter
 from datetime import date
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
+# Written separately from the main set and never used to tune the product (see holdout/README.md).
+HOLDOUT_DIR = Path(__file__).resolve().parent / "holdout"
+SETS = {"main": DATA_DIR, "holdout": HOLDOUT_DIR}
+PERSON_FILE = re.compile(r"^[a-z]\d+_.*\.json$")  # p1_maya.json, h1_whitfield.json
 
 EMAIL_KINDS = ("delivery_order", "inactivity", "engagement", "price_change", "trial", "store_receipt", "other",
                "irrelevant")
@@ -22,7 +28,7 @@ CHECK_TYPES = ("email_kind", "email_merchant", "sub_found", "sub_flag", "not_sub
 
 
 def files(data_dir: Path = DATA_DIR) -> list[Path]:
-    return sorted(data_dir.glob("p*.json"))
+    return sorted(p for p in data_dir.glob("*.json") if PERSON_FILE.match(p.name))
 
 
 def load(data_dir: Path = DATA_DIR) -> list[dict]:
@@ -40,6 +46,11 @@ def fingerprint(data_dir: Path = DATA_DIR) -> str:
 
 
 def _bank_charges(person: dict, label: dict) -> list[dict]:
+    if label.get("charge_ids"):
+        # Several App Store subscriptions share APPLE.COM/BILL, two can even share a price: the label lists its
+        # own charges.
+        ids = set(label["charge_ids"])
+        return sorted((t for t in person["transactions"] if t["id"] in ids), key=lambda t: t["date"])
     keys = [k.upper() for k in label["bank"]]
     txs = [t for t in person["transactions"] if t["amount"] > 0 and any(k in t["description"].upper() for k in keys)]
     if not label["variable"]:
@@ -94,6 +105,15 @@ def problems(person: dict) -> list[str]:
             if not s["evidence_emails"]:
                 out.append(f"{where}: no bank charges and no email behind it")
             continue
+        if s.get("charge_ids"):
+            by_id = {t["id"]: t for t in person["transactions"]}
+            keys = [k.upper() for k in s["bank"]]
+            for i in s["charge_ids"]:
+                t = by_id.get(i)
+                if t is None:
+                    out.append(f"{where}: charge {i} does not exist")
+                elif t["amount"] <= 0 or not any(k in t["description"].upper() for k in keys):
+                    out.append(f"{where}: charge {i} is not a {'/'.join(s['bank'])} charge")
         charges = _bank_charges(person, s)
         if not charges:
             out.append(f"{where}: no transactions behind it")
