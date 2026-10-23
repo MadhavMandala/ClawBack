@@ -2,7 +2,7 @@
 
 Price drops
   Data in: purchases from receipt emails (purchases.py), and a current-price check (tools/prices.py: live with
-  Tavily + a model, simulated in demo mode, MISSING [live-price-check] otherwise).
+  Tavily + Lightning on the store's own site, simulated in demo mode, none without the keys).
   Rule: rules/retailers.json: whether the store adjusts prices, and its window (days from purchase or delivery).
   Detector: only stores that adjust. Deadline = order date + window_days (from the order date even when the store
   counts from delivery, which we don't know, so the real window may be a little longer). A finding needs a drop of
@@ -10,6 +10,9 @@ Price drops
 Flights
   Data in: airline emails: booking (fare paid), cancellation and schedule-change notices. Matched to an airline in
   rules/flights.json when listed there; otherwise any email with a flight number and route is read.
+  Reading: regex rules, or with NEBIUS_API_KEY Nemotron 3.5 Lightning (Nano as backup, strict JSON schema, saved per
+  email). Code keeps a model value only if the email writes it (flight number, airports, fare, date, times), and a
+  "cancelled" or "changed" answer only if the email says so. Flagged emails (pipeline/guard.py) get the rules only.
   Rules: rules/flights.json. US DOT: a cash refund when the airline cancels, or changes the flight by 3+ hours
   (domestic) / 6+ hours (international), unless the passenger accepted the alternative or a voucher.
   EU261 / UK261: fixed compensation by great-circle distance band for a cancellation with under 14 days' notice
@@ -20,13 +23,16 @@ Flights
 from __future__ import annotations
 
 import re
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Callable
 
 from .. import llm
-from ..missing import Missing
 from ..models import Email, Finding, RuleRef
+from ..pipeline import grounded, guard
+from ..store import store
+from ..trace import record
 from .airports import EU, country, distance_km
 from .bills import find_date
 from .purchases import Item, Purchase
@@ -95,6 +101,9 @@ def _price_finding(p: Purchase, item: Item, r: dict, pc: PriceCheck, drop: float
     store, start = r["store"], r.get("window_from") or "purchase"
     number = f" (order {p.order_number})" if p.order_number else ""
     evidence = [f"You paid {money(item.price)} for {item.name} on {day(p.order_date)}{number}."]
+    if p.how == "vision":
+        evidence.append("The price you paid was read from a receipt image by Nemotron 3.5 Super-VL. "
+                        "Check it against your receipt.")
     evidence.append(f"Price now: {money(pc.price)}, from a simulated price check (demo data)." if pc.how == "simulated"
                     else f"Price now: {money(pc.price)} at {pc.url or store} (checked {day(today)}).")
     evidence.append(f"{store} adjusts prices within {r['window_days']} days of {start}: until {day(deadline)}.")
@@ -124,7 +133,8 @@ def _price_finding(p: Purchase, item: Item, r: dict, pc: PriceCheck, drop: float
                  f"for {money(drop)} back by {day(deadline)}."
                  + (f" {store} only takes this request from you directly." if self_file else "")),
         amount=drop, deadline=deadline, deadline_label="Price-adjustment window closes",
-        confidence="low" if store_only else "high" if pc.how == "live" else "medium", evidence=evidence,
+        confidence="low" if store_only else "high" if pc.how == "live" and p.how != "vision" else "medium",
+        evidence=evidence,
         rule=RuleRef(name=f"{store} price adjustment policy",
                      summary=f"{r['window_days']} days from {start}. {r.get('conditions') or ''}".strip(),
                      source_url=r["source_url"]) if r.get("source_url") else None,
@@ -221,51 +231,123 @@ def parse_flight_rules(email: Email, airline_rule: dict | None) -> FlightEmail |
     )
 
 
-_read: dict[str, FlightEmail | None] = {}  # email id -> what the model read (emails don't change; runs repeat)
+FLIGHT_STAGE = "extract flights"
+_NULL_STR = {"type": ["string", "null"]}
+FLIGHT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "kind": {"type": "string", "enum": ["booking", "cancelled", "changed", "other"]},
+        "flight_number": _NULL_STR, "origin": _NULL_STR, "destination": _NULL_STR, "flight_date": _NULL_STR,
+        "scheduled_departure": _NULL_STR, "new_departure": _NULL_STR,
+        "fare_total": {"type": ["number", "null"]},
+        "credit_or_voucher_offered": {"type": "boolean"}, "passenger_accepted_change": {"type": "boolean"},
+    },
+    "required": ["kind", "flight_number", "origin", "destination", "flight_date", "scheduled_departure",
+                 "new_departure", "fare_total", "credit_or_voucher_offered", "passenger_accepted_change"],
+    "additionalProperties": False,
+}
+# A model's "cancelled" / "changed" / "booking" counts only if the email uses words like these.
+_SAYS = {
+    "cancelled": re.compile(r"\bcancel", re.I),
+    "changed": re.compile(r"\bchang|\bresched|\bretim|\bnew\s+(?:departure|arrival)\s+time\b|\bdelay", re.I),
+    "booking": _BOOKING,
+}
+_CODE = re.compile(r"([A-Z][A-Z0-9]|[0-9][A-Z])\s?(\d{1,4})")
 
 
-def parse_flight_model(user_id: str, email: Email, airline_rule: dict | None) -> FlightEmail | None:
-    if email.id not in _read:
-        _read[email.id] = _parse_flight_model(user_id, email, airline_rule)
-    return _read[email.id]
-
-
-def _parse_flight_model(user_id: str, email: Email, airline_rule: dict | None) -> FlightEmail | None:
-    try:
-        res = llm.chat(user_id, "extract flights", "fast", [
-            {"role": "system", "content": FLIGHT_PROMPT},
-            {"role": "user", "content": f"<email>\nFrom: {email.sender}\nSubject: {email.subject}\n\n"
-                                        f"{email.body_text[:6000]}\n</email>"},
-        ], max_tokens=400)
-    except (Missing, Exception):
+def _flight_code(value, text: str) -> str | None:
+    if not isinstance(value, str):
         return None
-    d = llm.parse_json(res.text)
-    if not isinstance(d, dict) or d.get("kind") not in ("booking", "cancelled", "changed") or not d.get("flight_number"):
+    m = _CODE.fullmatch(re.sub(r"\s+", " ", value.strip().upper()))
+    if not m or not re.search(rf"\b{m.group(1)}\s?{m.group(2)}\b", text, re.I):
         return None
-    try:
-        flight_date = date.fromisoformat(str(d.get("flight_date"))) if d.get("flight_date") else None
-    except ValueError:
-        flight_date = None
-    old, new = d.get("scheduled_departure"), d.get("new_departure")
-    fare = d.get("fare_total")
+    return f"{m.group(1)} {m.group(2)}"
+
+
+def _airport(value, text: str) -> str | None:
+    code = value.strip().upper() if isinstance(value, str) else ""
+    return code if re.fullmatch(r"[A-Z]{3}", code) and re.search(rf"\b{code}\b", text) else None
+
+
+def check_flight(d: dict, text: str, ref: date) -> tuple[dict, int]:
+    """A model's flight answer, keeping only what the email writes. Returns (read, values dropped)."""
+    kind = d.get("kind") if isinstance(d, dict) else None
+    if kind not in _SAYS:
+        return {"kind": "other"}, 0
+    flight = _flight_code(d.get("flight_number"), text)
+    if not _SAYS[kind].search(text) or not flight:
+        return {"kind": "other"}, 1
+    pairs = {
+        "origin": (d.get("origin"), _airport(d.get("origin"), text)),
+        "dest": (d.get("destination"), _airport(d.get("destination"), text)),
+        "flight_date": (d.get("flight_date"), grounded.date_ok(d.get("flight_date"), text, ref)),
+        "old": (d.get("scheduled_departure"), grounded.time_ok(d.get("scheduled_departure"), text)),
+        "new": (d.get("new_departure"), grounded.time_ok(d.get("new_departure"), text)),
+        "fare": (d.get("fare_total"), grounded.amount_ok(d.get("fare_total"), text)),
+    }
+    read = {k: kept for k, (_, kept) in pairs.items()}
+    read["flight_date"] = read["flight_date"].isoformat() if read["flight_date"] else None
+    dropped = sum(1 for raw, kept in pairs.values() if raw not in (None, "") and kept is None)
+    # Credit offered adds advice; accepted removes the refund. Each needs the email's own words.
+    read["credit"] = d.get("credit_or_voucher_offered") is True and bool(re.search(r"credit|voucher", text, re.I))
+    read["accepted"] = bool(_ACCEPTED.search(text)) or (
+        d.get("passenger_accepted_change") is True and bool(re.search(r"\baccept", text, re.I)))
+    return {"kind": kind, "flight": flight, **read}, dropped
+
+
+def _from_read(r: dict, email: Email, airline_rule: dict | None) -> FlightEmail | None:
+    if r.get("kind") not in ("booking", "cancelled", "changed"):
+        return None
     return FlightEmail(
-        kind=d["kind"], airline=_airline_name(email, airline_rule), airline_rule=airline_rule,
-        flight=re.sub(r"\s+", " ", str(d["flight_number"]).upper()).strip(), email_id=email.id,
-        email_date=email.received_at.date(), origin=(d.get("origin") or None), dest=(d.get("destination") or None),
-        flight_date=flight_date, fare=float(fare) if isinstance(fare, (int, float)) else None,
-        credit_offered=bool(d.get("credit_or_voucher_offered")), accepted=bool(d.get("passenger_accepted_change")),
-        delay_hours=_hours_between(old, new) if old and new else None,
+        kind=r["kind"], airline=_airline_name(email, airline_rule), airline_rule=airline_rule, flight=r["flight"],
+        email_id=email.id, email_date=email.received_at.date(), origin=r.get("origin"), dest=r.get("dest"),
+        flight_date=date.fromisoformat(r["flight_date"]) if r.get("flight_date") else None, fare=r.get("fare"),
+        credit_offered=bool(r.get("credit")), accepted=bool(r.get("accepted")),
+        delay_hours=_hours_between(r["old"], r["new"]) if r.get("old") and r.get("new") else None,
     )
 
 
+def parse_flight_model(user_id: str, email: Email, airline_rule: dict | None) -> FlightEmail | None:
+    """What Lightning read from this airline email (saved per user). None: not a flight event, flagged by the
+    prompt-injection screen, or every model failed. The caller then tries the rules."""
+    cache = store.user(user_id).model_reads
+    key = f"flight:{email.id}"
+    if key not in cache:
+        text = guard.email_text(email)
+        if guard.check_email(user_id, FLIGHT_STAGE, email, text).flagged:
+            return None
+        data, _ = llm.chat_json(user_id, FLIGHT_STAGE, "fast", [
+            {"role": "system", "content": FLIGHT_PROMPT},
+            {"role": "user", "content": guard.wrap(text)},
+        ], FLIGHT_SCHEMA, max_tokens=400)
+        if data is None:
+            return None  # not saved: the next run tries the model again
+        read, dropped = check_flight(data, text, email.received_at.date())
+        if dropped:
+            record(user_id, FLIGHT_STAGE, "code", note=f"{email.id}: dropped {dropped} model values the email doesn't show")
+        cache[key] = read
+    return _from_read(cache[key], email, airline_rule)
+
+
+def _safe_flight(user_id: str, email: Email, rule: dict | None) -> FlightEmail | None:
+    try:
+        return parse_flight_model(user_id, email, rule)
+    except Exception as exc:  # one odd email must not fail the run: the rules read it
+        record(user_id, FLIGHT_STAGE, "tiers:fast", status="error", tier="fast", note=f"{email.id}: {str(exc)[:200]}")
+        return None
+
+
 def flight_emails(user_id: str, emails: list[Email], airline_for: Callable[[str], dict | None]) -> list[FlightEmail]:
+    candidates = [(e, airline_for(f"{e.sender} {e.subject}")) for e in emails]
+    candidates = [(e, r) for e, r in candidates if r or _FLIGHT_NO.search(f"{e.subject}\n{e.body_text}")]
+    if llm.available() and candidates:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            read = list(pool.map(lambda c: _safe_flight(user_id, *c), candidates))
+    else:
+        read = [None] * len(candidates)
     out: list[FlightEmail] = []
-    use_model = llm.available()
-    for e in emails:
-        rule = airline_for(f"{e.sender} {e.subject}")
-        if not rule and not _FLIGHT_NO.search(f"{e.subject}\n{e.body_text}"):
-            continue
-        ev = (parse_flight_model(user_id, e, rule) if use_model else None) or parse_flight_rules(e, rule)
+    for (e, rule), ev in zip(candidates, read):
+        ev = ev or parse_flight_rules(e, rule)
         if ev:
             out.append(ev)
     return out
