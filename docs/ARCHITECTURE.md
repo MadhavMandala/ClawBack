@@ -153,15 +153,15 @@ A model never computes a date, a total or a deadline.
 | # | Stage | Engine | Runs on | Status |
 |---|---|---|---|---|
 | 1 | Triage: drop email that can't be about a subscription | Sender + keyword rules; Lightning for unknown senders | every email | [built] rules, [MISSING] Lightning fallback |
-| 2 | Extraction: email -> facts (kind, merchant, amount, savings, old/new price, trial days left) | **Nemotron 3.5 Lightning** (`nvidia/Nemotron-3_5-Lightning`) | triage survivors | [stub] (regexes stand in) |
+| 2 | Extraction: email -> facts (kind, merchant, amount, savings, old/new price, trial days left) | **Nemotron 3.5 Lightning** (`nvidia/Nemotron-3_5-Lightning`), Nano backup, regex fallback; cached per email | triage survivors | [built] |
 | 2b | Receipts as PDFs/images | **Nemotron 3.5 Super-VL** on rendered pages | attachments | [MISSING] |
 | 3 | Recurring detection | code: steady cadence + constant amount (or one lasting change) | all transactions | [built] |
 | 4 | App-store resolution | code: match receipt emails by amount | `APPLE.COM/BILL`, `GOOGLE *` | [built] demo only |
 | 5 | Usage signals | code (see §6) | each subscription | [built] |
 | 6 | Membership value | code: savings from receipts minus the fee | delivery memberships | [built]; other memberships [MISSING] |
 | 7 | Flags | code | each subscription | [built] |
-| 8 | Find cheaper | **Tavily** search, then **Nemotron 3 Ultra** (`nvidia/Nemotron-3-Ultra-550b-a55b`), then a code citation check | on request | [stub] |
-| 9 | Prepare cancel | Tavily for the cancel page, a template or Ultra for the email, a Nylas draft | on request | [stub] / [MISSING] draft |
+| 8 | Find cheaper | **Tavily** search, **Nemotron 3 Super** reads the plans, **Nemotron 3 Ultra** (thinking on) fits them to usage, then a code citation check | on request | [built] |
+| 9 | Prepare cancel | Tavily for the cancel page, **Ultra** writes the email (template fallback), a Nylas draft | on request | [built] / [MISSING] draft |
 | 10 | Bills: classify + flag | code + `rules/bills.json` | recurring charges | [built] |
 | 11 | Purchases and flight details from email | regex rules; **Nemotron 3.5 Lightning** with a key | receipt / order / airline emails | [built] rules, [stub] model |
 | 12 | Findings: duplicates, fees, price drops, flights, settlements | code + `rules/*.json`; price checks with Tavily + Lightning | all transactions and emails | [built]; live price checks [stub] |
@@ -312,9 +312,18 @@ action (`ActionPrep`: channel, steps, verified links, a message and / or a scrip
 Source: the public catalog at `https://tokenfactory.nebius.com/api/public/models_info` (checked 2026-10-22).
 Nemotron 3 Nano Omni was removed on 2026-08-31.
 
-Not verified yet [MISSING]: whether Token Factory honours `response_format: json_schema` and
-`chat_template_kwargs.enable_thinking` for these models. The client asks for JSON in the prompt as well and parses
-defensively.
+Verified live on 2026-10-22 (one call per model; rerun with `python -m clawback.llm --check`):
+
+| Model | Strict JSON (`response_format: json_schema`) | Thinking on |
+|---|---|---|
+| Lightning | works | **breaks output**: reasoning is written into `content` with no tags. Never enabled. |
+| Nano | works | content stays clean |
+| Super | works, also with thinking on | reasoning in `message.reasoning_content` |
+| Ultra | works, also with thinking on | reasoning in `message.reasoning_content` |
+| Super-VL | works (text only tested) | reasoning in `message.reasoning_content` |
+
+Each tier has a backup (`fast` → `fast_fallback`) or a code fallback (regexes, template, hints), one retry on
+rate limits / server errors, and a timeout. See `backend/clawback/llm.py` (`TIERS`).
 
 **Zero Data Retention must be on** before any real user email is sent. Without it, Token Factory keeps inputs and
 outputs and logs them.
@@ -422,6 +431,15 @@ One page today [built]:
   real rules data.
 - [built] `tests/test_rules.py` (written with the rules data) checks every rules file loads, URLs are https, and the
   helpers match.
+- [built] 49 tests on the model layer with a fake OpenAI client (`tests/fakes.py`): the tier table, strict JSON and
+  the thinking flag, the Nano fallback, one retry on rate limits and none on timeouts, extraction (cached per email,
+  dates computed in code, merchant names mapped, rules when every model fails), "find cheaper" (Super then Ultra,
+  every option checked against its cited page), the Ultra cancel email and its checks, click-time trace rows
+  surviving a re-run, and `.env` loading. Two more check that sync rows survive a re-run too, and that
+  demo rows go when real data arrives.
+- [built] An opt-in live check (`CLAWBACK_LIVE=1 pytest tests/test_live.py`): Lightning against the regex rules on
+  the demo emails.
+- [MISSING] Fake-model tests for the findings' model calls (purchases, flight details, price checks).
 - [MISSING] A live run against a Nylas Sandbox app and Plaid Sandbox.
 - [MISSING] A labelled evaluation set: synthetic inboxes and transaction histories with known subscriptions and usage.
   Measure subscriptions found, false flags, and cost per 1,000 emails (rules + Lightning vs. everything to Ultra).
@@ -432,20 +450,20 @@ One page today [built]:
 
 | Requirement | How ClawBack meets it | Status |
 |---|---|---|
-| Runtime call to Nebius Token Factory | Extraction (Lightning) and alternatives (Ultra) | [stub]: needs a key and a live test |
-| At least one NVIDIA open model | Nemotron 3.5 Lightning, Nemotron 3 Ultra, Nemotron 3.5 Super-VL | [stub] |
+| Runtime call to Nebius Token Factory | Extraction (Lightning), find cheaper (Super, Ultra), the cancel email (Ultra) | [built]: all five tiers called live 2026-10-22 |
+| At least one NVIDIA open model | Nemotron 3.5 Lightning, Nemotron 3 Nano, Nemotron 3 Super, Nemotron 3 Ultra (Nemotron 3.5 Super-VL planned) | [built] |
 | Track fit: an app someone would use; Ultra for reasoning, Nano/Super for fast calls | Model routing in §8 | [built] in code |
 | Working demo URL until Dec 15 | Vercel frontend + hosted backend + seeded judge login | [MISSING] |
 | Public repo with an OSI license | MIT or Apache-2.0 | [MISSING]: private on purpose for now |
 | README with setup + how Nemotron / Token Factory are used | README.md | [built], update after live calls |
 | Video under 3 minutes | "aha" within 30 s: the DashPass net-loss card | [MISSING] |
-| Feedback on Token Factory / NVIDIA models | Keep notes while building | [MISSING] |
-| Tavily bonus ($3k) | Find cheaper + cancel-page lookup | [stub] |
+| Feedback on Token Factory / NVIDIA models | Notes kept while building: `docs/token-factory-feedback.md` | [stub]: notes started |
+| Tavily bonus ($3k) | Find cheaper, cancel-page lookup, bill competitor offers, store price checks | [built] find cheaper; [stub] the rest |
 
 ## 15. Suggested build order for the remaining days
 
-1. **Keys:** get Nebius (turn on ZDR) and Tavily keys. Run one live call per model; confirm JSON and thinking
-   behaviour. Exercise the extraction and "find cheaper" paths for real.
+1. **Keys:** Nebius and Tavily keys are in, and one live call per model confirmed the JSON and thinking behaviour
+   (done 2026-10-22). Still to do: turn on ZDR, then run extraction and "find cheaper" on real mail.
 2. **Plaid:** Sandbox Link + `/transactions/sync` into the existing recurring detection (built; try it live with
    Sandbox keys). Supabase schema + auth.
 3. **Email:** Nylas Hosted OAuth and a manual Sync (built; try it live with a Sandbox app), then webhooks, Lightning

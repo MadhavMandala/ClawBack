@@ -3,8 +3,9 @@
 The judges asked to see "which model is doing what", so every pipeline step records itself here
 and the dashboard shows the list.
 
-Rows from outside data sources (engines in SOURCE_ENGINES) survive a pipeline re-run and are replaced on the
-next sync of that source. Notes never contain tokens, secrets or email bodies.
+A pipeline re-run rebuilds its own rows. Two kinds survive it: rows from outside data sources (engines in
+SOURCE_ENGINES), which are replaced on the next sync of that source, and rows from on-click steps
+(ON_CLICK_STAGES), newest MAX_ON_CLICK_ROWS kept. Notes never contain tokens, secrets or email bodies.
 """
 
 from __future__ import annotations
@@ -18,6 +19,25 @@ from .store import store
 
 SOURCE_ENGINES = ("nylas", "plaid")
 
+# Steps that run when the user clicks something. They survive pipeline re-runs so the dashboard can show them.
+ON_CLICK_STAGES = frozenset({"alternatives", "alternatives_plans", "cancel_lookup", "cancel_email", "bill offers"})
+MAX_ON_CLICK_ROWS = 20
+
+
+def start_run(user_id: str) -> None:
+    """Called at the start of a pipeline run: drop the last run's rows, keep source rows and the newest on-click rows."""
+    trace = store.user(user_id).trace
+    clicks = {id(s) for s in [s for s in trace if s.stage in ON_CLICK_STAGES][-MAX_ON_CLICK_ROWS:]}
+    trace[:] = [s for s in trace if s.engine in SOURCE_ENGINES or id(s) in clicks]
+
+
+def view(user_id: str) -> list[TraceStep]:
+    """Pipeline rows in run order, then on-click rows newest first."""
+    trace = store.user(user_id).trace
+    pipeline = [s for s in trace if s.stage not in ON_CLICK_STAGES]
+    clicks = [s for s in trace if s.stage in ON_CLICK_STAGES]
+    return pipeline + clicks[::-1]
+
 
 def record(user_id: str, stage: str, engine: str, status: str = "ok", **kw) -> TraceStep:
     step = TraceStep(at=datetime.now(timezone.utc), stage=stage, engine=engine, status=status, **kw)
@@ -26,14 +46,8 @@ def record(user_id: str, stage: str, engine: str, status: str = "ok", **kw) -> T
 
 
 def drop(user_id: str, engines: tuple[str, ...]) -> None:
-    u = store.user(user_id)
-    u.trace = [t for t in u.trace if t.engine not in engines]
-
-
-def keep_only_sources(user_id: str) -> None:
-    """Called at the start of a pipeline run: pipeline rows are rebuilt, source rows stay."""
-    u = store.user(user_id)
-    u.trace = [t for t in u.trace if t.engine in SOURCE_ENGINES]
+    trace = store.user(user_id).trace
+    trace[:] = [t for t in trace if t.engine not in engines]
 
 
 @contextmanager

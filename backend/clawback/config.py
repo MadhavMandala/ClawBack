@@ -9,30 +9,17 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 PLAID_URLS = {"sandbox": "https://sandbox.plaid.com", "production": "https://production.plaid.com"}
 
 
-def load_dotenv(path: Path) -> None:
-    """Minimal .env reader: KEY=value lines and # comments. Never overrides a variable that is already set."""
-    if not path.is_file():
-        return
-    for line in path.read_text(encoding="utf-8-sig").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        key, value = key.strip().removeprefix("export ").strip(), value.strip()
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
-            value = value[1:-1]
-        elif " #" in value:
-            value = value.split(" #", 1)[0].strip()
-        os.environ.setdefault(key, value)
-
-
-if os.environ.get("CLAWBACK_DOTENV", "1") != "0":
-    load_dotenv(BACKEND_DIR / ".env")
+def load_env_file(path: Path) -> None:
+    """Load KEY=value lines from a .env file. Variables already set in the environment win, even empty ones
+    (so `NEBIUS_API_KEY=` in the shell turns that key off). utf-8-sig: Notepad may save a byte-order mark."""
+    load_dotenv(path, override=False, encoding="utf-8-sig")
 
 
 def _env(name: str) -> str | None:
@@ -104,4 +91,6 @@ class Settings:
         }
 
 
+if os.environ.get("CLAWBACK_DOTENV", "1") != "0":
+    load_env_file(BACKEND_DIR / ".env")
 settings = Settings()

@@ -431,7 +431,7 @@ def test_dotenv_reader(tmp_path, monkeypatch):
     for k in ("CB_T_A", "CB_T_B", "CB_T_C", "CB_T_D"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setenv("CB_T_E", "from-environment")
-    config.load_dotenv(env)
+    config.load_env_file(env)
     try:
         assert os.environ["CB_T_A"] == "plain" and os.environ["CB_T_B"] == "quoted # not a comment"
         assert os.environ["CB_T_C"] == "value" and os.environ["CB_T_D"] == ""

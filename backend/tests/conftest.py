@@ -1,8 +1,10 @@
-"""Shared test setup: no network, no backend/.env, and never the real backend/.local/connections.json."""
+"""Shared test setup: no network, no backend/.env, no model or Tavily calls, and never the real
+backend/.local/connections.json. Live checks (tests/test_live.py, CLAWBACK_LIVE=1) read backend/.env."""
 
 import os
 
-os.environ["CLAWBACK_DOTENV"] = "0"  # must happen before clawback.config is imported
+if os.environ.get("CLAWBACK_LIVE") != "1":
+    os.environ["CLAWBACK_DOTENV"] = "0"  # must happen before clawback.config is imported
 
 import json
 from datetime import date, datetime, timedelta, timezone
@@ -11,8 +13,11 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from clawback import config
+from clawback import config, llm
 from clawback.sources import net, nylas
+from clawback.tools import tavily
+
+from fakes import FakeLLM
 
 
 def _no_network(request: httpx.Request) -> httpx.Response:
@@ -34,7 +39,18 @@ def isolated(monkeypatch, tmp_path):
     monkeypatch.setattr(net, "transport", httpx.MockTransport(_no_network))
     monkeypatch.setattr(nylas, "_sleep", lambda seconds: None)
     nylas._states.clear()
+    # Tests never reach Token Factory or Tavily, even when backend/.env has real keys.
+    monkeypatch.setattr(llm, "available", lambda: False)
+    monkeypatch.setattr(tavily, "available", lambda: False)
     yield
+
+
+@pytest.fixture()
+def fake_llm(monkeypatch) -> FakeLLM:
+    fake = FakeLLM()
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_client", lambda: fake)
+    return fake
 
 
 @pytest.fixture()

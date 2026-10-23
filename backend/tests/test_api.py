@@ -23,3 +23,11 @@ def test_api_smoke(monkeypatch):
         r = client.get("/api/connect/email")
         assert r.status_code == 501 and "MISSING" in r.json()["missing"]
         assert client.get("/api/trace").json()
+
+
+def test_cancel_email_row_survives_rerun(fake_llm):
+    with TestClient(app) as client:
+        client.post("/api/demo/seed")
+        hulu = next(s for s in client.get("/api/subscriptions").json() if s["merchant"] == "Hulu")
+        client.post(f"/api/subscriptions/{hulu['id']}/cancel-prep")
+        assert "cancel_email" in [r["stage"] for r in client.get("/api/trace").json()]

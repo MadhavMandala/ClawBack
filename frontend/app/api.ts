@@ -72,9 +72,11 @@ export type TraceStep = {
   stage: string;
   engine: string;
   status: string;
+  tier: string;
   ms: number;
   input_tokens: number;
   output_tokens: number;
+  reasoning_tokens: number;
   cost_usd: number;
   note: string;
 };
