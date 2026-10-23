@@ -169,24 +169,36 @@ $$C \approx N\,(c_{rules} + p \cdot c_{Lightning}) + k \cdot c_{Ultra}$$
 where $N$ is the number of emails, $p$ is the share that gets past the rules, and $k$ is the number of clicks that
 call Ultra. Rules cost nothing. Keeping $p$ small, and Ultra on demand, is what makes it cheap enough to leave on.
 
-Measured on the synthetic test set (`docs/EVAL.md`):
+Measured on the synthetic test sets (`docs/EVAL.md`):
 
 | | Cost per 1,000 emails |
 |---|---|
-| ClawBack: rules, then Lightning | `[EVAL: cost per 1,000 emails, rules + Lightning]` |
-| Every email to Ultra, for comparison | `[EVAL: cost per 1,000 emails, everything to Ultra]` |
-| Share of emails that reached a model | `[EVAL: share past the rules]` |
-| One "find a cheaper option" click (Tavily, Super, Ultra) | `[EVAL: cost per find-cheaper click]` |
+| ClawBack's whole pipeline: rules, Lightning, receipts and flights (held-out set) | $0.057 |
+| The email-reading step alone: rules, then Lightning (main set) | $0.032 |
+| Every email to Ultra instead, for comparison (estimated from a 24-email sample) | $1.18, about 37 times the reading step |
+
+- About 9 in 10 test emails reached a model, because the test inboxes are almost all billing mail. A real inbox has
+  far more mail that the free rules set aside.
+- One "find a cheaper option" click (Tavily, Super, Ultra) cost about $0.004 in a live run on Hulu.
 
 ## How we tested it
 
-- **[EVAL: number of emails] synthetic, labelled emails**, with matching transactions. They are made up and say so;
-  no real person's mail is in them. Each one is labelled with what ClawBack should find.
-- ClawBack caught **[EVAL: catch rate]** of the labelled findings, with **[EVAL: false alarms]** false alarms.
-- The failure cases are published in `docs/EVAL.md`: `[EVAL: one-line summary of the main failure cases]`.
-- `[TEST COUNT: from pytest after the merge]` offline tests cover every detector, the model fallbacks, the citation and email checks, and the
-  email and bank connections against fake APIs. Live checks call each Nemotron tier and Lightning extraction on
-  demand.
+- **211 synthetic, labelled emails in two sets** (109 and 102), with about six months of matching bank
+  transactions each. They are made up and say so; no real person's mail is in them. Each one is labelled with what
+  ClawBack should find.
+- The second set was written separately and never used to tune the product. On it, with the models on, ClawBack:
+  - found **93%** of the subscriptions and bills (**85%** with the right name);
+  - caught **79%** of the problems worth flagging, with **1** false alarm;
+  - found **all 10** one-time refunds, fees and settlements (every one of the 8 fixed amounts exact), plus 2 false
+    findings;
+  - ignored both prompt-injection emails.
+- The same set measured before our fixes: 68% named right, 57% of problems caught with 4 false alarms, and one
+  injection email followed. Both columns are in `docs/EVAL.md`.
+- Every failure on the first set is published in `docs/EVAL.md`. What's left is mostly utility bills that vary a lot,
+  Apple-billed apps with no receipt in the inbox, newsletters read as usage, and low-confidence flight hints. The
+  held-out set's item-by-item failures stay out of the page, so it stays held out.
+- 691 offline tests cover every detector, the model fallbacks, the citation and email checks, sessions and storage,
+  the webhooks, and the email and bank connections against fake APIs. Live checks call each Nemotron tier on demand.
 
 ## Challenges we ran into
 
