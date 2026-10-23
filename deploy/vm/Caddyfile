@@ -1,0 +1,14 @@
+# ClawBack: HTTPS in front of the API. setup.sh copies this to /etc/caddy/Caddyfile and fills in the host name.
+# Caddy gets and renews a Let's Encrypt certificate for the host by itself; ports 80 and 443 must be open.
+
+__HOST__ {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8000
+
+	log {
+		output file /var/log/caddy/clawback.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}
