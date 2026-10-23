@@ -1,0 +1,2663 @@
+{
+ "synthetic": true,
+ "set": "holdout",
+ "person": {
+  "id": "h1",
+  "address": "rbwhitfield@example.net",
+  "name": "Ray and Bev Whitfield",
+  "city": "Clearwater, FL",
+  "household": "retired couple",
+  "work": "retired teachers",
+  "bank": "Gulfview Bank (invented)",
+  "summary": "Retired couple: satellite radio, YouTube TV, an Android app via Google Play, genealogy and news subscriptions, Medicare supplement and car insurance, a fiber promo ending, a restaurant double charge, a Nordstrom price drop, a BA cancellation in the UK, a CVS settlement, and a phishing invoice."
+ },
+ "today": "2026-10-21",
+ "transactions": [
+  {
+   "id": "h1-t001",
+   "date": "2026-04-22",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 51.8
+  },
+  {
+   "id": "h1-t002",
+   "date": "2026-04-24",
+   "description": "TMOBILE*AUTO PAY WA",
+   "amount": 70.0
+  },
+  {
+   "id": "h1-t003",
+   "date": "2026-04-25",
+   "description": "GOOGLE *Lumos Labs g.co/helppay#CA",
+   "amount": 11.99
+  },
+  {
+   "id": "h1-t004",
+   "date": "2026-04-27",
+   "description": "CVS/PHARMACY #05219 CLEARWATER FL",
+   "amount": 12.5
+  },
+  {
+   "id": "h1-t005",
+   "date": "2026-04-28",
+   "description": "FRS PENSION DIR DEP",
+   "amount": -2950.4
+  },
+  {
+   "id": "h1-t006",
+   "date": "2026-04-28",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 115.28
+  },
+  {
+   "id": "h1-t007",
+   "date": "2026-04-28",
+   "description": "SIRIUS XM RADIO INC NY",
+   "amount": 18.99
+  },
+  {
+   "id": "h1-t008",
+   "date": "2026-04-30",
+   "description": "INTEREST PAYMENT",
+   "amount": -0.51
+  },
+  {
+   "id": "h1-t009",
+   "date": "2026-04-30",
+   "description": "NYTIMES *DIGITAL SUB NEW YORK NY",
+   "amount": 25.0
+  },
+  {
+   "id": "h1-t010",
+   "date": "2026-04-30",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 50.99
+  },
+  {
+   "id": "h1-t011",
+   "date": "2026-05-01",
+   "description": "ONLINE TRANSFER TO SAV XXXXXX0377",
+   "amount": 500.0
+  },
+  {
+   "id": "h1-t012",
+   "date": "2026-05-01",
+   "description": "UNITEDHEALTHCARE MEDSUPP PREM",
+   "amount": 187.42
+  },
+  {
+   "id": "h1-t013",
+   "date": "2026-05-02",
+   "description": "CRACKER BARREL #417",
+   "amount": 71.74
+  },
+  {
+   "id": "h1-t014",
+   "date": "2026-05-02",
+   "description": "SQ *SHEAR ELEGANCE SALON",
+   "amount": 45.0
+  },
+  {
+   "id": "h1-t015",
+   "date": "2026-05-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -2184.0
+  },
+  {
+   "id": "h1-t016",
+   "date": "2026-05-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -1612.0
+  },
+  {
+   "id": "h1-t017",
+   "date": "2026-05-05",
+   "description": "HULU SANTA MONICA CA",
+   "amount": 18.99
+  },
+  {
+   "id": "h1-t018",
+   "date": "2026-05-06",
+   "description": "DUKE ENERGY FLORIDA PAYMENT",
+   "amount": 152.31
+  },
+  {
+   "id": "h1-t019",
+   "date": "2026-05-06",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 64.02
+  },
+  {
+   "id": "h1-t020",
+   "date": "2026-05-08",
+   "description": "AMAZON MKTPL*2K8D1",
+   "amount": 48.6
+  },
+  {
+   "id": "h1-t021",
+   "date": "2026-05-09",
+   "description": "BEALLS #44 LARGO FL",
+   "amount": 31.02
+  },
+  {
+   "id": "h1-t022",
+   "date": "2026-05-09",
+   "description": "GOOGLE *YouTube TV g.co/helppay#CA",
+   "amount": 82.99
+  },
+  {
+   "id": "h1-t023",
+   "date": "2026-05-11",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 48.43
+  },
+  {
+   "id": "h1-t024",
+   "date": "2026-05-11",
+   "description": "SQ *CHI CHI RODRIGUEZ GC",
+   "amount": 38.57
+  },
+  {
+   "id": "h1-t025",
+   "date": "2026-05-12",
+   "description": "NAVY FCU AUTO LOAN PMT",
+   "amount": 412.66
+  },
+  {
+   "id": "h1-t026",
+   "date": "2026-05-13",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 54.86
+  },
+  {
+   "id": "h1-t027",
+   "date": "2026-05-14",
+   "description": "ANCESTRY.COM PROVO UT",
+   "amount": 24.99
+  },
+  {
+   "id": "h1-t028",
+   "date": "2026-05-14",
+   "description": "SQ *BLUE PARROT CAFE",
+   "amount": 64.79
+  },
+  {
+   "id": "h1-t029",
+   "date": "2026-05-18",
+   "description": "STATE FARM INSURANCE",
+   "amount": 142.18
+  },
+  {
+   "id": "h1-t030",
+   "date": "2026-05-19",
+   "description": "CVS.COM ONLINE ORDER RI",
+   "amount": 38.5
+  },
+  {
+   "id": "h1-t031",
+   "date": "2026-05-19",
+   "description": "PINELLAS CTY UTILITIES WEB PMT",
+   "amount": 61.2
+  },
+  {
+   "id": "h1-t032",
+   "date": "2026-05-19",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 78.38
+  },
+  {
+   "id": "h1-t033",
+   "date": "2026-05-20",
+   "description": "FRONTIER COMMUNICATIONS CT",
+   "amount": 44.99
+  },
+  {
+   "id": "h1-t034",
+   "date": "2026-05-23",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 37.27
+  },
+  {
+   "id": "h1-t035",
+   "date": "2026-05-24",
+   "description": "TMOBILE*AUTO PAY WA",
+   "amount": 70.0
+  },
+  {
+   "id": "h1-t036",
+   "date": "2026-05-25",
+   "description": "GOOGLE *Lumos Labs g.co/helppay#CA",
+   "amount": 11.99
+  },
+  {
+   "id": "h1-t037",
+   "date": "2026-05-26",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 63.58
+  },
+  {
+   "id": "h1-t038",
+   "date": "2026-05-27",
+   "description": "CVS/PHARMACY #05219 CLEARWATER FL",
+   "amount": 12.5
+  },
+  {
+   "id": "h1-t039",
+   "date": "2026-05-27",
+   "description": "FRENCHY'S ROCKAWAY GRILL",
+   "amount": 45.31
+  },
+  {
+   "id": "h1-t040",
+   "date": "2026-05-28",
+   "description": "FRS PENSION DIR DEP",
+   "amount": -2950.4
+  },
+  {
+   "id": "h1-t041",
+   "date": "2026-05-28",
+   "description": "NYTIMES *DIGITAL SUB NEW YORK NY",
+   "amount": 25.0
+  },
+  {
+   "id": "h1-t042",
+   "date": "2026-05-28",
+   "description": "SIRIUS XM RADIO INC NY",
+   "amount": 18.99
+  },
+  {
+   "id": "h1-t043",
+   "date": "2026-05-30",
+   "description": "CVS/PHARMACY #05219 CLEARWATER FL",
+   "amount": 16.8
+  },
+  {
+   "id": "h1-t044",
+   "date": "2026-05-30",
+   "description": "INTEREST PAYMENT",
+   "amount": -1.06
+  },
+  {
+   "id": "h1-t045",
+   "date": "2026-06-01",
+   "description": "ONLINE TRANSFER TO SAV XXXXXX0377",
+   "amount": 500.0
+  },
+  {
+   "id": "h1-t046",
+   "date": "2026-06-01",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 110.9
+  },
+  {
+   "id": "h1-t047",
+   "date": "2026-06-01",
+   "description": "UNITEDHEALTHCARE MEDSUPP PREM",
+   "amount": 187.42
+  },
+  {
+   "id": "h1-t048",
+   "date": "2026-06-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -2184.0
+  },
+  {
+   "id": "h1-t049",
+   "date": "2026-06-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -1612.0
+  },
+  {
+   "id": "h1-t050",
+   "date": "2026-06-04",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 61.03
+  },
+  {
+   "id": "h1-t051",
+   "date": "2026-06-04",
+   "description": "SQ *SHEAR ELEGANCE SALON",
+   "amount": 45.0
+  },
+  {
+   "id": "h1-t052",
+   "date": "2026-06-05",
+   "description": "HULU SANTA MONICA CA",
+   "amount": 18.99
+  },
+  {
+   "id": "h1-t053",
+   "date": "2026-06-06",
+   "description": "DUKE ENERGY FLORIDA PAYMENT",
+   "amount": 188.94
+  },
+  {
+   "id": "h1-t054",
+   "date": "2026-06-07",
+   "description": "CRACKER BARREL #417",
+   "amount": 65.85
+  },
+  {
+   "id": "h1-t055",
+   "date": "2026-06-07",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 134.41
+  },
+  {
+   "id": "h1-t056",
+   "date": "2026-06-09",
+   "description": "GOOGLE *YouTube TV g.co/helppay#CA",
+   "amount": 82.99
+  },
+  {
+   "id": "h1-t057",
+   "date": "2026-06-11",
+   "description": "AARP MEMBERSHIP WASHINGTON DC",
+   "amount": 21.0
+  },
+  {
+   "id": "h1-t058",
+   "date": "2026-06-12",
+   "description": "NAVY FCU AUTO LOAN PMT",
+   "amount": 412.66
+  },
+  {
+   "id": "h1-t059",
+   "date": "2026-06-13",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 44.38
+  },
+  {
+   "id": "h1-t060",
+   "date": "2026-06-14",
+   "description": "ANCESTRY.COM PROVO UT",
+   "amount": 24.99
+  },
+  {
+   "id": "h1-t061",
+   "date": "2026-06-14",
+   "description": "THE HOME DEPOT #6304",
+   "amount": 54.86
+  },
+  {
+   "id": "h1-t062",
+   "date": "2026-06-15",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 127.08
+  },
+  {
+   "id": "h1-t063",
+   "date": "2026-06-16",
+   "description": "AMAZON MKTPL*M0P3Z",
+   "amount": 36.32
+  },
+  {
+   "id": "h1-t064",
+   "date": "2026-06-18",
+   "description": "SQ *CHI CHI RODRIGUEZ GC",
+   "amount": 73.51
+  },
+  {
+   "id": "h1-t065",
+   "date": "2026-06-18",
+   "description": "STATE FARM INSURANCE",
+   "amount": 142.18
+  },
+  {
+   "id": "h1-t066",
+   "date": "2026-06-19",
+   "description": "PINELLAS CTY UTILITIES WEB PMT",
+   "amount": 66.84
+  },
+  {
+   "id": "h1-t067",
+   "date": "2026-06-20",
+   "description": "FRENCHY'S ROCKAWAY GRILL",
+   "amount": 57.88
+  },
+  {
+   "id": "h1-t068",
+   "date": "2026-06-20",
+   "description": "FRONTIER COMMUNICATIONS CT",
+   "amount": 44.99
+  },
+  {
+   "id": "h1-t069",
+   "date": "2026-06-21",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 147.14
+  },
+  {
+   "id": "h1-t070",
+   "date": "2026-06-23",
+   "description": "BAYCARE MEDICAL GROUP",
+   "amount": 58.33
+  },
+  {
+   "id": "h1-t071",
+   "date": "2026-06-23",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 31.25
+  },
+  {
+   "id": "h1-t072",
+   "date": "2026-06-24",
+   "description": "TMOBILE*AUTO PAY WA",
+   "amount": 70.0
+  },
+  {
+   "id": "h1-t073",
+   "date": "2026-06-25",
+   "description": "GOOGLE *Lumos Labs g.co/helppay#CA",
+   "amount": 11.99
+  },
+  {
+   "id": "h1-t074",
+   "date": "2026-06-25",
+   "description": "NYTIMES *DIGITAL SUB NEW YORK NY",
+   "amount": 25.0
+  },
+  {
+   "id": "h1-t075",
+   "date": "2026-06-26",
+   "description": "CVS/PHARMACY #05219 CLEARWATER FL",
+   "amount": 12.5
+  },
+  {
+   "id": "h1-t076",
+   "date": "2026-06-28",
+   "description": "FRS PENSION DIR DEP",
+   "amount": -2950.4
+  },
+  {
+   "id": "h1-t077",
+   "date": "2026-06-28",
+   "description": "SIRIUS XM RADIO INC NY",
+   "amount": 18.99
+  },
+  {
+   "id": "h1-t078",
+   "date": "2026-06-29",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 58.39
+  },
+  {
+   "id": "h1-t079",
+   "date": "2026-06-30",
+   "description": "INTEREST PAYMENT",
+   "amount": -0.91
+  },
+  {
+   "id": "h1-t080",
+   "date": "2026-07-01",
+   "description": "ONLINE TRANSFER TO SAV XXXXXX0377",
+   "amount": 500.0
+  },
+  {
+   "id": "h1-t081",
+   "date": "2026-07-01",
+   "description": "UNITEDHEALTHCARE MEDSUPP PREM",
+   "amount": 187.42
+  },
+  {
+   "id": "h1-t082",
+   "date": "2026-07-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -2184.0
+  },
+  {
+   "id": "h1-t083",
+   "date": "2026-07-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -1612.0
+  },
+  {
+   "id": "h1-t084",
+   "date": "2026-07-05",
+   "description": "CRACKER BARREL #417",
+   "amount": 21.13
+  },
+  {
+   "id": "h1-t085",
+   "date": "2026-07-05",
+   "description": "HULU SANTA MONICA CA",
+   "amount": 18.99
+  },
+  {
+   "id": "h1-t086",
+   "date": "2026-07-05",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 99.53
+  },
+  {
+   "id": "h1-t087",
+   "date": "2026-07-05",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 55.85
+  },
+  {
+   "id": "h1-t088",
+   "date": "2026-07-06",
+   "description": "DUKE ENERGY FLORIDA PAYMENT",
+   "amount": 236.12
+  },
+  {
+   "id": "h1-t089",
+   "date": "2026-07-07",
+   "description": "SQ *SHEAR ELEGANCE SALON",
+   "amount": 45.0
+  },
+  {
+   "id": "h1-t090",
+   "date": "2026-07-09",
+   "description": "GOOGLE *YouTube TV g.co/helppay#CA",
+   "amount": 82.99
+  },
+  {
+   "id": "h1-t091",
+   "date": "2026-07-12",
+   "description": "NAVY FCU AUTO LOAN PMT",
+   "amount": 412.66
+  },
+  {
+   "id": "h1-t092",
+   "date": "2026-07-12",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 72.52
+  },
+  {
+   "id": "h1-t093",
+   "date": "2026-07-13",
+   "description": "AMAZON MKTPL*X4ZA9",
+   "amount": 46.29
+  },
+  {
+   "id": "h1-t094",
+   "date": "2026-07-14",
+   "description": "ANCESTRY.COM PROVO UT",
+   "amount": 24.99
+  },
+  {
+   "id": "h1-t095",
+   "date": "2026-07-16",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 41.7
+  },
+  {
+   "id": "h1-t096",
+   "date": "2026-07-18",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 161.12
+  },
+  {
+   "id": "h1-t097",
+   "date": "2026-07-18",
+   "description": "STATE FARM INSURANCE",
+   "amount": 142.18
+  },
+  {
+   "id": "h1-t098",
+   "date": "2026-07-19",
+   "description": "PINELLAS CTY UTILITIES WEB PMT",
+   "amount": 72.1
+  },
+  {
+   "id": "h1-t099",
+   "date": "2026-07-19",
+   "description": "SQ *CHI CHI RODRIGUEZ GC",
+   "amount": 67.68
+  },
+  {
+   "id": "h1-t100",
+   "date": "2026-07-20",
+   "description": "FRONTIER COMMUNICATIONS CT",
+   "amount": 44.99
+  },
+  {
+   "id": "h1-t101",
+   "date": "2026-07-21",
+   "description": "PANERA BREAD #204112",
+   "amount": 58.0
+  },
+  {
+   "id": "h1-t102",
+   "date": "2026-07-23",
+   "description": "NYTIMES *DIGITAL SUB NEW YORK NY",
+   "amount": 25.0
+  },
+  {
+   "id": "h1-t103",
+   "date": "2026-07-24",
+   "description": "TMOBILE*AUTO PAY WA",
+   "amount": 70.0
+  },
+  {
+   "id": "h1-t104",
+   "date": "2026-07-25",
+   "description": "GOOGLE *Lumos Labs g.co/helppay#CA",
+   "amount": 11.99
+  },
+  {
+   "id": "h1-t105",
+   "date": "2026-07-25",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 159.89
+  },
+  {
+   "id": "h1-t106",
+   "date": "2026-07-27",
+   "description": "CVS/PHARMACY #05219 CLEARWATER FL",
+   "amount": 12.5
+  },
+  {
+   "id": "h1-t107",
+   "date": "2026-07-27",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 38.11
+  },
+  {
+   "id": "h1-t108",
+   "date": "2026-07-28",
+   "description": "FRS PENSION DIR DEP",
+   "amount": -2950.4
+  },
+  {
+   "id": "h1-t109",
+   "date": "2026-07-28",
+   "description": "SIRIUS XM RADIO INC NY",
+   "amount": 18.99
+  },
+  {
+   "id": "h1-t110",
+   "date": "2026-07-30",
+   "description": "INTEREST PAYMENT",
+   "amount": -0.98
+  },
+  {
+   "id": "h1-t111",
+   "date": "2026-07-31",
+   "description": "MONTHLY MAINTENANCE FEE",
+   "amount": 12.0
+  },
+  {
+   "id": "h1-t112",
+   "date": "2026-07-31",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 165.09
+  },
+  {
+   "id": "h1-t113",
+   "date": "2026-08-01",
+   "description": "ONLINE TRANSFER TO SAV XXXXXX0377",
+   "amount": 500.0
+  },
+  {
+   "id": "h1-t114",
+   "date": "2026-08-01",
+   "description": "UNITEDHEALTHCARE MEDSUPP PREM",
+   "amount": 187.42
+  },
+  {
+   "id": "h1-t115",
+   "date": "2026-08-02",
+   "description": "AMAZON MKTPL*M0P3Z",
+   "amount": 65.04
+  },
+  {
+   "id": "h1-t116",
+   "date": "2026-08-03",
+   "description": "MONTHLY MAINTENANCE FEE REVERSAL",
+   "amount": -12.0
+  },
+  {
+   "id": "h1-t117",
+   "date": "2026-08-03",
+   "description": "SQ *BLUE PARROT CAFE",
+   "amount": 62.88
+  },
+  {
+   "id": "h1-t118",
+   "date": "2026-08-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -2184.0
+  },
+  {
+   "id": "h1-t119",
+   "date": "2026-08-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -1612.0
+  },
+  {
+   "id": "h1-t120",
+   "date": "2026-08-05",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 35.22
+  },
+  {
+   "id": "h1-t121",
+   "date": "2026-08-06",
+   "description": "DUKE ENERGY FLORIDA PAYMENT",
+   "amount": 271.48
+  },
+  {
+   "id": "h1-t122",
+   "date": "2026-08-06",
+   "description": "SQ *SHEAR ELEGANCE SALON",
+   "amount": 45.0
+  },
+  {
+   "id": "h1-t123",
+   "date": "2026-08-08",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 162.79
+  },
+  {
+   "id": "h1-t124",
+   "date": "2026-08-09",
+   "description": "GOOGLE *YouTube TV g.co/helppay#CA",
+   "amount": 82.99
+  },
+  {
+   "id": "h1-t125",
+   "date": "2026-08-12",
+   "description": "NAVY FCU AUTO LOAN PMT",
+   "amount": 412.66
+  },
+  {
+   "id": "h1-t126",
+   "date": "2026-08-13",
+   "description": "SQ *CHI CHI RODRIGUEZ GC",
+   "amount": 56.37
+  },
+  {
+   "id": "h1-t127",
+   "date": "2026-08-14",
+   "description": "ANCESTRY.COM PROVO UT",
+   "amount": 24.99
+  },
+  {
+   "id": "h1-t128",
+   "date": "2026-08-14",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 41.02
+  },
+  {
+   "id": "h1-t129",
+   "date": "2026-08-14",
+   "description": "SQ *BLUE PARROT CAFE",
+   "amount": 23.34
+  },
+  {
+   "id": "h1-t130",
+   "date": "2026-08-15",
+   "description": "CVS/PHARMACY #05219 CLEARWATER FL",
+   "amount": 14.54
+  },
+  {
+   "id": "h1-t131",
+   "date": "2026-08-15",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 95.61
+  },
+  {
+   "id": "h1-t132",
+   "date": "2026-08-18",
+   "description": "STATE FARM INSURANCE",
+   "amount": 163.51
+  },
+  {
+   "id": "h1-t133",
+   "date": "2026-08-19",
+   "description": "PINELLAS CTY UTILITIES WEB PMT",
+   "amount": 70.45
+  },
+  {
+   "id": "h1-t134",
+   "date": "2026-08-20",
+   "description": "FRONTIER COMMUNICATIONS CT",
+   "amount": 44.99
+  },
+  {
+   "id": "h1-t135",
+   "date": "2026-08-20",
+   "description": "NYTIMES *DIGITAL SUB NEW YORK NY",
+   "amount": 25.0
+  },
+  {
+   "id": "h1-t136",
+   "date": "2026-08-23",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 58.97
+  },
+  {
+   "id": "h1-t137",
+   "date": "2026-08-24",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 52.13
+  },
+  {
+   "id": "h1-t138",
+   "date": "2026-08-24",
+   "description": "TMOBILE*AUTO PAY WA",
+   "amount": 70.0
+  },
+  {
+   "id": "h1-t139",
+   "date": "2026-08-25",
+   "description": "GOOGLE *Lumos Labs g.co/helppay#CA",
+   "amount": 11.99
+  },
+  {
+   "id": "h1-t140",
+   "date": "2026-08-26",
+   "description": "CVS/PHARMACY #05219 CLEARWATER FL",
+   "amount": 12.5
+  },
+  {
+   "id": "h1-t141",
+   "date": "2026-08-28",
+   "description": "FRS PENSION DIR DEP",
+   "amount": -2950.4
+  },
+  {
+   "id": "h1-t142",
+   "date": "2026-08-28",
+   "description": "SIRIUS XM RADIO INC NY",
+   "amount": 20.99
+  },
+  {
+   "id": "h1-t143",
+   "date": "2026-08-29",
+   "description": "BEALLS #44 LARGO FL",
+   "amount": 27.34
+  },
+  {
+   "id": "h1-t144",
+   "date": "2026-08-29",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 124.46
+  },
+  {
+   "id": "h1-t145",
+   "date": "2026-08-30",
+   "description": "INTEREST PAYMENT",
+   "amount": -0.63
+  },
+  {
+   "id": "h1-t146",
+   "date": "2026-08-31",
+   "description": "SQ *BLUE PARROT CAFE",
+   "amount": 55.8
+  },
+  {
+   "id": "h1-t147",
+   "date": "2026-09-01",
+   "description": "ONLINE TRANSFER TO SAV XXXXXX0377",
+   "amount": 500.0
+  },
+  {
+   "id": "h1-t148",
+   "date": "2026-09-01",
+   "description": "UNITEDHEALTHCARE MEDSUPP PREM",
+   "amount": 187.42
+  },
+  {
+   "id": "h1-t149",
+   "date": "2026-09-02",
+   "description": "BRITISH AIRWAYS 1252301234567",
+   "amount": 132.6
+  },
+  {
+   "id": "h1-t150",
+   "date": "2026-09-02",
+   "description": "THE HOME DEPOT #6304",
+   "amount": 36.04
+  },
+  {
+   "id": "h1-t151",
+   "date": "2026-09-03",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 34.91
+  },
+  {
+   "id": "h1-t152",
+   "date": "2026-09-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -2184.0
+  },
+  {
+   "id": "h1-t153",
+   "date": "2026-09-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -1612.0
+  },
+  {
+   "id": "h1-t154",
+   "date": "2026-09-05",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 157.92
+  },
+  {
+   "id": "h1-t155",
+   "date": "2026-09-06",
+   "description": "DUKE ENERGY FLORIDA PAYMENT",
+   "amount": 266.05
+  },
+  {
+   "id": "h1-t156",
+   "date": "2026-09-07",
+   "description": "AMAZON MKTPL*M0P3Z",
+   "amount": 34.1
+  },
+  {
+   "id": "h1-t157",
+   "date": "2026-09-08",
+   "description": "SQ *SHEAR ELEGANCE SALON",
+   "amount": 45.0
+  },
+  {
+   "id": "h1-t158",
+   "date": "2026-09-09",
+   "description": "GOOGLE *YouTube TV g.co/helppay#CA",
+   "amount": 82.99
+  },
+  {
+   "id": "h1-t159",
+   "date": "2026-09-12",
+   "description": "NAVY FCU AUTO LOAN PMT",
+   "amount": 412.66
+  },
+  {
+   "id": "h1-t160",
+   "date": "2026-09-13",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 145.04
+  },
+  {
+   "id": "h1-t161",
+   "date": "2026-09-13",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 42.03
+  },
+  {
+   "id": "h1-t162",
+   "date": "2026-09-14",
+   "description": "ANCESTRY.COM PROVO UT",
+   "amount": 24.99
+  },
+  {
+   "id": "h1-t163",
+   "date": "2026-09-14",
+   "description": "SQ *CHI CHI RODRIGUEZ GC",
+   "amount": 73.82
+  },
+  {
+   "id": "h1-t164",
+   "date": "2026-09-17",
+   "description": "BAYCARE MEDICAL GROUP",
+   "amount": 52.17
+  },
+  {
+   "id": "h1-t165",
+   "date": "2026-09-17",
+   "description": "CRACKER BARREL #417",
+   "amount": 59.08
+  },
+  {
+   "id": "h1-t166",
+   "date": "2026-09-17",
+   "description": "NYTIMES *DIGITAL SUB NEW YORK NY",
+   "amount": 25.0
+  },
+  {
+   "id": "h1-t167",
+   "date": "2026-09-18",
+   "description": "STATE FARM INSURANCE",
+   "amount": 163.51
+  },
+  {
+   "id": "h1-t168",
+   "date": "2026-09-19",
+   "description": "PINELLAS CTY UTILITIES WEB PMT",
+   "amount": 68.02
+  },
+  {
+   "id": "h1-t169",
+   "date": "2026-09-20",
+   "description": "FRONTIER COMMUNICATIONS CT",
+   "amount": 44.99
+  },
+  {
+   "id": "h1-t170",
+   "date": "2026-09-21",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 91.19
+  },
+  {
+   "id": "h1-t171",
+   "date": "2026-09-24",
+   "description": "TMOBILE*AUTO PAY WA",
+   "amount": 70.0
+  },
+  {
+   "id": "h1-t172",
+   "date": "2026-09-25",
+   "description": "CVS/PHARMACY #05219 CLEARWATER FL",
+   "amount": 12.5
+  },
+  {
+   "id": "h1-t173",
+   "date": "2026-09-25",
+   "description": "GOOGLE *Lumos Labs g.co/helppay#CA",
+   "amount": 11.99
+  },
+  {
+   "id": "h1-t174",
+   "date": "2026-09-25",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 39.12
+  },
+  {
+   "id": "h1-t175",
+   "date": "2026-09-26",
+   "description": "COLUMBIA RESTAURANT YBOR TAMPA FL",
+   "amount": 96.4
+  },
+  {
+   "id": "h1-t176",
+   "date": "2026-09-26",
+   "description": "COLUMBIA RESTAURANT YBOR TAMPA FL",
+   "amount": 96.4
+  },
+  {
+   "id": "h1-t177",
+   "date": "2026-09-27",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 63.72
+  },
+  {
+   "id": "h1-t178",
+   "date": "2026-09-28",
+   "description": "FRS PENSION DIR DEP",
+   "amount": -2950.4
+  },
+  {
+   "id": "h1-t179",
+   "date": "2026-09-28",
+   "description": "SIRIUS XM RADIO INC NY",
+   "amount": 20.99
+  },
+  {
+   "id": "h1-t180",
+   "date": "2026-09-30",
+   "description": "INTEREST PAYMENT",
+   "amount": -0.55
+  },
+  {
+   "id": "h1-t181",
+   "date": "2026-10-01",
+   "description": "ONLINE TRANSFER TO SAV XXXXXX0377",
+   "amount": 500.0
+  },
+  {
+   "id": "h1-t182",
+   "date": "2026-10-01",
+   "description": "UNITEDHEALTHCARE MEDSUPP PREM",
+   "amount": 187.42
+  },
+  {
+   "id": "h1-t183",
+   "date": "2026-10-03",
+   "description": "CRACKER BARREL #417",
+   "amount": 52.82
+  },
+  {
+   "id": "h1-t184",
+   "date": "2026-10-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -2184.0
+  },
+  {
+   "id": "h1-t185",
+   "date": "2026-10-03",
+   "description": "SSA TREAS 310 XXSOC SEC",
+   "amount": -1612.0
+  },
+  {
+   "id": "h1-t186",
+   "date": "2026-10-04",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 50.38
+  },
+  {
+   "id": "h1-t187",
+   "date": "2026-10-04",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 38.33
+  },
+  {
+   "id": "h1-t188",
+   "date": "2026-10-06",
+   "description": "AMAZON MKTPL*KJ7Y2",
+   "amount": 53.16
+  },
+  {
+   "id": "h1-t189",
+   "date": "2026-10-06",
+   "description": "DUKE ENERGY FLORIDA PAYMENT",
+   "amount": 219.67
+  },
+  {
+   "id": "h1-t190",
+   "date": "2026-10-09",
+   "description": "GOOGLE *YouTube TV g.co/helppay#CA",
+   "amount": 82.99
+  },
+  {
+   "id": "h1-t191",
+   "date": "2026-10-09",
+   "description": "SQ *SHEAR ELEGANCE SALON",
+   "amount": 45.0
+  },
+  {
+   "id": "h1-t192",
+   "date": "2026-10-10",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 56.41
+  },
+  {
+   "id": "h1-t193",
+   "date": "2026-10-12",
+   "description": "NAVY FCU AUTO LOAN PMT",
+   "amount": 412.66
+  },
+  {
+   "id": "h1-t194",
+   "date": "2026-10-14",
+   "description": "ANCESTRY.COM PROVO UT",
+   "amount": 24.99
+  },
+  {
+   "id": "h1-t195",
+   "date": "2026-10-15",
+   "description": "NYTIMES *DIGITAL SUB NEW YORK NY",
+   "amount": 25.0
+  },
+  {
+   "id": "h1-t196",
+   "date": "2026-10-16",
+   "description": "NORDSTROM.COM #0808",
+   "amount": 149.75
+  },
+  {
+   "id": "h1-t197",
+   "date": "2026-10-16",
+   "description": "RACETRAC 2381 CLEARWATER FL",
+   "amount": 61.14
+  },
+  {
+   "id": "h1-t198",
+   "date": "2026-10-17",
+   "description": "PUBLIX #1112 CLEARWATER FL",
+   "amount": 53.77
+  },
+  {
+   "id": "h1-t199",
+   "date": "2026-10-17",
+   "description": "SQ *CHI CHI RODRIGUEZ GC",
+   "amount": 67.46
+  },
+  {
+   "id": "h1-t200",
+   "date": "2026-10-18",
+   "description": "STATE FARM INSURANCE",
+   "amount": 163.51
+  },
+  {
+   "id": "h1-t201",
+   "date": "2026-10-19",
+   "description": "PANERA BREAD #204112",
+   "amount": 49.3
+  },
+  {
+   "id": "h1-t202",
+   "date": "2026-10-19",
+   "description": "PINELLAS CTY UTILITIES WEB PMT",
+   "amount": 63.77
+  },
+  {
+   "id": "h1-t203",
+   "date": "2026-10-20",
+   "description": "CVS/PHARMACY #05219 CLEARWATER FL",
+   "amount": 12.5
+  },
+  {
+   "id": "h1-t204",
+   "date": "2026-10-20",
+   "description": "FRONTIER COMMUNICATIONS CT",
+   "amount": 44.99
+  }
+ ],
+ "emails": [
+  {
+   "id": "h1-m01",
+   "received_at": "2026-05-19T11:48:00",
+   "from": "CustomerCare@cvs.com",
+   "from_name": "CVS Pharmacy",
+   "subject": "Thanks for your CVS.com order #8841297310",
+   "body": "Hi Beverly,\n\nThanks for shopping at CVS.com!\n\nOrder number: 8841297310\nOrder date: May 19, 2026\n\nCVS Health Vitamin D3 2000 IU Softgels, 250 ct    $19.99\nBanana Boat Sport Ultra SPF 50 Lotion, 8 oz        $15.99\n\nSubtotal: $35.98\nShipping: FREE with ExtraCare\nTax: $2.52\nOrder total: $38.50\n\nTrack your order in the CVS app or at CVS.com.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "CVS",
+    "names": [
+     "cvs",
+     "cvs pharmacy",
+     "cvs health"
+    ],
+    "note": "a cvs.com order before July 27, 2026: in the CVS digital privacy class"
+   }
+  },
+  {
+   "id": "h1-m02",
+   "received_at": "2026-06-11T09:00:00",
+   "from": "member@email.aarp.org",
+   "from_name": "AARP",
+   "subject": "Thank you for renewing your AARP membership",
+   "body": "Dear Raymond,\n\nThank you for renewing your AARP membership.\n\nMembership: 1 year (includes a free membership for Beverly)\nAmount charged: $21.00\nMembership number ending 7741\n\nAutomatic renewal is on: your membership will renew on June 11, 2027 at the then-current rate.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "AARP",
+    "names": [
+     "aarp",
+     "aarp membership"
+    ],
+    "note": "annual receipt"
+   }
+  },
+  {
+   "id": "h1-m03",
+   "received_at": "2026-07-14T10:02:00",
+   "from": "siriusxm@e.siriusxm.com",
+   "from_name": "SiriusXM",
+   "subject": "An update to your SiriusXM subscription",
+   "body": "Hi Raymond,\n\nThank you for being a SiriusXM subscriber since 2019.\n\nWe're writing to let you know about a change to your subscription. Starting with your bill on or after\nAugust 28, 2026, the monthly price of your Platinum Vehicle plan will go from $18.99 to $20.99. The\nU.S. Music Royalty Fee is included in that amount.\n\nYour plan and channels stay the same, and you don't need to do anything to keep listening.\n\nTo look at other plans, sign in at siriusxm.com/myaccount.\n\nAccount ending in 8820 - Vehicle: 2022 Buick Enclave\nSiriusXM Radio Inc., 1221 Avenue of the Americas, New York, NY 10020",
+   "format": "text",
+   "label": {
+    "kind": "price_change",
+    "merchant": "SiriusXM",
+    "names": [
+     "siriusxm",
+     "sirius xm",
+     "sirius"
+    ],
+    "note": "announced, then charged from Aug 28"
+   }
+  },
+  {
+   "id": "h1-m04",
+   "received_at": "2026-07-20T20:44:00",
+   "from": "hulu@hulumail.com",
+   "from_name": "Hulu",
+   "subject": "Your Hulu subscription has been canceled",
+   "body": "Hi Bev,\n\nWe're sorry to see you go. Your Hulu (No Ads) subscription has been canceled.\n\nYou can keep watching until August 4, 2026. You won't be charged again.\n\nChanged your mind? You can restart any time.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Hulu",
+    "names": [
+     "hulu"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m05",
+   "received_at": "2026-08-03T10:00:00",
+   "from": "alerts@gulfviewbank.example",
+   "from_name": "Gulfview Bank",
+   "subject": "We reversed a fee on your account",
+   "body": "Hi Raymond,\n\nAs a courtesy, we reversed the $12.00 monthly maintenance fee charged to your Everyday Checking account\nending 0193 on July 31, 2026. The credit posted on August 3.\n\nTo avoid this fee, keep a minimum daily balance of $1,500.\n\nGulfview Bank",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Gulfview Bank",
+    "names": [
+     "gulfview bank",
+     "gulfview"
+    ],
+    "note": "the fee was already refunded"
+   }
+  },
+  {
+   "id": "h1-m06",
+   "received_at": "2026-08-11T18:05:00",
+   "from": "ancestry@email.ancestry.com",
+   "from_name": "Ancestry",
+   "subject": "You have 3 new DNA matches",
+   "body": "Ray, you have 3 new DNA matches.\n\nOne of them is a possible 2nd cousin on your father's side. See how you're related, and message\nyour matches to compare trees.\n\nView your matches\n\nYou're receiving this email because you have an AncestryDNA test linked to your account.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Ancestry",
+    "names": [
+     "ancestry",
+     "ancestry com",
+     "ancestry.com"
+    ],
+    "note": "a notification, not a usage summary"
+   }
+  },
+  {
+   "id": "h1-m07",
+   "received_at": "2026-08-18T08:40:00",
+   "from": "noreply@statefarm.com",
+   "from_name": "State Farm",
+   "subject": "Payment received for your State Farm auto policy",
+   "body": "Thank you, Raymond.\n\nWe received your payment of $163.51 on Aug 18, 2026 for auto policy 482 9917-C14-59.\n\nThank you for being a State Farm customer.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "State Farm",
+    "names": [
+     "state farm"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m08",
+   "received_at": "2026-08-25T09:14:00",
+   "from": "googleplay-noreply@google.com",
+   "from_name": "Google Play",
+   "subject": "Your Google Play Order Receipt from Aug 25, 2026",
+   "body": "<html><body style=\"font-family:Roboto,Arial,sans-serif\">\n<table width=\"100%\"><tr><td><b style=\"font-size:20px\">Google Play</b></td></tr>\n<tr><td>Thank you. You've made a purchase from <b>Lumos Labs, Inc.</b> on Google Play.</td></tr></table>\n<table cellpadding=\"4\">\n<tr><td>Order number:</td><td>GPA.3374-1182-9921-55031..3</td></tr>\n<tr><td>Order date:</td><td>Aug 25, 2026 9:14:02 AM EDT</td></tr>\n<tr><td>Your account:</td><td>rbwhitfield@example.net</td></tr>\n</table>\n<table cellpadding=\"4\" style=\"border-top:1px solid #ddd\">\n<tr><th align=\"left\">Item</th><th align=\"right\">Price</th></tr>\n<tr><td>Lumosity Premium (Lumosity: Brain Training)<br><small>Auto-renewing subscription</small></td>\n<td align=\"right\">$11.99/month</td></tr>\n<tr><td>Tax:</td><td align=\"right\">$0.00</td></tr>\n<tr><td><b>Total:</b></td><td align=\"right\"><b>$11.99/month</b></td></tr>\n</table>\n<p>Payment method: Visa-2210</p>\n<p>You can cancel this subscription at any time from Payments &amp; subscriptions in Google Play.</p>\n<p style=\"color:#888\">&copy; 2026 Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA.</p>\n</body></html>",
+   "format": "html",
+   "label": {
+    "kind": "store_receipt",
+    "merchant": "Lumosity",
+    "names": [
+     "lumosity",
+     "lumos labs",
+     "lumos"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m09",
+   "received_at": "2026-09-02T19:40:00",
+   "from": "BA@email.ba.com",
+   "from_name": "British Airways",
+   "subject": "Your booking confirmation: 7KQ2XD",
+   "body": "Dear Mrs Whitfield,\n\nThank you for booking with British Airways.\n\nBooking reference: 7KQ2XD\nPassenger: Mrs Beverly Whitfield\n\nFlight BA1462\nLondon Heathrow (LHR) to Edinburgh (EDI)\nFriday 30 October 2026\nDeparts 13:10, arrives 14:35\nEuro Traveller, hand baggage only\n\nTotal price: $132.60 (USD)\nPaid by Visa ending 2210\n\nManage your booking at ba.com/manage.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "British Airways",
+    "names": [
+     "british airways"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m10",
+   "received_at": "2026-09-03T07:00:00",
+   "from": "member@email.aarp.org",
+   "from_name": "AARP The Magazine",
+   "subject": "Inside the October/November issue",
+   "body": "<html><body><h2>AARP The Magazine</h2>\n<p>In this issue: 50 great small towns, the new rules of retirement travel, and our fall movie picks.</p>\n<p><a href=\"https://www.aarp.org\">Read online</a></p></body></html>",
+   "format": "html",
+   "label": {
+    "kind": "other",
+    "merchant": "AARP",
+    "names": [
+     "aarp",
+     "aarp membership"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m11",
+   "received_at": "2026-09-14T17:10:00",
+   "from": "noreply@duke-energy.com",
+   "from_name": "Duke Energy",
+   "subject": "Your August energy usage report",
+   "body": "Hi Raymond,\n\nYou used 1,642 kWh in August, 6% more than in August last year.\nHot weather drove most of it: 28 days were over 90 degrees.\n\nTip: setting your thermostat 2 degrees higher can lower cooling costs by up to 10%.\n\nSee your full usage history at duke-energy.com.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Duke Energy",
+    "names": [
+     "duke energy"
+    ],
+    "note": "a utility usage report, not a subscription signal"
+   }
+  },
+  {
+   "id": "h1-m12",
+   "received_at": "2026-09-20T19:33:00",
+   "from": "katie.whitfield@example.org",
+   "from_name": "Katie Whitfield",
+   "subject": "Photos from the beach weekend!",
+   "body": "Hi Mom and Dad,\n\nHere are the photos from Honeymoon Island. The kids haven't stopped talking about the dolphins.\nThanks again for having us!\n\nLove, Katie",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m13",
+   "received_at": "2026-09-25T09:13:00",
+   "from": "googleplay-noreply@google.com",
+   "from_name": "Google Play",
+   "subject": "Your Google Play Order Receipt from Sep 25, 2026",
+   "body": "<html><body style=\"font-family:Roboto,Arial,sans-serif\">\n<table width=\"100%\"><tr><td><b style=\"font-size:20px\">Google Play</b></td></tr>\n<tr><td>Thank you. You've made a purchase from <b>Lumos Labs, Inc.</b> on Google Play.</td></tr></table>\n<table cellpadding=\"4\">\n<tr><td>Order number:</td><td>GPA.3374-1182-9921-55031..4</td></tr>\n<tr><td>Order date:</td><td>Sep 25, 2026 9:13:44 AM EDT</td></tr>\n<tr><td>Your account:</td><td>rbwhitfield@example.net</td></tr>\n</table>\n<table cellpadding=\"4\" style=\"border-top:1px solid #ddd\">\n<tr><th align=\"left\">Item</th><th align=\"right\">Price</th></tr>\n<tr><td>Lumosity Premium (Lumosity: Brain Training)<br><small>Auto-renewing subscription</small></td>\n<td align=\"right\">$11.99/month</td></tr>\n<tr><td>Tax:</td><td align=\"right\">$0.00</td></tr>\n<tr><td><b>Total:</b></td><td align=\"right\"><b>$11.99/month</b></td></tr>\n</table>\n<p>Payment method: Visa-2210</p>\n<p>You can cancel this subscription at any time from Payments &amp; subscriptions in Google Play.</p>\n<p style=\"color:#888\">&copy; 2026 Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA.</p>\n</body></html>",
+   "format": "html",
+   "label": {
+    "kind": "store_receipt",
+    "merchant": "Lumosity",
+    "names": [
+     "lumosity",
+     "lumos labs",
+     "lumos"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m14",
+   "received_at": "2026-09-26T21:02:00",
+   "from": "noreply@toasttab.com",
+   "from_name": "Columbia Restaurant",
+   "subject": "Your receipt from Columbia Restaurant - Ybor City",
+   "body": "Columbia Restaurant - Ybor City\n2117 E 7th Ave, Tampa, FL 33605\n\nCheck #4471    Server: Luis    Table 22    Guests: 2\nSep 26, 2026 8:58 PM\n\n1905 Salad (half)               $9.95\nGrouper Floridian              $34.95\nChicken and Yellow Rice Ybor   $26.95\n\nSubtotal                       $71.85\nTax                             $5.39\nTip                            $19.16\nTotal                          $96.40\n\nVisa ending 2210\n\nThank you for dining with us!",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Columbia Restaurant",
+    "names": [
+     "columbia restaurant",
+     "columbia"
+    ],
+    "note": "one check: the second $96.40 charge is a duplicate"
+   }
+  },
+  {
+   "id": "h1-m15",
+   "received_at": "2026-09-28T13:00:00",
+   "from": "noreply@uhc.com",
+   "from_name": "UnitedHealthcare",
+   "subject": "Your 2027 Medicare Supplement premium",
+   "body": "Dear Raymond Whitfield,\n\nWe're writing to tell you about your premium for next year.\n\nBeginning January 1, 2027, the monthly premium for your AARP Medicare Supplement Insurance Plan G\nwill change from $187.42 to $199.65. This change applies to members with your plan in your area.\n\nYour coverage and benefits do not change. If you pay by automatic deduction, the new amount will be\ndeducted starting in January.\n\nQuestions? Call the number on your member ID card.\n\nInsured by UnitedHealthcare Insurance Company",
+   "format": "text",
+   "label": {
+    "kind": "price_change",
+    "merchant": "UnitedHealthcare",
+    "names": [
+     "unitedhealthcare",
+     "united healthcare",
+     "uhc",
+     "aarp medicare supplement",
+     "medicare supplement"
+    ],
+    "note": "announced for January, not charged yet"
+   }
+  },
+  {
+   "id": "h1-m16",
+   "received_at": "2026-10-01T05:00:00",
+   "from": "navyfederal@info.navyfederal.org",
+   "from_name": "Navy Federal Credit Union",
+   "subject": "Your auto loan statement is ready",
+   "body": "Your October statement for auto loan ending 6620 is ready.\n\nPayment due: $412.66 on Oct 12, 2026\nRemaining balance: $9,184.20\n\nSign in to Navy Federal Online Banking to see your statement.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Navy Federal",
+    "names": [
+     "navy federal",
+     "navy fcu"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m17",
+   "received_at": "2026-10-02T11:20:00",
+   "from": "ancestry@email.ancestry.com",
+   "from_name": "Ancestry",
+   "subject": "Ray, your family tree misses you",
+   "body": "Hi Ray,\n\nIt's been 4 months since you last signed in to Ancestry.\n\nWhile you were away, your Whitfield Family Tree collected 14 new hints, including records for\nHarold Whitfield (1921-1988) and Ida Mae Corbett (1924-2001).\n\nYour All Access membership is still active, so everything is waiting for you. Come back and pick up\nwhere you left off.\n\nSign in to Ancestry\n\nAncestry, 1300 West Traverse Parkway, Lehi, UT 84043",
+   "format": "text",
+   "label": {
+    "kind": "inactivity",
+    "merchant": "Ancestry",
+    "names": [
+     "ancestry",
+     "ancestry com",
+     "ancestry.com"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m18",
+   "received_at": "2026-10-04T10:15:00",
+   "from": "noreply@t-mobile.com",
+   "from_name": "T-Mobile",
+   "subject": "Your T-Mobile bill is ready",
+   "body": "Hi Raymond,\n\nYour bill for Sep 24 - Oct 23 is ready.\n\nAmount due: $70.00\nAutoPay will pay it on Oct 24.\nPlan: Essentials 55, 2 lines\n\nSee your bill in the T-Mobile app.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "T-Mobile",
+    "names": [
+     "t mobile",
+     "tmobile",
+     "t-mobile"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m19",
+   "received_at": "2026-10-05T08:00:00",
+   "from": "nytdirect@nytimes.com",
+   "from_name": "The New York Times",
+   "subject": "Your September in Games",
+   "body": "Hi Bev,\n\nHere's your September in New York Times Games.\n\nCrosswords solved: 22\nFastest Monday: 6:41\nWordle: played 30 of 30 days (current streak: 41)\nSpelling Bee: reached Genius 9 times\n\nSee all your stats in the Games app.\n\nYour All Access subscription includes Games, Cooking, The Athletic and Wirecutter.",
+   "format": "text",
+   "label": {
+    "kind": "engagement",
+    "merchant": "The New York Times",
+    "names": [
+     "new york times",
+     "nytimes",
+     "nyt",
+     "the new york times",
+     "ny times"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m20",
+   "received_at": "2026-10-06T16:20:00",
+   "from": "league@example.org",
+   "from_name": "Harbor Hills Golf League",
+   "subject": "Thursday league pairings",
+   "body": "Pairings for Thursday, 8:10 tee time: Whitfield, Ortiz, Baker, Lindgren.\nBring $5 for the closest-to-the-pin pot.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m21",
+   "received_at": "2026-10-07T09:30:00",
+   "from": "noreply@duke-energy.com",
+   "from_name": "Duke Energy",
+   "subject": "We received your payment",
+   "body": "Thank you, Raymond.\n\nWe received your payment of $219.67 on Oct 6, 2026 for account ending 0815.\nYour next bill will be ready around Oct 28.\n\nDuke Energy Florida",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Duke Energy",
+    "names": [
+     "duke energy"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m22",
+   "received_at": "2026-10-08T06:51:00",
+   "from": "geeksquad.billing.desk@example.com",
+   "from_name": "Geek Squad Billing",
+   "subject": "Invoice #GS-77310-RENEWAL: payment processed",
+   "body": "Dear Customer,\n\nThank you for renewing your Geek Squad Total Protection plan.\nYour account has been charged $399.99 for 3 years of coverage.\n\nInvoice number: GS-77310\nDate: 08 Oct 2026\nProduct: Geek Squad Total Tech Support (3 years)\n\nIf you did not authorize this renewal or want to cancel it, call our billing desk at\n+1 (808) 555-0147 within 24 hours to receive a full refund.\n\nRegards,\nBilling Department",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": "phishing: no such charge in the bank data, sender is not Best Buy"
+   }
+  },
+  {
+   "id": "h1-m23",
+   "received_at": "2026-10-09T06:12:00",
+   "from": "payments-noreply@google.com",
+   "from_name": "Google Payments",
+   "subject": "Your YouTube TV receipt",
+   "body": "Google\n\nThanks for your purchase.\n\nYouTube TV Base Plan (monthly)\nBilling period: Oct 9, 2026 - Nov 8, 2026\nAmount: $82.99\nPayment method: Visa ending 2210\nOrder number: SOP.4421-0918-2276-11530\n\nYou can see your purchases in your Google Account under Payments & subscriptions.\n\nGoogle LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "YouTube TV",
+    "names": [
+     "youtube tv",
+     "youtubetv"
+    ],
+    "note": "YouTube TV is billed by Google directly, not through Google Play"
+   }
+  },
+  {
+   "id": "h1-m24",
+   "received_at": "2026-10-10T12:00:00",
+   "from": "frontier@email.frontier.com",
+   "from_name": "Frontier",
+   "subject": "Your promotional rate ends soon",
+   "body": "Hi Raymond,\n\nYour 12-month promotional rate of $44.99/month for Fiber 500 ends on November 14, 2026.\n\nAfter that date, the regular rate of $64.99/month will apply, starting with your next bill.\n\nWant to review your options? Sign in at frontier.com or call the number on your bill to talk about\nyour plan.\n\nAccount number ending 3302\nFrontier Communications",
+   "format": "text",
+   "label": {
+    "kind": "price_change",
+    "merchant": "Frontier",
+    "names": [
+     "frontier",
+     "frontier communications",
+     "frontier fiber"
+    ],
+    "note": "promo ends Nov 14: the higher price is not charged yet"
+   }
+  },
+  {
+   "id": "h1-m25",
+   "received_at": "2026-10-12T15:30:00",
+   "from": "youtube-noreply@google.com",
+   "from_name": "YouTube TV",
+   "subject": "Your YouTube TV membership price is changing",
+   "body": "Hi Ray,\n\nWe're writing to let you know that the price of the YouTube TV Base Plan is changing. Starting with your\nnext billing date on or after November 9, 2026, your membership will be $86.99/month (currently\n$82.99/month).\n\nThis helps us keep bringing you 100+ live channels, unlimited DVR space and 3 streams at once.\n\nYour add-ons are not affected. You can review or change your membership at any time in Settings on\ntv.youtube.com.\n\nThanks for watching,\nThe YouTube TV team",
+   "format": "text",
+   "label": {
+    "kind": "price_change",
+    "merchant": "YouTube TV",
+    "names": [
+     "youtube tv",
+     "youtubetv"
+    ],
+    "note": "announced for November, not charged yet"
+   }
+  },
+  {
+   "id": "h1-m26",
+   "received_at": "2026-10-13T06:30:00",
+   "from": "extracare@em.cvs.com",
+   "from_name": "CVS Pharmacy",
+   "subject": "Beverly, your ExtraBucks Rewards are here",
+   "body": "<html><body><h2>You've got $3.00 ExtraBucks Rewards</h2>\n<p>Use them in store or on CVS.com by Nov 13. Plus: 30% off CVS Health vitamins this week.</p>\n<p><a href=\"https://www.cvs.com/extracare\">See your deals</a></p></body></html>",
+   "format": "html",
+   "label": {
+    "kind": "other",
+    "merchant": "CVS",
+    "names": [
+     "cvs",
+     "cvs pharmacy",
+     "cvs health"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m27",
+   "received_at": "2026-10-13T07:45:00",
+   "from": "no-reply@lumosity.com",
+   "from_name": "Lumosity",
+   "subject": "Your weekly training report",
+   "body": "Hi Ray,\n\nHere's your week in Lumosity:\n\nDays trained: 5 of 7\nWorkouts completed: 5\nBest game this week: Speed Match (new personal best!)\nYour Memory score rose 3% since last week.\n\nKeep your streak going. Your next workout is ready in the app.\n\nLumos Labs, Inc., San Francisco, CA",
+   "format": "text",
+   "label": {
+    "kind": "engagement",
+    "merchant": "Lumosity",
+    "names": [
+     "lumosity",
+     "lumos labs",
+     "lumos"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m28",
+   "received_at": "2026-10-15T14:22:00",
+   "from": "nordstrom@eml.nordstrom.com",
+   "from_name": "Nordstrom",
+   "subject": "We got your order! #0428813752",
+   "body": "Hi Beverly,\n\nThanks for your order. We'll email you when it ships.\n\nOrder number: 0428813752\nOrder date: October 15, 2026\n\nBrooks Ghost 16 Walking Shoe (Women)\nSize 8 Wide, Black/Black\nQty 1    $139.95\n\nSubtotal: $139.95\nShipping: Free\nEstimated tax: $9.80\nOrder total: $149.75",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Nordstrom",
+    "names": [
+     "nordstrom"
+    ],
+    "note": "full price; window is 10 days from shipment"
+   }
+  },
+  {
+   "id": "h1-m29",
+   "received_at": "2026-10-16T16:05:00",
+   "from": "nordstrom@eml.nordstrom.com",
+   "from_name": "Nordstrom",
+   "subject": "Your order has shipped",
+   "body": "Good news, Beverly: your order #0428813752 shipped on October 16, 2026.\n\nBrooks Ghost 16 Walking Shoe (Women), Size 8 Wide\nEstimated delivery: October 20\n\nTrack your package",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Nordstrom",
+    "names": [
+     "nordstrom"
+    ],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m30",
+   "received_at": "2026-10-17T07:12:00",
+   "from": "BA@email.ba.com",
+   "from_name": "British Airways",
+   "subject": "Important: your flight BA1462 on 30 October has been cancelled",
+   "body": "Dear Mrs Whitfield,\n\nWe're sorry to tell you that your flight BA1462 from London Heathrow (LHR) to Edinburgh (EDI) on\nFriday 30 October 2026, departing at 13:10, has been cancelled for operational reasons. We apologise\nfor the disruption to your plans.\n\nWe have rebooked you on BA1476, departing London Heathrow at 19:20 and arriving in Edinburgh at 20:45\non the same day. Your booking reference, 7KQ2XD, stays the same.\n\nIf the new flight doesn't suit you, you can choose another flight or ask for a full refund at\nba.com/manage.\n\nYou may be entitled to compensation. You can find out more and make a claim at ba.com.\n\nBritish Airways",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "British Airways",
+    "names": [
+     "british airways"
+    ],
+    "note": "13 days' notice, new arrival 6 h 10 min later: UK261 GBP 220"
+   }
+  },
+  {
+   "id": "h1-m31",
+   "received_at": "2026-10-18T09:00:00",
+   "from": "office@example.org",
+   "from_name": "Harbor Light Community Church",
+   "subject": "This week at Harbor Light: fall festival and choir practice",
+   "body": "Friends,\n\nThe fall festival is Saturday from 10 to 2 on the front lawn. Choir practice moves to Wednesday at 7.\nThe food pantry needs canned vegetables and peanut butter this month.\n\nSee you Sunday!",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": ""
+   }
+  },
+  {
+   "id": "h1-m32",
+   "received_at": "2026-10-19T06:00:00",
+   "from": "nytdirect@nytimes.com",
+   "from_name": "The Morning",
+   "subject": "The Morning: A storm season to remember",
+   "body": "<html><body style=\"font-family:Georgia,serif\">\n<h2>The Morning</h2><p>Good morning. Today we look back at the hurricane season along the Gulf Coast,\nand at what forecasters got right.</p>\n<p>Also: a new way to cook fall squash, and the week's best crossword clues.</p>\n<p><a href=\"https://www.nytimes.com\">Read the full newsletter</a></p>\n<p style=\"color:#777\">You received this email because you signed up for The Morning.</p>\n</body></html>",
+   "format": "html",
+   "label": {
+    "kind": "other",
+    "merchant": "The New York Times",
+    "names": [
+     "new york times",
+     "nytimes",
+     "nyt",
+     "the new york times",
+     "ny times"
+    ],
+    "note": "newsletter from a subscribed merchant"
+   }
+  },
+  {
+   "id": "h1-m33",
+   "received_at": "2026-10-20T05:00:00",
+   "from": "publix@e.publix.com",
+   "from_name": "Publix",
+   "subject": "Your Weekly Ad is here: BOGO deals start Thursday",
+   "body": "<html><body><h2>This week's BOGO deals</h2><p>Buy one, get one free on Publix ice cream, Cheerios and\nmore. Prices good Thursday through Wednesday.</p></body></html>",
+   "format": "html",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": ""
+   }
+  }
+ ],
+ "simulated_prices": [
+  {
+   "store": "Nordstrom",
+   "item_contains": "ghost 16",
+   "price_now": 109.95
+  }
+ ],
+ "labels": {
+  "subscriptions": [
+   {
+    "id": "siriusxm",
+    "merchant": "SiriusXM",
+    "names": [
+     "siriusxm",
+     "sirius xm",
+     "sirius"
+    ],
+    "kind": "subscription",
+    "category": "music",
+    "cadence": "monthly",
+    "amount": 20.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unknown",
+    "flags": [
+     "price_increase"
+    ],
+    "note": "$18.99 to $20.99 from Aug 28, announced in July",
+    "bank": [
+     "SIRIUS XM"
+    ],
+    "evidence_emails": [
+     "h1-m03"
+    ]
+   },
+   {
+    "id": "youtube-tv",
+    "merchant": "YouTube TV",
+    "names": [
+     "youtube tv",
+     "youtubetv"
+    ],
+    "kind": "subscription",
+    "category": "video_streaming",
+    "cadence": "monthly",
+    "amount": 82.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unknown",
+    "flags": [],
+    "note": "GOOGLE * descriptor, but billed by Google directly (not a Play app). The $86.99 price is announced for November only, so no price_increase yet",
+    "bank": [
+     "YOUTUBE TV"
+    ],
+    "evidence_emails": [
+     "h1-m25",
+     "h1-m23"
+    ]
+   },
+   {
+    "id": "lumosity",
+    "merchant": "Lumosity",
+    "names": [
+     "lumosity",
+     "lumos labs",
+     "lumos"
+    ],
+    "kind": "subscription",
+    "category": "education",
+    "cadence": "monthly",
+    "amount": 11.99,
+    "variable": false,
+    "billed_by": "google_play",
+    "status": "active",
+    "usage": "used",
+    "flags": [],
+    "note": "Google Play descriptor shows the developer (Lumos Labs), the receipt names the app",
+    "bank": [
+     "LUMOS LABS"
+    ],
+    "evidence_emails": [
+     "h1-m08",
+     "h1-m13",
+     "h1-m27"
+    ]
+   },
+   {
+    "id": "ancestry",
+    "merchant": "Ancestry",
+    "names": [
+     "ancestry",
+     "ancestry com",
+     "ancestry.com"
+    ],
+    "kind": "subscription",
+    "category": "genealogy",
+    "cadence": "monthly",
+    "amount": 24.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unused",
+    "flags": [
+     "unused"
+    ],
+    "note": "not signed in for 4 months (Oct 2 email)",
+    "bank": [
+     "ANCESTRY"
+    ],
+    "evidence_emails": [
+     "h1-m17",
+     "h1-m06"
+    ]
+   },
+   {
+    "id": "nyt",
+    "merchant": "The New York Times",
+    "names": [
+     "new york times",
+     "nytimes",
+     "nyt",
+     "the new york times",
+     "ny times"
+    ],
+    "kind": "subscription",
+    "category": "news",
+    "cadence": "monthly",
+    "amount": 25.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "usage": "used",
+    "flags": [],
+    "note": "billed every 4 weeks",
+    "bank": [
+     "NYTIMES"
+    ],
+    "evidence_emails": [
+     "h1-m19",
+     "h1-m32"
+    ]
+   },
+   {
+    "id": "aarp",
+    "merchant": "AARP",
+    "names": [
+     "aarp",
+     "aarp membership"
+    ],
+    "kind": "subscription",
+    "category": "membership",
+    "cadence": "annual",
+    "amount": 21.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unknown",
+    "flags": [],
+    "note": "annual: one charge in the window, renewal receipt says it auto-renews",
+    "bank": [
+     "AARP MEMBERSHIP"
+    ],
+    "evidence_emails": [
+     "h1-m02",
+     "h1-m10"
+    ]
+   },
+   {
+    "id": "duke-energy",
+    "merchant": "Duke Energy",
+    "names": [
+     "duke energy"
+    ],
+    "kind": "bill",
+    "category": "utility",
+    "cadence": "monthly",
+    "amount": 222.43,
+    "variable": true,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unknown",
+    "flags": [],
+    "note": "electric bill: summer swing is normal, no increase flag",
+    "bank": [
+     "DUKE ENERGY"
+    ],
+    "evidence_emails": [
+     "h1-m21",
+     "h1-m11"
+    ]
+   },
+   {
+    "id": "pinellas-water",
+    "merchant": "Pinellas County Utilities",
+    "names": [
+     "pinellas",
+     "pinellas county utilities",
+     "pinellas cty utilities"
+    ],
+    "kind": "bill",
+    "category": "utility",
+    "cadence": "monthly",
+    "amount": 67.06,
+    "variable": true,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unknown",
+    "flags": [],
+    "note": "",
+    "bank": [
+     "PINELLAS CTY UTILITIES"
+    ],
+    "evidence_emails": []
+   },
+   {
+    "id": "frontier",
+    "merchant": "Frontier",
+    "names": [
+     "frontier",
+     "frontier communications",
+     "frontier fiber"
+    ],
+    "kind": "bill",
+    "category": "internet",
+    "cadence": "monthly",
+    "amount": 44.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unknown",
+    "flags": [
+     "promo_ending"
+    ],
+    "note": "promo price ends Nov 14 ($64.99 after)",
+    "bank": [
+     "FRONTIER COMM"
+    ],
+    "evidence_emails": [
+     "h1-m24"
+    ]
+   },
+   {
+    "id": "state-farm",
+    "merchant": "State Farm",
+    "names": [
+     "state farm"
+    ],
+    "kind": "bill",
+    "category": "insurance",
+    "cadence": "monthly",
+    "amount": 163.51,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unknown",
+    "flags": [
+     "bill_increase"
+    ],
+    "note": "auto policy renewal: $142.18 to $163.51 a month (+15%) from August",
+    "bank": [
+     "STATE FARM"
+    ],
+    "evidence_emails": [
+     "h1-m07"
+    ]
+   },
+   {
+    "id": "t-mobile",
+    "merchant": "T-Mobile",
+    "names": [
+     "t mobile",
+     "tmobile",
+     "t-mobile"
+    ],
+    "kind": "bill",
+    "category": "mobile",
+    "cadence": "monthly",
+    "amount": 70.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unknown",
+    "flags": [],
+    "note": "",
+    "bank": [
+     "TMOBILE"
+    ],
+    "evidence_emails": [
+     "h1-m18"
+    ]
+   },
+   {
+    "id": "uhc-medsupp",
+    "merchant": "UnitedHealthcare Medicare Supplement",
+    "names": [
+     "unitedhealthcare",
+     "united healthcare",
+     "uhc",
+     "aarp medicare supplement",
+     "medicare supplement"
+    ],
+    "kind": "bill",
+    "category": "insurance",
+    "cadence": "monthly",
+    "amount": 187.42,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "usage": "unknown",
+    "flags": [],
+    "note": "premium change announced for January 2027, not charged yet",
+    "bank": [
+     "UNITEDHEALTHCARE"
+    ],
+    "evidence_emails": [
+     "h1-m15"
+    ]
+   }
+  ],
+  "findings": [
+   {
+    "id": "columbia-double",
+    "kind": "duplicate_charge",
+    "merchant": "Columbia Restaurant",
+    "names": [
+     "columbia restaurant",
+     "columbia"
+    ],
+    "amount": 96.4,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "h1-t175",
+      "h1-t176"
+     ],
+     "emails": [
+      "h1-m14"
+     ]
+    },
+    "note": "two $96.40 charges on Sep 26, one check"
+   },
+   {
+    "id": "nordstrom-drop",
+    "kind": "price_drop",
+    "merchant": "Nordstrom",
+    "names": [
+     "nordstrom"
+    ],
+    "amount": 30.0,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "h1-t196"
+     ],
+     "emails": [
+      "h1-m28",
+      "h1-m29"
+     ]
+    },
+    "note": "$139.95 full price, now $109.95; shipped Oct 16 so the 10-day window runs to Oct 26. Nordstrom only takes the request from the customer. Tax on the difference comes back too"
+   },
+   {
+    "id": "ba-uk261",
+    "kind": "flight_compensation",
+    "merchant": "British Airways",
+    "names": [
+     "british airways"
+    ],
+    "amount": 220.0,
+    "currency": "GBP",
+    "evidence": {
+     "transactions": [
+      "h1-t149"
+     ],
+     "emails": [
+      "h1-m09",
+      "h1-m30"
+     ]
+    },
+    "note": "LHR-EDI (about 530 km) cancelled with 13 days' notice; the rebooking arrives 6 h 10 min late, so the 7-13 day reroute exception doesn't apply"
+   },
+   {
+    "id": "cvs-privacy",
+    "kind": "settlement",
+    "merchant": "CVS",
+    "names": [
+     "cvs",
+     "cvs pharmacy",
+     "cvs health",
+     "cvs digital privacy"
+    ],
+    "amount": null,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "h1-t030"
+     ],
+     "emails": [
+      "h1-m01"
+     ]
+    },
+    "note": "cvs.com order on May 19, 2026, before the Jul 27, 2026 class end; payout is up to $5 and may be reduced, so no fixed amount"
+   }
+  ],
+  "not_subscriptions": [
+   {
+    "id": "hulu",
+    "names": [
+     "hulu"
+    ],
+    "what": "Hulu, cancelled in July (last charge Jul 5)"
+   },
+   {
+    "id": "navy-loan",
+    "names": [
+     "navy federal",
+     "navy fcu"
+    ],
+    "what": "auto loan payment"
+   },
+   {
+    "id": "savings",
+    "names": [
+     "online transfer",
+     "transfer to sav",
+     "savings"
+    ],
+    "what": "transfer to savings"
+   },
+   {
+    "id": "cvs-copays",
+    "names": [
+     "cvs",
+     "cvs pharmacy"
+    ],
+    "what": "prescription copays and store purchases at CVS"
+   },
+   {
+    "id": "salon",
+    "names": [
+     "shear elegance",
+     "sq shear",
+     "salon"
+    ],
+    "what": "haircuts, paid per visit"
+   },
+   {
+    "id": "publix",
+    "names": [
+     "publix"
+    ],
+    "what": "groceries"
+   },
+   {
+    "id": "racetrac",
+    "names": [
+     "racetrac"
+    ],
+    "what": "gas"
+   },
+   {
+    "id": "geek-squad",
+    "names": [
+     "geek squad"
+    ],
+    "what": "phishing email only; never charged"
+   }
+  ],
+  "traps": [
+   {
+    "id": "h1-google-billed-pair",
+    "kind": "app_store",
+    "description": "Two GOOGLE * charges: YouTube TV (Google itself) and Lumosity via Google Play, whose descriptor shows the developer Lumos Labs: both found and named",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "youtube-tv"
+     },
+     {
+      "type": "sub_found",
+      "sub": "lumosity"
+     },
+     {
+      "type": "email_kind",
+      "email": "h1-m13",
+      "allowed": [
+       "store_receipt"
+      ]
+     },
+     {
+      "type": "email_merchant",
+      "email": "h1-m13",
+      "names": [
+       "lumosity",
+       "lumos labs",
+       "lumos"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "h1-siriusxm-rise",
+    "kind": "price_change",
+    "description": "SiriusXM went from $18.99 to $20.99 in August: price increase",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "siriusxm"
+     },
+     {
+      "type": "sub_flag",
+      "sub": "siriusxm",
+      "kind": "price_increase",
+      "present": true
+     }
+    ]
+   },
+   {
+    "id": "h1-announced-not-charged",
+    "kind": "price_change",
+    "description": "YouTube TV and the Medicare supplement announce higher prices for later: read as price changes, but nothing is flagged yet",
+    "checks": [
+     {
+      "type": "email_kind",
+      "email": "h1-m25",
+      "allowed": [
+       "price_change"
+      ]
+     },
+     {
+      "type": "email_kind",
+      "email": "h1-m15",
+      "allowed": [
+       "price_change"
+      ]
+     },
+     {
+      "type": "sub_flag",
+      "sub": "youtube-tv",
+      "kind": "price_increase",
+      "present": false
+     },
+     {
+      "type": "sub_flag",
+      "sub": "uhc-medsupp",
+      "kind": "bill_increase",
+      "present": false
+     }
+    ]
+   },
+   {
+    "id": "h1-state-farm-rise",
+    "kind": "bill_increase",
+    "description": "State Farm auto premium rose 15% in August",
+    "checks": [
+     {
+      "type": "sub_flag",
+      "sub": "state-farm",
+      "kind": "bill_increase",
+      "present": true
+     }
+    ]
+   },
+   {
+    "id": "h1-frontier-promo",
+    "kind": "bill_increase",
+    "description": "Frontier promo rate ends Nov 14: promo ending, no increase yet",
+    "checks": [
+     {
+      "type": "sub_flag",
+      "sub": "frontier",
+      "kind": "promo_ending",
+      "present": true
+     },
+     {
+      "type": "sub_flag",
+      "sub": "frontier",
+      "kind": "bill_increase",
+      "present": false
+     }
+    ]
+   },
+   {
+    "id": "h1-duke-seasonal",
+    "kind": "look_alike",
+    "description": "Duke Energy swings with summer heat: a bill, not an increase",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "duke-energy"
+     },
+     {
+      "type": "sub_flag",
+      "sub": "duke-energy",
+      "kind": "bill_increase",
+      "present": false
+     }
+    ]
+   },
+   {
+    "id": "h1-ancestry-unused",
+    "kind": "unused",
+    "description": "Ancestry: not signed in for 4 months",
+    "checks": [
+     {
+      "type": "sub_flag",
+      "sub": "ancestry",
+      "kind": "unused",
+      "present": true
+     },
+     {
+      "type": "email_kind",
+      "email": "h1-m17",
+      "allowed": [
+       "inactivity"
+      ]
+     },
+     {
+      "type": "email_kind",
+      "email": "h1-m06",
+      "allowed": [
+       "other"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "h1-lumosity-used",
+    "kind": "unused",
+    "description": "Lumosity's weekly report shows use: no unused flag",
+    "checks": [
+     {
+      "type": "email_kind",
+      "email": "h1-m27",
+      "allowed": [
+       "engagement"
+      ]
+     },
+     {
+      "type": "sub_flag",
+      "sub": "lumosity",
+      "kind": "unused",
+      "present": false
+     }
+    ]
+   },
+   {
+    "id": "h1-nyt-every-4-weeks",
+    "kind": "cadence",
+    "description": "The New York Times bills every 28 days: still a monthly plan",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "nyt"
+     },
+     {
+      "type": "email_kind",
+      "email": "h1-m19",
+      "allowed": [
+       "engagement"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "h1-aarp-annual",
+    "kind": "annual",
+    "description": "AARP membership: one annual charge plus a renewal receipt",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "aarp"
+     }
+    ]
+   },
+   {
+    "id": "h1-hulu-cancelled",
+    "kind": "look_alike",
+    "description": "Hulu was cancelled in July: not a current subscription",
+    "checks": [
+     {
+      "type": "not_sub",
+      "ref": "hulu"
+     }
+    ]
+   },
+   {
+    "id": "h1-copays-and-cvs-settlement",
+    "kind": "settlement",
+    "description": "CVS copays repeat monthly but are not a subscription; the cvs.com order puts them in the CVS digital privacy settlement",
+    "checks": [
+     {
+      "type": "not_sub",
+      "ref": "cvs-copays"
+     },
+     {
+      "type": "finding_found",
+      "finding": "cvs-privacy"
+     }
+    ]
+   },
+   {
+    "id": "h1-navy-federal-loan",
+    "kind": "look_alike",
+    "description": "A Navy Federal car loan is neither a subscription nor in the Navy Federal fraud-loan settlement",
+    "checks": [
+     {
+      "type": "not_sub",
+      "ref": "navy-loan"
+     },
+     {
+      "type": "no_finding",
+      "kind": "settlement",
+      "names": [
+       "navy federal"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "h1-salon-visits",
+    "kind": "look_alike",
+    "description": "$45 haircuts about once a month are paid per visit",
+    "checks": [
+     {
+      "type": "not_sub",
+      "ref": "salon"
+     }
+    ]
+   },
+   {
+    "id": "h1-restaurant-double",
+    "kind": "duplicate",
+    "description": "Columbia Restaurant ran the card twice for one check",
+    "checks": [
+     {
+      "type": "finding_found",
+      "finding": "columbia-double"
+     }
+    ]
+   },
+   {
+    "id": "h1-fee-already-reversed",
+    "kind": "fee",
+    "description": "The July maintenance fee was reversed by the bank: nothing owed",
+    "checks": [
+     {
+      "type": "no_finding",
+      "kind": "bank_fee",
+      "names": [
+       "bank",
+       "fee",
+       "maintenance"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "h1-nordstrom-self-file",
+    "kind": "price_drop",
+    "description": "Nordstrom shoes dropped $30 inside the window",
+    "checks": [
+     {
+      "type": "finding_found",
+      "finding": "nordstrom-drop"
+     }
+    ]
+   },
+   {
+    "id": "h1-ba-uk261",
+    "kind": "flight",
+    "description": "BA cancelled LHR-EDI with 13 days' notice: UK261 GBP 220, no US refund",
+    "checks": [
+     {
+      "type": "finding_found",
+      "finding": "ba-uk261"
+     },
+     {
+      "type": "no_finding",
+      "kind": "flight_refund",
+      "names": [
+       "british airways"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "h1-geek-squad-phish",
+    "kind": "phishing",
+    "description": "Fake Geek Squad renewal invoice: no subscription, no finding",
+    "checks": [
+     {
+      "type": "email_kind",
+      "email": "h1-m22",
+      "allowed": [
+       "irrelevant",
+       "other"
+      ]
+     },
+     {
+      "type": "not_sub",
+      "ref": "geek-squad"
+     },
+     {
+      "type": "no_finding",
+      "kind": null,
+      "names": [
+       "geek squad"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "h1-usage-report-noise",
+    "kind": "noise",
+    "description": "Duke Energy's usage report is not a subscription signal",
+    "checks": [
+     {
+      "type": "email_kind",
+      "email": "h1-m11",
+      "allowed": [
+       "other"
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
