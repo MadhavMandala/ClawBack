@@ -4,13 +4,17 @@ Demo mode: a fixed table (demo_data.PRICE_CHECKS), shown in evidence and the tra
 (demo data)".
 Real mode (needs TAVILY_API_KEY and NEBIUS_API_KEY): Tavily searches only the store's own site for the item
 (include_domains), and the top two pages on that domain are extracted, skipping refurbished, used and open-box
-listings. Stores that load prices in the browser (Target does) give pages with no price, so no live price. Nemotron 3.5 Lightning (Nano as backup,
-strict JSON) reads the price and says which page it came from. Code then keeps the price only if:
+listings. Nemotron 3.5 Lightning (Nano as backup, strict JSON) reads the price and says which page it came from.
+Code then keeps the price only if:
   - the cited page is on the store's own domain (the domain of its verified retailers.json links);
   - the price is written as money in the page text the model read ("$169.99" or "169.99");
   - the item is on that page (its model number, or most of the words of its name);
   - it is not under MIN_SHARE of what the user paid (a much lower number is usually another item or a part).
 A failed check means no price, and a "fallback" trace row says which check. One live check per item per day.
+Live on 2026-10-23: Best Buy's pages gave a checked price; Target's gave none (see the TODO below).
+
+TODO(clawback): stores that load prices in the browser (Target) give Tavily pages with no price, so they never get a
+live price. A store's own product API or a rendering fetch would be needed; until then those items aren't checked.
 """
 
 from __future__ import annotations

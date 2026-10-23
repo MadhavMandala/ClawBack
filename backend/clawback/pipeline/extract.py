@@ -139,6 +139,9 @@ def _norm(text: str) -> str:
 
 def _trial_end(days, written, text: str, received: date) -> date | None:
     """The model reports days left or the end date as written; code does the date math and the parsing."""
+    # TODO(clawback): days left is range-checked but not yet checked against the email text (amounts and the written
+    # date are). tests/test_extract.py::test_trial_end_computed_in_code feeds a number its email doesn't state, so
+    # grounding it means changing that test.
     if isinstance(days, int) and not isinstance(days, bool) and 0 <= days <= 365:
         return received + timedelta(days=days)
     if isinstance(written, str) and written.strip() and _norm(written) in _norm(text):
