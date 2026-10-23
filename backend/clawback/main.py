@@ -22,7 +22,7 @@ from .pipeline.recommend import alternatives
 from .pipeline.run import best_saving, run, summary
 from .sources import nylas, plaid
 from .sources.net import SourceError
-from .sources.statements import parse_csv
+from .sources.statements import parse_upload
 from .store import store
 from .trace import view
 
@@ -219,14 +219,18 @@ def finding_done(finding_id: str, body: Done | None = None):
 
 @app.post("/api/ingest/statement")
 async def upload_statement(file: UploadFile = File(...)):
-    content = (await file.read()).decode("utf-8-sig", errors="replace")
+    """A CSV, OFX or QFX statement file (picked by extension or content)."""
     try:
-        txs = parse_csv(content)
+        kind, txs = parse_upload(await file.read(), file.filename)
     except ValueError as exc:
         raise HTTPException(400, str(exc))
-    store.user(USER).transactions.extend(txs)
+    u = store.user(USER)
+    if kind == "ofx":  # OFX ids come from FITID, so the same file uploaded twice adds nothing new
+        held = {t.id for t in u.transactions}
+        txs = [t for t in txs if t.id not in held]
+    u.transactions.extend(txs)
     result = run(USER)
-    return {"added_transactions": len(txs), **result}
+    return {"added_transactions": len(txs), "format": kind, **result}
 
 
 # --- Connections ----------------------------------------------------------------------------------
