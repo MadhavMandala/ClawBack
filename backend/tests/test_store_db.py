@@ -4,7 +4,7 @@ import dataclasses
 import json
 import logging
 from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 
 import pytest
 from conftest import TEST_KEY
@@ -130,6 +130,53 @@ def test_real_mail_stays_in_memory_and_is_read_again(fake):
     assert len(fake.nylas.message_calls()) == calls + 1  # once per load
 
 
+def test_unreadable_mail_keeps_saved_results_until_it_is_read(api, fake):
+    from conftest import connect_both, new_session
+
+    h = new_session(api)
+    connect_both(api, h)
+    uid = _uid(h)
+    subs = {s["merchant"] for s in api.get("/api/subscriptions", headers=h).json()}
+    assert "Super Duolingo" in subs  # found from the mail
+
+    store.clear()  # a restart
+    fake.nylas.messages_status = 503  # and Nylas is down
+    assert {s["merchant"] for s in api.get("/api/subscriptions", headers=h).json()} == subs
+    assert store.is_cold(uid)
+    netflix = next(s for s in api.get("/api/subscriptions", headers=h).json() if s["merchant"] == "Netflix")
+    api.post(f"/api/subscriptions/{netflix['id']}/keep", headers=h)
+    assert {s["merchant"] for s in api.get("/api/subscriptions", headers=h).json()} == subs  # nothing dropped
+    assert any(t["status"] == "skipped" and "kept the saved results" in t["note"]
+               for t in api.get("/api/trace", headers=h).json())
+
+    fake.nylas.messages_status = 200
+    reads = len(fake.nylas.message_calls())
+    api.get("/api/summary", headers=h)
+    assert len(fake.nylas.message_calls()) == reads and store.is_cold(uid)  # waits before trying again
+    api.post("/api/sync", headers=h)  # Sync tries at once
+    assert not store.is_cold(uid)
+    statuses = {s["merchant"]: s["status"] for s in api.get("/api/subscriptions", headers=h).json()}
+    assert statuses["Netflix"] == "kept" and set(statuses) == subs  # the click from earlier counts now
+
+
+def _uid(headers: dict) -> str:
+    from clawback import sessions
+
+    return db.one("SELECT user_id FROM sessions WHERE token_hash = ?",
+                  (sessions._hash(headers[sessions.HEADER]),))["user_id"]
+
+
+def test_a_sync_never_clears_a_newer_reconnect_flag():
+    conn = EmailConnection(grant_id="grant-1", connected_at=now())
+    connections.set_email("u1", conn)
+    copy_from_sync = connections.get("u1").email  # a sync starts with this copy
+    connections.mark_reconnect("u1", "email", "Connect email again.")  # grant.expired arrives meanwhile
+    copy_from_sync.last_sync, copy_from_sync.error = now(), None
+    connections.update_email("u1", copy_from_sync)  # the sync finishes
+    saved = connections.get("u1").email
+    assert saved.needs_reconnect and saved.error == "Connect email again." and saved.last_sync
+
+
 def test_refresh_reloads_what_another_process_saved():
     make_row("u1")
     store.replace("u1", demo_user())
@@ -158,20 +205,28 @@ def test_careful_save_refuses_to_overwrite():
         store.save("u1", careful=True)
 
 
-def test_api_save_never_overwrites_a_newer_row(caplog):
+def test_api_save_merges_with_a_newer_row(caplog):
     make_row("u1")
     store.replace("u1", demo_user())
     store.save("u1")
+    # The nightly job, in another process, adds a transaction and moves the cursor.
     other = deserialize(json.loads(crypto.decrypt(db.one("SELECT data FROM users WHERE id='u1'")["data"])))
-    other.kept["from-nightly"] = TODAY
+    other.transactions = other.transactions[:3]
+    other.plaid_cursor = "cursor-from-nightly"
     db.execute("UPDATE users SET data = ?, version = version + 1 WHERE id = 'u1'",
                (crypto.encrypt(json.dumps(serialize(other)).encode()),))
 
-    store.user("u1").kept["from-request"] = TODAY  # a request that started before the job saved
+    store.user("u1").kept["netflix"] = TODAY  # a click whose request started before the job saved
+    store.user("u1").emails.append(real_mail())  # mail held in memory only
     with caplog.at_level(logging.WARNING):
-        assert store.save("u1") is False
-    assert "changed on disk" in caplog.text
-    assert set(store.user("u1").kept) == {"from-nightly"}  # the newer copy on disk won and is loaded
+        assert store.save("u1") is True
+    assert "merged" in caplog.text
+    u = store.user("u1")
+    assert u.kept == {"netflix": TODAY} and u.plaid_cursor == "cursor-from-nightly" and len(u.transactions) == 3
+    assert "real-1" in [e.id for e in u.emails]
+    store.clear()
+    on_disk = store.user("u1")
+    assert on_disk.kept == {"netflix": TODAY} and on_disk.plaid_cursor == "cursor-from-nightly"
 
 
 def test_idle_users_are_saved_and_dropped_from_memory(monkeypatch):

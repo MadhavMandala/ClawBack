@@ -166,7 +166,8 @@ async function createSession(): Promise<string> {
 
 /** This browser's session id, made on first use. `replacing`: an id the API just said has expired. */
 export async function session(replacing?: string): Promise<string> {
-  const current = storedSession() ?? memorySession;
+  // Memory first: if saving to localStorage failed, an old stored id must not keep winning over the new one.
+  const current = memorySession ?? storedSession();
   if (current && current !== replacing) return current;
   if (!creating) creating = createSession().finally(() => { creating = null; });
   return creating;

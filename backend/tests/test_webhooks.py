@@ -229,12 +229,25 @@ def test_bad_plaid_tokens_are_refused(api, fake, connected, signer):
         assert post_plaid(api, body, token).status_code == 401, token
     assert fake.plaid.paths().count("/transactions/sync") == syncs
 
-    lookups = fake.plaid.paths().count("/webhook_verification_key/get")
-    post_plaid(api, body, signer.token(body, kid="kid-unknown"))
-    assert fake.plaid.paths().count("/webhook_verification_key/get") == lookups  # failed lookups are remembered
-
     fake.plaid.verification_keys["kid-2"] = {**Signer("kid-2").jwk, "expired_at": 1700000000}
     assert post_plaid(api, body, Signer("kid-2").token(body)).status_code == 401  # Plaid retired that key
+
+
+def test_random_key_ids_cannot_make_us_call_plaid_often(api, fake, connected, signer):
+    body = plaid_event("TRANSACTIONS", "SYNC_UPDATES_AVAILABLE")
+    for i in range(plaid.MAX_KEY_FETCHES_PER_MIN + 5):
+        assert post_plaid(api, body, signer.token(body, kid=f"junk-{i}")).status_code == 401
+    assert fake.plaid.paths().count("/webhook_verification_key/get") == plaid.MAX_KEY_FETCHES_PER_MIN
+
+
+def test_cached_keys_are_checked_again_after_an_hour(api, fake, connected, signer, monkeypatch):
+    body = plaid_event("ITEM", "WEBHOOK_UPDATE_ACKNOWLEDGED")
+    assert post_plaid(api, body, signer.token(body)).status_code == 200
+    fake.plaid.verification_keys[signer.kid] = {**signer.jwk, "expired_at": 1700000000}  # Plaid retires it
+    assert post_plaid(api, body, signer.token(body)).status_code == 200  # still cached
+    key, fetched = plaid._keys[signer.kid]
+    plaid._keys[signer.kid] = (key, fetched - plaid.KEY_TTL_S - 1)
+    assert post_plaid(api, body, signer.token(body)).status_code == 401
 
 
 def test_verification_key_is_cached(api, fake, connected, signer):

@@ -221,6 +221,10 @@ def delete(user_id: str) -> dict:
         global _single_ready
         with _single_lock:
             _single_ready = False
+        if config.settings.single_user and config.settings.autoseed_demo:
+            ensure_single()  # the one local user starts over with a fresh demo, as on startup
+            demo.seed(SINGLE_USER)
+            store.save(SINGLE_USER)
     return {"ok": True, "removed": removed}
 
 

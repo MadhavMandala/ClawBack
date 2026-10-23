@@ -243,35 +243,45 @@ def restore(user_id: str) -> bool:
         if not connections.get(user_id).any():
             return False
         store.use_real_data(user_id)
-        store.mark_warm(user_id)  # the sync below reads the mail
-        sync_sources(user_id, wait_for_plaid=False)
+        sync_sources(user_id, wait_for_plaid=False)  # reads the mail again; if it can't, the saved results stay
     except Exception as exc:
         reason = getattr(exc, "safe_message", None) or type(exc).__name__
         record(user_id, "startup sync", "code", status="error", note=f"restoring saved connections failed: {reason}")
     return store.user(user_id).mode == "real"
 
 
-def ensure_fresh(user_id: str) -> dict | None:
-    """A real-mode user loaded from disk has no mail in memory (bodies are never saved): read it again, once,
-    before anything re-runs the pipeline on it. The saved results stay as they are until then. Never raises.
+MAIL_RETRY_S = 300
 
-    Returns the email pull's result ({"ok": ..., "error": ...}) when it read the mail, None when nothing was needed.
+
+def ensure_fresh(user_id: str) -> dict | None:
+    """A real-mode user loaded from disk has no mail in memory (bodies are never saved): read it again before
+    anything re-runs the pipeline on it. Never raises.
+
+    While the mail can't be read (Nylas unreachable, say), the user stays "cold": pipeline runs keep the saved
+    results (pipeline/run.py), and the read is tried again after MAIL_RETRY_S (Sync tries at once). An inbox
+    that needs a new sign-in can't be read until the user reconnects, so the pipeline then runs without its mail.
+    Returns the email pull's result when it tried to read, None when nothing was needed.
     """
     store.user(user_id)  # load it, if this process hasn't yet
     if not store.is_cold(user_id):
         return None
-    store.mark_warm(user_id)  # one try per load; failures show on the connection, and Sync tries again
-    if store.user(user_id).mode != "real" or not connections.get(user_id).email:
+    conn = connections.get(user_id).email
+    if store.user(user_id).mode != "real" or conn is None or conn.needs_reconnect:
+        store.mark_warm(user_id)
         return None
-    return _attempt(user_id, nylas.ENGINE, lambda: {"emails": _pull_email(user_id)})
+    if not store.retry_due(user_id):
+        return {"ok": False, "error": "The mail will be read again in a few minutes."}
+    result = _attempt(user_id, nylas.ENGINE, lambda: {"emails": _pull_email(user_id)})
+    if not result["ok"]:
+        conn = connections.get(user_id).email
+        if conn is None or conn.needs_reconnect:
+            store.mark_warm(user_id)
+        else:
+            store.retry_later(user_id, MAIL_RETRY_S)
+    return result
 
 
 # --- Background updates: webhooks and the nightly job -------------------------------------------------
-
-def _mail_ready(pull: dict | None) -> bool:
-    """False when the mail had to be read and couldn't be: then a pipeline re-run would lose every email finding."""
-    return pull is None or bool(pull.get("ok"))
-
 
 def _rerun_and_alert(user_id: str, before: set[str]) -> int:
     _rerun_quietly(user_id)
@@ -285,7 +295,8 @@ def on_new_message(user_id: str, grant_id: str, message_id: str | None) -> str:
         return "ignored"
     before = set(alerts.keys(store.user(user_id)))
     if store.is_cold(user_id):
-        if not _mail_ready(ensure_fresh(user_id)):  # reads every recent message, this one included
+        ensure_fresh(user_id)  # reads every recent message, this one included
+        if store.is_cold(user_id):
             return "error"
     elif not message_id:
         if not _attempt(user_id, nylas.ENGINE, lambda: {"emails": _pull_email(user_id)})["ok"]:
@@ -318,10 +329,10 @@ def on_plaid_update(user_id: str, item_id: str) -> str:
     if conn is None or conn.item_id != item_id or store.user(user_id).mode != "real":
         return "ignored"
     before = set(alerts.keys(store.user(user_id)))
-    mail = ensure_fresh(user_id)
+    ensure_fresh(user_id)
     result = _attempt(user_id, plaid.ENGINE,
                       lambda: dict(zip(("added_transactions", "pending"), _pull_plaid(user_id, wait=False))))
-    if _mail_ready(mail):
+    if not store.is_cold(user_id):  # otherwise the run would drop every email finding: wait for the mail
         _rerun_and_alert(user_id, before)
     return "processed" if result.get("ok") else "error"
 
@@ -342,8 +353,8 @@ def nightly_refresh(user_id: str) -> dict:
     """The nightly job for one user: check the grant, pull every source, re-run the pipeline (price checks
     included) and alert on what is new. A user in demo mode keeps their saved connections unused: grant check only.
 
-    When the mail can't be read, the pipeline isn't re-run (it would drop every email finding); the bank data is
-    still pulled and the error shows on the connection."""
+    When the mail can't be read for now, the pipeline isn't re-run (it would drop every email finding); the bank
+    data is still pulled and the error shows on the connection. See ensure_fresh()."""
     grant = check_grant(user_id)
     u = store.user(user_id)
     if u.mode != "real":
@@ -359,7 +370,7 @@ def nightly_refresh(user_id: str) -> dict:
     if c.plaid:
         synced["plaid"] = _attempt(user_id, plaid.ENGINE,
                                    lambda: dict(zip(("added_transactions", "pending"), _pull_plaid(user_id, wait=False))))
-    rerun = _mail_ready(synced.get("email"))
+    rerun = not store.is_cold(user_id)
     added = _rerun_and_alert(user_id, before) if rerun else 0
     return {"grant": grant, "synced": synced, "alerts": added, "mode": "real", "rerun": rerun}
 
@@ -368,6 +379,7 @@ def disconnect(user_id: str, source: str) -> dict:
     """Forget the connection (and tell Nylas / Plaid, best effort) and drop that source's data from memory."""
     u, c = store.user(user_id), connections.get(user_id)
     if source == "email":
+        store.mark_warm(user_id)  # no mail left to read again
         drop(user_id, (nylas.ENGINE,))
         if c.email:
             release_grant(user_id, c.email.grant_id)

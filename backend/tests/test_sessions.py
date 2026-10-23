@@ -199,10 +199,11 @@ def test_delete_still_works_when_the_providers_fail(api, fake, monkeypatch):
 
 
 def test_single_user_delete_starts_over(client):
-    client.post("/api/demo/seed")
+    hulu = next(s for s in client.get("/api/subscriptions").json() if s["merchant"] == "Hulu")
+    client.post(f"/api/subscriptions/{hulu['id']}/keep")
     assert client.delete("/api/me").json()["ok"] is True
-    assert client.get("/api/subscriptions").json() == []  # empty until "Reset demo"
-    assert client.post("/api/demo/seed").json()["subscriptions"] >= 9
+    subs = {s["merchant"]: s["status"] for s in client.get("/api/subscriptions").json()}
+    assert len(subs) >= 9 and subs["Hulu"] != "kept"  # a fresh demo, as on startup
 
 
 # --- Daily model spend caps ----------------------------------------------------------------------------

@@ -50,17 +50,37 @@ def test_refreshes_connected_users_and_alerts_once(api, fake, connected):
     assert api.post("/api/alerts/seen", headers=h).json() == {"ok": True, "marked": 2, "unseen": 0}  # no body: all
 
 
-def test_lost_grant_is_flagged_and_results_are_kept(api, fake, connected):
+def test_unreachable_mail_keeps_the_saved_results(api, fake, connected):
     h, uid = connected
     before = {s["merchant"] for s in api.get("/api/subscriptions", headers=h).json()}
+    fake.nylas.messages_status = 503  # Nylas is having a bad night
+    code, line = nightly.run()
+    assert code == 0 and "1 not re-run (mail unreadable)" in line and "0 need a new email sign-in" in line
+    assert not api.get("/api/connections", headers=h).json()["email"]["needs_reconnect"]
+    # The mail couldn't be read, so the pipeline wasn't re-run: the saved results stay, Super Duolingo included.
+    assert {s["merchant"] for s in api.get("/api/subscriptions", headers=h).json()} == before
+
+
+def test_lost_grant_is_flagged_and_runs_without_mail(api, fake, connected):
+    h, uid = connected
     fake.nylas.grant_status = "gone"
     fake.nylas.messages_status = 401
     code, line = nightly.run()
-    assert code == 0 and "1 need a new email sign-in" in line and "1 not re-run (mail unreadable)" in line
+    assert code == 0 and "1 need a new email sign-in" in line and "0 not re-run" in line
     email = api.get("/api/connections", headers=h).json()["email"]
-    assert email["needs_reconnect"]
-    # The mail couldn't be read, so the pipeline wasn't re-run: yesterday's results stay.
-    assert {s["merchant"] for s in api.get("/api/subscriptions", headers=h).json()} == before
+    assert email["needs_reconnect"] and "Connect email again" in email["error"]
+    # Until the user signs in again, the inbox can't be read: the bank side still runs.
+    assert {s["merchant"] for s in api.get("/api/subscriptions", headers=h).json()} == {"Netflix"}
+
+
+def test_an_item_that_comes_back_does_not_alert(api, fake, connected):
+    h, _ = connected
+    trial = fake.nylas.messages.pop(0)  # the Super Duolingo trial mail is gone for a night
+    assert " 0 new alerts" in nightly.run()[1]
+    assert "Super Duolingo" not in {s["merchant"] for s in api.get("/api/subscriptions", headers=h).json()}
+    fake.nylas.messages.insert(0, trial)  # and back the next
+    assert " 0 new alerts" in nightly.run()[1]  # it was there before the first run: not news
+    assert api.get("/api/alerts", headers=h).json() == {"alerts": [], "unseen": 0}
 
 
 def test_invalid_grant_counts_too(api, fake, connected):

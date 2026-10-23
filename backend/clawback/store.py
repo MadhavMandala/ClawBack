@@ -25,15 +25,14 @@ Email bodies never touch the disk
 Two processes
   The nightly job (a separate process, python -m clawback.nightly) writes the same file. Each row has a version,
   and every save is conditional on it, so a stale copy never overwrites a newer one. The API calls refresh() at
-  the start of each request and reloads a user whose row the job changed; if the job saves a user while one of
-  that user's requests runs, the job's copy wins (see save()). The job saves with careful=True and redoes the
-  user from disk when the API saved first.
+  the start of each request and reloads a user whose row the job changed. If the job saves a user while one of
+  that user's requests runs, the API's save merges field by field (see save()). The job saves with careful=True
+  and redoes the user from disk when the API saved first.
 """
 
 from __future__ import annotations
 
 import dataclasses
-import hashlib
 import json
 import logging
 import threading
@@ -107,6 +106,15 @@ def serialize(u: UserData) -> dict:
     return data
 
 
+def _parts(u: UserData) -> dict[str, str]:
+    """Each field as canonical JSON: what is compared to see what changed, and what is written."""
+    return {k: json.dumps(v, separators=(",", ":"), sort_keys=True) for k, v in serialize(u).items()}
+
+
+def _text(parts: dict[str, str]) -> str:
+    return "{" + ",".join(f"{json.dumps(k)}:{v}" for k, v in sorted(parts.items())) + "}"
+
+
 _hints: dict[str, object] | None = None
 _adapters: dict[str, TypeAdapter] = {}
 
@@ -147,8 +155,9 @@ class SaveConflict(Exception):
 class _Entry:
     data: UserData
     version: int = 0  # the row version this copy was loaded from or last saved as
-    digest: str = ""  # hash of the last saved JSON, so unchanged users aren't written again
+    base: dict[str, str] = field(default_factory=dict)  # each field's JSON as last loaded or saved
     cold: bool = False  # loaded from disk in real mode: real emails must be read again before use
+    retry_at: float = 0.0  # while cold after a failed read: when to try reading the mail again
     used: float = field(default_factory=time.monotonic)  # last store.user() call, for evicting idle users
 
 
@@ -195,7 +204,7 @@ class Store:
         with self._lock:
             old = self._users.get(user_id)
             self._users[user_id] = _Entry(data, version=old.version if old else self._row_version(user_id) or 0,
-                                          digest=old.digest if old else "")
+                                          base=old.base if old else {})
             return data
 
     def use_real_data(self, user_id: str) -> UserData:
@@ -224,36 +233,57 @@ class Store:
         """Write the user if it changed. Only updates an existing row. Returns True when a row was written.
 
         A save only succeeds if the row is still at the version this copy was loaded from, so a stale copy never
-        overwrites another process's write. On a conflict, careful=True (the nightly job, which then redoes the
-        user) raises SaveConflict; otherwise (the API) the copy on disk wins: it is read again and this copy's
-        unsaved change is dropped, with a warning. The API reloads changed users at the start of each request,
-        so this only happens when the nightly job saves the same user during one request.
+        overwrites another process's write. On a conflict:
+          careful=True (the nightly job): raise SaveConflict; the job loads the user again and redoes it.
+          otherwise (the API): a three-way merge. Fields this copy changed since it was loaded keep this copy's
+          value; every other field takes the newer value on disk; then it saves again. So a click saved during
+          a nightly run keeps both the click and the night's new data (derived results are rebuilt on the next
+          pipeline run).
         """
-        with self._lock:
-            entry = self._users.get(user_id)
-            if entry is None:
-                return False
-            text = json.dumps(serialize(entry.data), separators=(",", ":"), sort_keys=True)
-            digest = hashlib.sha256(text.encode()).hexdigest()
-            if digest == entry.digest:
-                return False
-            blob = crypto.encrypt(text.encode())
+        for attempt in (1, 2):
+            with self._lock:
+                entry = self._users.get(user_id)
+                if entry is None:
+                    return False
+                parts = _parts(entry.data)
+                if parts == entry.base:
+                    return False
+                version = entry.version
+            blob = crypto.encrypt(_text(parts).encode())  # outside the lock: other users don't wait for this
             with db.tx() as c:
                 changed = c.execute("UPDATE users SET data = ?, version = version + 1 WHERE id = ? AND version = ?",
-                                    (blob, user_id, entry.version)).rowcount
-                if changed:
-                    entry.version = c.execute("SELECT version FROM users WHERE id = ?", (user_id,)).fetchone()[0]
-                exists = changed or c.execute("SELECT 1 FROM users WHERE id = ?", (user_id,)).fetchone()
-            if changed:
-                entry.digest = digest
-                return True
-            if not exists:  # deleted, or never created: nothing to save
+                                    (blob, user_id, version)).rowcount
+                row = c.execute("SELECT version FROM users WHERE id = ?", (user_id,)).fetchone()
+            if row is None:  # deleted, or never created: nothing to save
                 return False
-            if careful:
-                raise SaveConflict(user_id)
-            log.warning("a user changed on disk during this request; kept the saved copy and dropped this change")
-            self._users[user_id] = self._load(user_id) or _Entry(UserData())
+            with self._lock:
+                if changed:
+                    if self._users.get(user_id) is entry:
+                        entry.version, entry.base = row[0], parts
+                    return True
+                if careful:
+                    raise SaveConflict(user_id)
+                if attempt == 1 and self._merge_into_disk_copy(user_id, entry, parts):
+                    continue
+                log.warning("a user changed on disk during this request and could not be merged; kept the disk copy")
+                self._users[user_id] = self._load(user_id) or _Entry(UserData())
+                return False
+        return False
+
+    def _merge_into_disk_copy(self, user_id: str, mine: _Entry, parts: dict[str, str]) -> bool:
+        disk = self._load(user_id)
+        if disk is None:
             return False
+        for name, text in parts.items():
+            if text != mine.base.get(name):  # this copy changed it
+                setattr(disk.data, name, getattr(mine.data, name))
+        # Mail that is never written stays as this process has it.
+        disk.data.emails = ([e for e in disk.data.emails if e.source in PERSISTED_EMAIL_SOURCES]
+                            + [e for e in mine.data.emails if e.source not in PERSISTED_EMAIL_SOURCES])
+        disk.cold = mine.cold
+        self._users[user_id] = disk
+        log.warning("a user changed on disk during this request; merged the two copies")
+        return True
 
     def refresh(self, user_id: str) -> None:
         """Reload the user if another process (the nightly job) saved a newer version."""
@@ -276,6 +306,16 @@ class Store:
         with self._lock:
             if entry := self._users.get(user_id):
                 entry.cold = False
+
+    def retry_due(self, user_id: str) -> bool:
+        with self._lock:
+            entry = self._users.get(user_id)
+            return entry is None or time.monotonic() >= entry.retry_at
+
+    def retry_later(self, user_id: str, seconds: float) -> None:
+        with self._lock:
+            if entry := self._users.get(user_id):
+                entry.retry_at = time.monotonic() + seconds
 
     def version(self, user_id: str) -> int:
         with self._lock:
@@ -305,8 +345,7 @@ class Store:
         except (crypto.CryptoError, ValueError) as exc:
             log.warning("stored data for a user could not be read (%s); starting it empty", exc)
             return _Entry(UserData(), version=row["version"])
-        digest = hashlib.sha256(text.encode()).hexdigest()
-        return _Entry(data, version=row["version"], digest=digest, cold=data.mode == "real")
+        return _Entry(data, version=row["version"], base=_parts(data), cold=data.mode == "real")
 
 
 store = Store()
