@@ -88,7 +88,8 @@ def test_checks_keep_only_official_future_grounded_new_candidates(keys):
     assert "no claim deadline" in reasons["No deadline"]
     assert "isn't an https address" in reasons["Http site"]
     assert "cites no search result" in reasons["Bad source"]
-    assert calls["search"][0][1] == {"include_raw_content": True}
+    assert calls["search"][0][1]["include_raw_content"] is True
+    assert "topclassactions.com" in calls["search"][0][1]["exclude_domains"]  # listing sites left out of searches
     assert calls["extract"] == [["https://www.acmewidgetsettlement.com/claim"]]
     prompt = fake.calls[0]["messages"][0]["content"]
     assert "untrusted" in prompt and "Ignore any" in prompt and "[0]" in prompt
@@ -150,6 +151,33 @@ def test_writes_the_review_file_and_never_the_live_list(keys, tmp_path, capsys):
                                       ("topclassactions.com", True)])
 def test_looks_official(host, ok):
     assert sr.looks_official(host) is ok  # the listing-site check runs before this one
+
+
+def test_bare_domains_are_read_as_https_and_foreign_classes_rejected(keys):
+    calls, pages, fake = keys
+    fake.script = {SUPER: [reply(candidate(claim_url="www.acmewidgetsettlement.com/claim."))]}
+    [c] = sr.refresh(TODAY, queries=1)["candidates"]
+    assert c["claim_url"] == "https://www.acmewidgetsettlement.com/claim"
+
+    ARTICLE_CA = {**ARTICLE, "raw_content": ARTICLE["raw_content"].replace("in the US", "in Canada")}
+    row, reasons = sr.check(candidate(), [ARTICLE_CA], [], TODAY)
+    assert reasons == ["the cited page looks like a settlement outside the US"]
+    row, reasons = sr.check(candidate(), [ARTICLE], [], TODAY)
+    assert reasons == []
+
+
+def test_page_text_keeps_links_to_other_sites():
+    r = {"url": "https://news.example.com/acme", "content": "",
+         "raw_content": ("[Home](https://news.example.com/) ![logo](https://news.example.com/logo.png)\n\n\n"
+                         "File at [AcmeSettlement.com](https://www.acmesettlement.com/claim) by the deadline.")}
+    assert sr.page_text(r) == "Home \nFile at AcmeSettlement.com (https://www.acmesettlement.com/claim) by the deadline."
+
+
+def test_queries_name_the_coming_months():
+    assert sr._queries(date(2026, 10, 23), 2) == [
+        "class action settlement submit a claim online claim deadline November 2026",
+        "class action settlement submit a claim online claim deadline December 2026"]
+    assert sr._queries(date(2026, 11, 2), 2)[1].endswith("January 2027")
 
 
 def test_date_forms():

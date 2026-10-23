@@ -36,12 +36,14 @@ from ..tools import tavily
 STAGE = "settlements_refresh"
 OUT = Path(rules.__file__).resolve().parent / "review" / "settlements_candidates.json"
 TEXT_CHARS = 6000  # page text per search result handed to the model
+# Listing sites name deadlines but link to their own articles, not to the claim site, so searches leave them out
+# (exclude_domains) and land on settlement websites, whose own pages state the deadline.
 QUERIES = (
-    "open class action settlement claim form deadline {month} {year} consumers file a claim",
-    "new class action settlements you can file a claim for without proof {year}",
-    "class action settlement claim deadline {next_month} {year} official settlement website",
-    "data breach class action settlement claim deadline {year} file claim",
-    "consumer product refund class action settlement open claims {year}",
+    "class action settlement submit a claim online claim deadline {next_month} {year}",
+    "class action settlement submit a claim online claim deadline {month2} {year2}",
+    "settlement website file a claim deadline {next_year} class members",
+    "consumer class action settlement claim form deadline {year} purchased",
+    "data breach class action settlement claim deadline {year} file a claim",
 )
 # Listing, news and social sites: useful to find settlements, never the official claim site.
 NOT_OFFICIAL = ("classaction.org", "topclassactions.com", "claimdepot.com", "openclassactions.com",
@@ -131,6 +133,16 @@ def _text(r: dict) -> str:
     return f"{r.get('title', '')}\n{r.get('content', '')}\n{r.get('raw_content', '')}"
 
 
+_ABROAD = re.compile(r"\b(Canada|Canadian|Ontario|Quebec|British Columbia|Alberta|Australia|Australian|"
+                     r"United Kingdom|England|Scotland|New Zealand)\b")
+_US = re.compile(r"\b(United States|U\.S\.|USA|U\.S\.A\.)|\bUS (residents|citizens|consumers)\b")
+
+
+def _outside_us(text: str) -> bool:
+    """The page names another country and never the United States."""
+    return bool(_ABROAD.search(text or "")) and not _US.search(text or "")
+
+
 def _slug(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:60]
 
@@ -152,9 +164,15 @@ def check(c: dict, results: list[dict], live: list, today: date) -> tuple[dict, 
         reasons.append(f"deadline {deadline.isoformat()} has passed")
     elif result is not None and not mentions_date(_text(result), deadline):
         reasons.append("deadline isn't written in the cited page")
-    url = str(c.get("claim_url") or "").strip()
+    url = str(c.get("claim_url") or "").strip().rstrip(".,;)")
+    if re.fullmatch(r"(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}(/\S*)?", url, re.I):
+        url = "https://" + url  # written as a bare domain ("www.acmesettlement.com"); still checked below
     host = host_of(url)
-    if not url.startswith("https://") or not host:
+    if result is not None and _outside_us(_text(result)):
+        reasons.append("the cited page looks like a settlement outside the US")
+    if not url:
+        reasons.append("the text names no claim site")
+    elif not url.startswith("https://") or not host:
         reasons.append("claim site isn't an https address")
     else:
         in_results = any(host_of(r.get("url", "")) == host or host in _text(r).lower() for r in results)
@@ -212,12 +230,31 @@ def verify_on_site(user_id: str, rows: list[dict]) -> None:
 # --- The run ------------------------------------------------------------------------------------------
 
 def _queries(today: date, n: int) -> list[str]:
-    nxt = MONTHS[today.month % 12]
-    return [q.format(month=MONTHS[today.month - 1], next_month=nxt, year=today.year) for q in QUERIES[:n]]
+    in_two = (today.month + 1) % 12  # index of the month after next
+    return [q.format(next_month=MONTHS[today.month % 12], month2=MONTHS[in_two],
+                     year=today.year, year2=today.year + (today.month + 2 > 12), next_year=today.year + 1)
+            for q in QUERIES[:n]]
+
+
+def page_text(r: dict) -> str:
+    """The result's text for the model: images dropped, a link kept as its text plus its address when it points to
+    another site (that is how an article names the official site), and cut around the first "deadline"."""
+    text = f"{r.get('content', '')}\n{r.get('raw_content', '')}"
+    own = host_of(r.get("url", ""))
+    text = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", text)
+
+    def link(m: re.Match) -> str:
+        label, url = m.group(1), m.group(2).split()[0] if m.group(2).split() else ""
+        return f"{label} ({url})" if url.startswith("http") and host_of(url) != own else label
+    text = re.sub(r"\[([^\]]*)\]\(([^)]*)\)", link, text)
+    text = re.sub(r"[ \t]+", " ", re.sub(r"\n\s*\n+", "\n", text)).strip()
+    at = text.lower().find("deadline")
+    start = max(0, at - 2000) if at >= 0 else 0
+    return text[start:start + TEXT_CHARS]
 
 
 def _numbered(results: list[dict], offset: int) -> str:
-    return "\n\n".join(f"[{offset + i}] {r.get('title', '')} ({r.get('url', '')})\n{_text(r)[:TEXT_CHARS]}"
+    return "\n\n".join(f"[{offset + i}] {r.get('title', '')} ({r.get('url', '')})\n{page_text(r)}"
                        for i, r in enumerate(results))
 
 
@@ -241,7 +278,7 @@ def refresh(today: date, queries: int = 3, verify: bool = True, user_id: str = "
     results: list[dict] = []
     raw: list[dict] = []
     for q in _queries(today, queries):
-        found = tavily.search(user_id, STAGE, q, include_raw_content=True)
+        found = tavily.search(user_id, STAGE, q, include_raw_content=True, exclude_domains=list(NOT_OFFICIAL))
         report["queries"].append({"query": q, "results": [r.get("url") for r in found]})
         if not found:
             continue
