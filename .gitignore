@@ -5,7 +5,7 @@
 # TEMPORARY while the repo is private: the team shares test keys in backend/.env.
 # Remove this line and regenerate the keys before making the repo public.
 !backend/.env
-# Saved Gmail / Plaid tokens (plaintext, local only)
+# Local database, its encryption key, and any old plaintext connections file
 backend/.local/
 
 # Python
