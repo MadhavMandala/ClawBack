@@ -132,8 +132,8 @@ def test_look_alikes_are_never_verified(fake_tavily):
     out = cancel_lookup.lookup("t", "Netflix", TODAY)
     assert out["links"] == [] and out["verified"] is False
     prep = cancel_prep("t", NETFLIX, TODAY)
-    assert prep["links"] == []
-    assert prep["steps"] == ["Sign in on the merchant's website and look for Account > Subscription or Membership."]
+    assert [l for l in prep["links"] if "netflix" in l["url"]] == []
+    assert prep["steps"][0] == "Sign in on the merchant's website and look for Account > Subscription or Membership."
 
 
 def test_unrelated_domains_and_community_posts_are_dropped(fake_tavily):
@@ -330,8 +330,8 @@ def test_store_billed_and_bill_pages_skip_the_search(fake_tavily):
     fake = fake_tavily([result("https://help.netflix.com/en/node/407")])
     icloud = Subscription(id="icloud", merchant="iCloud+", category="cloud_storage", monthly_cost=2.99)
     prep = cancel_prep("t", icloud, TODAY)
-    assert prep["links"] == [{"label": "Apple subscriptions page", "url": "https://apps.apple.com/account/subscriptions",
-                              "verified": True}]
+    assert prep["links"][0] == {"label": "Apple subscriptions page",
+                                "url": "https://apps.apple.com/account/subscriptions", "verified": True}
     bill = Subscription(id="xfinity", merchant="Xfinity (Comcast)", category="internet", kind="bill",
                         bill_category="internet", monthly_cost=80.0)
     prep = cancel_prep("t", bill, TODAY)

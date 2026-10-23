@@ -529,6 +529,73 @@ def merchant_site(name: str) -> MerchantSite | None:
     return None
 
 
+# ---------------------------------------------------------------- auto_renewal.json
+
+
+class FederalLaw(_Model):
+    law: str
+    title: str
+    rule: str
+    user_right: str
+    quote: str
+    source_url: HttpsUrl
+    extra_source_urls: tuple[HttpsUrl, ...] = ()
+    checked_on: date
+    verified: bool
+
+
+class FtcRuleStatus(_Model):
+    in_force: bool
+    status: str
+    source_urls: tuple[HttpsUrl, ...] = Field(min_length=1)
+    checked_on: date
+    notes: str = ""
+
+
+class FederalRules(_Model):
+    rosca: FederalLaw
+    ftc_negative_option_rule: FtcRuleStatus
+
+
+class StateAutoRenewal(_Model):
+    state: str = Field(pattern=r"^[A-Z]{2}$")
+    name: str
+    law: str
+    title: str
+    effective: date | None
+    rule: str
+    user_right: str  # one plain sentence a user can rely on; hedged where the law has limits
+    applies_when: Literal["any", "trial", "annual"] = "any"
+    exclude_categories: tuple[str, ...] = ()  # Subscription.category values the law exempts
+    applies_to: str
+    price_increase_right: str | None = None
+    quote: str
+    source_url: HttpsUrl
+    extra_source_urls: tuple[HttpsUrl, ...] = ()
+    checked_on: date
+    verified: bool
+    confidence: Literal["high", "medium", "low"]
+    notes: str = ""
+
+
+class AutoRenewalFile(_Model):
+    note: str
+    checked_on: date
+    federal: FederalRules
+    states: tuple[StateAutoRenewal, ...]
+
+
+@lru_cache
+def auto_renewal() -> AutoRenewalFile:
+    return AutoRenewalFile.model_validate(_load("auto_renewal.json"))
+
+
+def auto_renewal_for(state: str | None) -> StateAutoRenewal | None:
+    """The verified auto-renewal law row for a two-letter state code ("ca" works too), else None."""
+    code = (state or "").strip().upper()
+    return next((s for s in auto_renewal().states if s.state == code and s.verified), None)
+
+
 # ---------------------------------------------------------------- loading
 
 
@@ -539,12 +606,13 @@ def _load(name: str) -> dict:
 
 def clear_cache() -> None:
     """Drop cached files (e.g. after editing the JSON in a running process)."""
-    for fn in (retailers, flights, disputes, bank_fees, bills, settlements, merchant_sites):
+    for fn in (retailers, flights, disputes, bank_fees, bills, settlements, merchant_sites, auto_renewal):
         fn.cache_clear()
 
 
 __all__ = [
     "MerchantSite", "merchant_site", "merchant_sites", "on_domains",
+    "StateAutoRenewal", "auto_renewal", "auto_renewal_for",
     "Airline", "BankFee", "BillProvider", "DisputeRule", "Retailer", "Settlement",
     "airline_for", "bank_fee_for", "bank_fees", "bill_provider_for", "bills", "clear_cache",
     "delay_compensation", "dispute_deadline", "dispute_rule", "disputes", "fee_kind_for", "flights",

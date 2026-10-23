@@ -17,6 +17,7 @@ from .findings import actions, rulebook
 from .findings.detect import sort_key
 from .models import ActionPrep, Finding
 from .missing import REGISTRY, Missing, missing
+from .pipeline import rights
 from .pipeline.cancel import cancel_prep
 from .pipeline.recommend import alternatives
 from .pipeline.run import best_saving, run, summary
@@ -33,7 +34,9 @@ USER = "demo"
 def seed(today: date | None = None) -> dict:
     """Switch to demo mode and load the fake data. Saved connections stay saved but unused."""
     today = today or date.today()
+    state = store.user(USER).state  # a setting, not data: it survives reseeding
     u = store.reset(USER)
+    u.state = state
     u.transactions = demo_data.transactions(today)
     u.emails = demo_data.emails(today)
     book = rulebook.current()
@@ -285,6 +288,28 @@ def email_webhook(payload: dict):
 @app.post("/api/ingest/plaid/webhook")
 def plaid_webhook(payload: dict):
     plaid.handle_webhook(payload)  # raises Missing -> 501
+
+
+# --- Settings -------------------------------------------------------------------------------------
+
+class StateSetting(BaseModel):
+    state: str | None = None  # two-letter US state code, e.g. "CA"; null clears it
+
+
+@app.get("/api/settings")
+def get_settings():
+    """The user's state (for state auto-renewal rules), its rule if we have one, and every state to pick from."""
+    return rights.settings_view(store.user(USER).state)
+
+
+@app.post("/api/settings/state")
+def set_state(body: StateSetting):
+    try:
+        code = rights.normalize_state(body.state)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    store.user(USER).state = code
+    return rights.settings_view(code)
 
 
 # --- Drafts in the user's own mailbox (never sent) ------------------------------------------------
