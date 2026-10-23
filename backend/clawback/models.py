@@ -148,9 +148,25 @@ class TraceStep(BaseModel):
     at: datetime
     stage: str
     engine: str  # model ID, "code", "tavily", or "rules"
-    status: str  # ok | missing | error
+    status: str  # ok | missing | error | fallback
+    tier: str = ""  # fast | fast_fallback | mid | reason | vision ("" for non-model steps)
     ms: float = 0.0
     input_tokens: int = 0
     output_tokens: int = 0
+    reasoning_tokens: int = 0
     cost_usd: float = 0.0
     note: str = ""
+
+
+class Fact(BaseModel):
+    """What one email says about a subscription. Dates here are computed by code, never by a model."""
+
+    email_id: str
+    received: date
+    kind: str  # delivery_order | inactivity | engagement | price_change | trial | store_receipt | other
+    merchant: str | None = None
+    amount: float | None = None
+    saved_amount: float | None = None
+    old_price: float | None = None
+    new_price: float | None = None
+    trial_end: date | None = None

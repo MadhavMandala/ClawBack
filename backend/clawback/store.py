@@ -13,7 +13,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date
 
-from .models import Email, Finding, Subscription, TraceStep, Transaction
+from .models import Email, Fact, Finding, Subscription, TraceStep, Transaction
 
 
 @dataclass
@@ -40,6 +40,8 @@ class UserData:
     bill_info: dict[str, dict] = field(default_factory=dict)
     # Plaid /transactions/sync position of the transactions held in memory. None = pull from the start.
     plaid_cursor: str | None = None
+    # Extracted facts by email id, so each email goes to a model once. Reset demo clears it.
+    facts: dict[str, Fact] = field(default_factory=dict)
 
 
 class MemoryStore:
@@ -56,7 +58,8 @@ class MemoryStore:
     def use_real_data(self, user_id: str) -> UserData:
         """Leave demo mode: drop the seeded data and everything derived from it. Uploaded statements stay.
 
-        Demo trace rows go on the next pipeline run (pipeline/run.py keeps only Gmail / Plaid rows).
+        Demo trace rows go too; Nylas / Plaid rows stay. Cached email facts stay: they are keyed by email id,
+        and demo emails are gone.
         """
         u = self.user(user_id)
         if u.mode != "real":
@@ -69,6 +72,7 @@ class MemoryStore:
             u.cancel_pending = {}
             u.findings, u.finding_status, u.got_back = {}, {}, {}
             u.plaid_cursor = None
+            u.trace = [t for t in u.trace if t.engine in ("nylas", "plaid")]  # trace.SOURCE_ENGINES (no import: cycle)
         return u
 
 

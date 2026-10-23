@@ -13,23 +13,88 @@ MISSING [cancel-confirmation]: nothing checks that the charge actually stopped.
 
 from __future__ import annotations
 
+import re
 from datetime import date
 
+from .. import llm
 from ..merchants import APPLE_SUBSCRIPTIONS_URL, GOOGLE_PLAY_SUBSCRIPTIONS_URL, by_name
 from ..models import Subscription
 from ..tools import tavily
 
 
-def draft_email(sub: Subscription) -> dict:
+PLACEHOLDER = "[your account email]"
+DRAFT_STATUS = "MISSING [email-drafts]: not saved to your mailbox yet. Copy it, or use the merchant's cancel page."
+EMAIL_SCHEMA = {
+    "type": "object",
+    "properties": {"subject": {"type": "string"}, "body": {"type": "string"}},
+    "required": ["subject", "body"],
+    "additionalProperties": False,
+}
+EMAIL_PROMPT = """Write a short, polite email asking {merchant} to cancel a subscription.
+Facts (use only these; do not invent account numbers, dates, prices or links):
+{facts}
+Rules: keep the exact text {placeholder} where the account email goes; no links; under 120 words;
+ask them to confirm the cancellation in writing and make sure it does not renew."""
+
+
+def _template(sub: Subscription) -> dict:
     return {
         "subject": f"Please cancel my {sub.merchant} subscription",
         "body": (
             f"Hello,\n\nPlease cancel my {sub.merchant} subscription, effective immediately, and make sure it "
             "does not renew. Please confirm the cancellation in writing by replying to this email.\n\n"
-            "Account email: [your account email]\n\nThank you."
+            f"Account email: {PLACEHOLDER}\n\nThank you."
         ),
-        "status": "MISSING [email-drafts]: not saved to your mailbox yet. Copy it, or use the merchant's cancel page.",
+        "status": DRAFT_STATUS,
+        "written_by": "template",
     }
+
+
+def _facts(sub: Subscription) -> str:
+    """Facts computed by code, handed to the model as plain lines."""
+    lines = [f"- Service: {sub.merchant}", f"- Monthly cost: ${sub.monthly_cost:.2f}"]
+    if sub.price_change:
+        pc = sub.price_change
+        lines.append(f"- Price went from ${pc.old_amount:.2f} to ${pc.new_amount:.2f} on {pc.changed_on.isoformat()}")
+    if sub.next_expected:
+        lines.append(f"- Next charge expected: {sub.next_expected.isoformat()}")
+    if sub.status == "trial":
+        lines.append("- This is a free trial; they do not want it to convert to a paid plan")
+    return "\n".join(lines)
+
+
+LINK = re.compile(r"https?://|www\.|\b[a-z0-9-]+\.(com|net|org|io|co|tv|app)\b", re.I)
+
+
+def _numbers(text: str) -> set[int]:
+    return {int(n) for n in re.findall(r"\d+", text)}
+
+
+def _acceptable(subject: str, body: str, facts: str) -> bool:
+    """Placeholder kept, no links of any form, and no numbers (dates, account numbers, prices) not in our facts."""
+    text = f"{subject}\n{body}"
+    return (
+        PLACEHOLDER in body
+        and not LINK.search(text)
+        and _numbers(text) <= _numbers(facts)
+        and len(body) < 1500
+    )
+
+
+def write_email(user_id: str, sub: Subscription) -> dict:
+    """Ultra writes the cancellation email from code-computed facts; the template is the fallback."""
+    if not llm.available():
+        return _template(sub)
+    facts = _facts(sub)
+    data, res = llm.chat_json(
+        user_id, "cancel_email", "reason",
+        [{"role": "user", "content": EMAIL_PROMPT.format(merchant=sub.merchant, facts=facts, placeholder=PLACEHOLDER)}],
+        EMAIL_SCHEMA,
+    )
+    subject, body = (data or {}).get("subject"), (data or {}).get("body")
+    if not (isinstance(subject, str) and isinstance(body, str) and _acceptable(subject, body, facts)):
+        return _template(sub)
+    return {"subject": subject.strip(), "body": body.strip(), "status": DRAFT_STATUS, "written_by": res.model}
 
 
 def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
@@ -67,7 +132,7 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
         "next_charge": sub.next_expected.isoformat() if sub.next_expected else None,
         "links": links,
         "steps": steps,
-        "email": draft_email(sub),
+        "email": write_email(user_id, sub),
         "missing": missing,
         "prepared_on": today.isoformat(),
     }

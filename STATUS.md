@@ -5,8 +5,10 @@ subscriptions, bills, bank charge problems (duplicate charges, fees), refunds ow
 refunds) and class-action settlements. It runs end to end on **made-up demo data for one fake user** by default.
 With Nylas and Plaid keys in `backend/.env`, it can also read the user's own email from any provider (read-only,
 through Nylas) and their bank transactions (Plaid). The first real connection replaces the demo data. Those two
-connections are covered by mocked tests only: nobody has run them against the live Nylas or Plaid APIs yet. No AI
-model has been called live yet either.
+connections are covered by mocked tests only: nobody has run them against the live Nylas or Plaid APIs yet.
+With a Token Factory key set, the Nemotron model tiers make live calls; all five tiers were checked live on
+2026-10-22 (`python -m clawback.llm --check`). The findings' own model calls (purchases, flight details, price
+checks) haven't been run live yet.
 
 Every gap is marked with the word `MISSING`:
 - in the code (`grep -rn MISSING backend frontend/app`),
@@ -14,7 +16,7 @@ Every gap is marked with the word `MISSING`:
 - on the dashboard (the yellow "Prototype" banner lists everything below).
 
 The list below is generated from `backend/clawback/missing.py`, the single source of truth:
-`cd backend && .venv/Scripts/python -m clawback.missing`.
+`cd backend && .venv/bin/python -m clawback.missing`.
 
 ## Works today
 
@@ -35,18 +37,19 @@ The list below is generated from `backend/clawback/missing.py`, the single sourc
 | Flags | unused, membership losing money, two plans doing the same job, trial about to convert, price went up | `pipeline/flags.py` |
 | Free-trial detection from email | Finds trials before the first charge, with the end date computed in code | `pipeline/run.py` |
 | Apple-billed charges | Names an `APPLE.COM/BILL` charge by matching an Apple receipt email with the same amount (demo only) | `pipeline/recurring.py` |
-| Cancel prep | Link + steps + cancellation email text. Never cancels or sends anything | `pipeline/cancel.py` |
-| "Find cheaper" hints | Code-computed hints (e.g. break-even orders per month). The model + web search path is written but untested | `pipeline/recommend.py` |
+| Cancel prep | Link + steps + cancellation email written by Nemotron 3 Ultra (template fallback). Never cancels or sends anything | `pipeline/cancel.py` |
+| Email extraction | Nemotron 3.5 Lightning reads each email once (cached) into facts with a strict JSON schema; Nano and regexes as fallbacks | `pipeline/extract.py` |
+| "Find cheaper" | Tavily finds current plans, Nemotron 3 Super lists them, Nemotron 3 Ultra fits them to your usage; every option cites a Tavily page. Code hints without keys | `pipeline/recommend.py` |
 | Statement CSV upload | Real transactions without any bank approval, in demo or real mode | `sources/statements.py` |
 | Email connection, any provider (read-only) | One "Connect email" button: Nylas Hosted OAuth with its provider picker (Gmail, Outlook / Microsoft 365, Yahoo, iCloud, IMAP), CSRF `state` check, a clear "reconnect" error when the grant expires. Sync reads the last 180 days of subscription-like mail (up to 150 messages): native search on Gmail and Outlook, keyword rules elsewhere. Untested live | `sources/nylas.py` |
 | Bank connection (Plaid) | Link token, public-token exchange, `/transactions/sync` cursor loop with a wait for brand-new Items, added / modified / removed changes, Sandbox or Production. Untested live | `sources/plaid.py` |
 | Demo vs real mode | First real connection drops the demo data so the two never mix; `POST /api/demo/seed` switches back. `GET /api/connections` shows the mode and each connection | `connect.py`, `store.py` |
 | Saved connections | Tokens, sync cursor, account and timestamps survive a restart; on startup ClawBack re-syncs them. Plaintext, local only | `connections.py` → `backend/.local/connections.json` |
 | Disconnect | Forgets the connection, deletes the Nylas grant / removes the Plaid Item (best effort), drops that source's data from memory | `connect.py` |
-| Model trace | Every step, including each Nylas / Plaid call, logs its engine, time, tokens and cost. Shown on the dashboard | `trace.py` |
-| Token Factory client | Exact Nemotron model IDs, prices and cost tracking. Untested without a key | `llm.py` |
-| Dashboard | One page: totals, subscription cards, check-ins, cancel / cheaper panels, trace, MISSING banner | `frontend/app/page.tsx` |
-| Tests | 60 backend tests: the demo data, every findings detector (with the negative cases), the findings API, and email (Nylas) and Plaid against fake APIs (no network). `tests/test_rules.py` checks the rules data | `backend/tests/` |
+| Model trace | Every step, including each Nylas / Plaid call, logs its tier, engine, time, tokens (incl. thinking) and cost. Sync rows and click-time rows survive re-runs. Shown on the dashboard | `trace.py` |
+| Token Factory client | Five model tiers, verified live; strict JSON, fallbacks, retries, timeouts; `python -m clawback.llm --check` | `llm.py` |
+| Dashboard | One page: monthly total and what you could get back, money owed to you, subscriptions and bills in groups, check-ins, cancel / cheaper / negotiate panels, connect buttons, trace, MISSING banner | `frontend/app/page.tsx` |
+| Tests | 193 offline backend tests (no network; a fake model client): the demo data, every findings detector (with the negative cases), the findings API, email (Nylas) and Plaid against fake APIs, model tiers and fallbacks, extraction, "find cheaper" and the cancel email. `tests/test_rules.py` checks the rules data. Plus an opt-in live extraction test (`CLAWBACK_LIVE=1`) | `backend/tests/` |
 
 ## MISSING
 
@@ -54,12 +57,11 @@ P0 = needed for the hackathon demo. P1 = needed for a convincing submission. P2 
 
 | Priority | Area | What is missing | Where |
 |---|---|---|---|
+| Priority | Area | What is missing | Where |
 | P0 | Actions | Save cancellation emails as drafts in the user's mailbox (Nylas drafts API). The user always presses send. | `backend/clawback/sources/nylas.py, POST /api/subscriptions/{id}/email-draft` |
 | P0 | Actions | 'Find something cheaper': Tavily pulls current plans and prices, Nemotron Ultra matches them to your usage | `backend/clawback/pipeline/recommend.py` |
 | P0 | Actions | Find the merchant's real cancel page / support email with Tavily and cite it | `backend/clawback/pipeline/cancel.py` |
 | P0 | Data sources | Plaid Production access for real banks, plus OAuth-bank support (redirect URI in /link/token/create and a return page in the frontend) | `Plaid Dashboard, backend/clawback/sources/plaid.py, frontend` |
-| P0 | Pipeline | Nemotron extraction of receipts / renewal / trial emails into structured facts | `backend/clawback/pipeline/extract.py` |
-| P0 | Pipeline | Confirm Token Factory honours response_format=json_schema and chat_template_kwargs on Nemotron models | `backend/clawback/llm.py` |
 | P0 | Safety | Turn on Zero Data Retention in Token Factory before any real user email is processed | `Token Factory profile settings` |
 | P0 | Storage | Real database (Supabase Postgres) with per-user row-level security; currently an in-memory dict that resets on restart | `backend/clawback/store.py` |
 | P0 | Storage | User accounts / login (Supabase Auth). Everything is one hard-coded 'demo' user right now | `backend/clawback/main.py` |

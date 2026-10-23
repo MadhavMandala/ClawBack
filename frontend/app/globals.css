@@ -324,6 +324,7 @@ th.num, td.num { text-align: right; white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
 .trace-table tr.missing td { color: var(--missing-ink); }
 .trace-table tr.error td { color: var(--loss); }
+.trace-table tr.fallback td { color: var(--missing-ink); font-style: italic; }
 .missing-table { color: var(--ink); }
 
 .foot { padding-block: 24px 48px; font-size: var(--t-xs); color: var(--muted); }

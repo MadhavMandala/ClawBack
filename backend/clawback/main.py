@@ -23,6 +23,7 @@ from .sources import nylas, plaid
 from .sources.net import SourceError
 from .sources.statements import parse_csv
 from .store import store
+from .trace import view
 
 # MISSING [auth]: one hard-coded user. Replace with Supabase Auth and a demo login for judges.
 USER = "demo"
@@ -89,7 +90,7 @@ def missing_list():
 
 @app.get("/api/trace")
 def trace():
-    return store.user(USER).trace
+    return view(USER)
 
 
 # --- Dashboard ------------------------------------------------------------------------------------

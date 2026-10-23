@@ -335,15 +335,15 @@ export default function Home() {
             <span className="trace-meta num">{trace.length} steps, {costLabel(trace)} in model costs</span>
             <Chevron className="chev" />
           </summary>
-          <p className="fine-print">Each step records which engine ran it, how long it took and what it cost. Rows marked missing are stand-ins for parts not built yet.</p>
+          <p className="fine-print">Each step records which engine ran it, how long it took and what it cost. Rows marked missing are stand-ins for parts not built yet; fallback rows are where a backup model took over.</p>
           <div className="table-scroll">
             <table className="trace-table">
-              <thead><tr><th>Step</th><th>Engine</th><th>Result</th><th className="num">Time</th><th className="num">Tokens in, out</th><th className="num">Cost</th><th>Note</th></tr></thead>
+              <thead><tr><th>Step</th><th>Tier</th><th>Engine</th><th>Result</th><th className="num">Time</th><th className="num">Tokens in, out</th><th className="num">Cost</th><th>Note</th></tr></thead>
               <tbody>
                 {trace.map((t, i) => (
                   <tr key={i} className={t.status}>
-                    <td>{t.stage}</td><td><code>{t.engine}</code></td><td>{t.status}</td>
-                    <td className="num">{t.ms.toFixed(1)} ms</td><td className="num">{t.input_tokens}, {t.output_tokens}</td>
+                    <td>{t.stage}</td><td>{t.tier || "—"}</td><td><code>{t.engine}</code></td><td>{t.status}</td>
+                    <td className="num">{t.ms.toFixed(1)} ms</td><td className="num">{t.input_tokens}, {t.output_tokens}{t.reasoning_tokens > 0 ? ` (+${t.reasoning_tokens} thinking)` : ""}</td>
                     <td className="num">${t.cost_usd.toFixed(5)}</td><td>{t.note}</td>
                   </tr>
                 ))}

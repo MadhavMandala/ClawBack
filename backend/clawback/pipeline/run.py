@@ -15,7 +15,7 @@ from ..findings.detect import run_findings
 from ..merchants import by_name
 from ..models import Cadence, Subscription
 from ..store import store
-from ..trace import keep_only_sources, timed
+from ..trace import start_run, timed
 from .extract import extract_all
 from .flags import flag_one, flag_overlaps
 from .recurring import detect_series, resolve_store_billed
@@ -27,7 +27,7 @@ from .value import membership_value
 def run(user_id: str, today: date | None = None) -> dict:
     today = today or date.today()
     u = store.user(user_id)
-    keep_only_sources(user_id)  # Nylas / Plaid rows from the last sync stay visible
+    start_run(user_id)  # Nylas / Plaid sync rows and the newest on-click rows stay visible
     rules = rulebook.current()
     bill_for = rules.bill_provider_for if rules else None
 
