@@ -18,7 +18,9 @@ from .findings.detect import sort_key
 from .models import ActionPrep, Finding
 from .missing import REGISTRY, Missing, missing
 from .pipeline.cancel import cancel_prep
+from .pipeline.confirm import mark_done
 from .pipeline.recommend import alternatives
+from .pipeline.recovered import history
 from .pipeline.run import best_saving, run, summary
 from .sources import nylas, plaid
 from .sources.net import SourceError
@@ -39,6 +41,7 @@ def seed(today: date | None = None) -> dict:
     book = rulebook.current()
     if book:
         u.emails += demo_data.settlement_story(today, u.transactions, u.emails, book)
+    demo_data.decisions(u, today)  # what the demo user already did: one cancellation, started weeks ago
     return run(USER, today)
 
 
@@ -198,6 +201,7 @@ def dismiss_finding(finding_id: str):
     u = store.user(USER)
     u.finding_status[f.id] = f.status = "dismissed"
     u.got_back.pop(f.id, None)
+    u.done_on.pop(f.id, None)
     return f
 
 
@@ -207,12 +211,17 @@ class Done(BaseModel):
 
 @app.post("/api/findings/{finding_id}/done", response_model=Finding)
 def finding_done(finding_id: str, body: Done | None = None):
-    """Mark it done. `got_back` is what the user says they recovered (self-reported, not checked)."""
+    """Mark it done. `got_back` is what the user says they recovered (self-reported). The next sync looks for the
+    matching bank credit and, when it finds one, counts the money as confirmed (pipeline/confirm.py)."""
     f = _finding(finding_id)
-    u = store.user(USER)
-    u.finding_status[f.id] = f.status = "done"
-    u.got_back[f.id] = round(body.got_back if body else 0.0, 2)
+    mark_done(store.user(USER), f, body.got_back if body else 0.0, date.today())
     return f
+
+
+@app.get("/api/recovered")
+def recovered_history():
+    """Money recovered: totals (confirmed from bank data, self-reported, cancellations per month) and dated events."""
+    return history(USER)
 
 
 # --- Data in --------------------------------------------------------------------------------------

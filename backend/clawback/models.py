@@ -48,13 +48,21 @@ class UsageSummary(BaseModel):
     level: str = "unknown"  # none | low | normal | unknown
     evidence: list[str] = Field(default_factory=list)
     needs_checkin: bool = False
+    strength: str = ""  # "strong" when the check-in history alone settles it (two "no" answers in a row)
+    next_checkin: date | None = None  # when ClawBack asks "used it?" again (later after three "yes" in a row)
 
 
 class MembershipValue(BaseModel):
     period_fee: float
     uses: int
-    savings: float
+    savings: float  # what the receipts say it saved, or the generous end of an estimate
     net: float  # savings - fee; negative means the membership is losing money
+    # losing_money | paying_off | too_close | not_enough_receipts. Only losing_money raises a flag.
+    verdict: str = "losing_money"
+    basis: str = "stated"  # stated (the receipt says what it saved) | estimated (from published fees) | none
+    savings_low: float | None = None  # cautious end of an estimate
+    note: str = ""
+    source_url: str | None = None  # where the non-member fees used in an estimate come from
 
 
 class Flag(BaseModel):
@@ -85,6 +93,95 @@ class Subscription(BaseModel):
     flags: list[Flag] = Field(default_factory=list)
     status: str = "active"  # active | trial | kept | cancel_pending | cancelled
     detected_from: list[str] = Field(default_factory=list)  # bank | email
+    billed_by: str | None = None  # apple | google_play when the store bills it (cancel there)
+    matched_from: str | None = None  # how it was named: the store receipt it matched, or the naming step
+    cancellation: Cancellation | None = None  # set once the user starts cancelling
+    series_key: str | None = Field(None, exclude=True)  # how its bank charges are grouped (pipeline/recurring.py)
+
+
+class Cancellation(BaseModel):
+    """A subscription the user started cancelling, and what the bank shows since (pipeline/confirm.py)."""
+
+    subscription_id: str
+    merchant: str
+    started_on: date
+    series_key: str  # how its charges are grouped (recurring.series_key), to spot a charge after cancelling
+    amount: float | None = None
+    monthly_cost: float = 0.0
+    cadence: Cadence | None = None
+    category: str = "unknown"
+    kind: str = "subscription"
+    billed_by: str | None = None
+    last_charge: date | None = None  # last charge on or before the day cancelling started
+    first_due: date | None = None  # no charge yet (a free trial): when the first one was due
+    expected_by: date | None = None  # next expected charge plus a grace period
+    status: str = "pending"  # pending | charged_again | confirmed
+    charged_again_on: date | None = None
+    charged_again_amount: float | None = None
+    confirmed_on: date | None = None
+    skipped_charges: int = 0  # expected charges that didn't come
+    note: str = ""
+
+
+class RefundWatch(BaseModel):
+    """A finding the user marked done: the credit ClawBack looks for in the bank (pipeline/confirm.py).
+
+    Kept apart from the finding itself, because detectors rebuild findings each run and drop them once a deadline
+    passes, while the refund can arrive later."""
+
+    finding_id: str
+    kind: str
+    category: str
+    merchant: str
+    title: str
+    amount: float
+    currency: str = "USD"
+    got_back: float = 0.0  # what the user said came back (self-reported)
+    done_on: date
+    charged_on: date | None = None  # the original charge or purchase; a credit must come after it
+    match_words: list[str] = Field(default_factory=list)  # words the credit's bank description must contain
+    status: str = "waiting"  # waiting | confirmed
+    confirmed_on: date | None = None
+    confirmed_amount: float | None = None
+    confirmed_from: str | None = None  # the bank credit that matched
+    confirmed_tx: str | None = None  # its transaction id (each credit confirms one finding)
+
+
+class RecoveryEvent(BaseModel):
+    """One dated line in the history of money recovered (GET /api/recovered)."""
+
+    id: str
+    kind: str  # cancelled_subscription | refund | self_reported
+    status: str  # confirmed | self_reported
+    on: date
+    merchant: str
+    amount: float = 0.0  # one-time money back; for a cancellation, the charges that didn't come so far
+    monthly: float = 0.0  # cancellations: what it no longer costs each month
+    note: str = ""
+    subscription_id: str | None = None
+    finding_id: str | None = None
+
+
+class StoreItem(BaseModel):
+    name: str  # the app or service, as the receipt names it
+    plan: str | None = None  # "Calm Premium (Monthly)"
+    price: float | None = None  # before tax
+    merchant: str | None = None  # our merchant list's name, when it is one we know
+
+
+class StoreReceipt(BaseModel):
+    """What an Apple or Google Play receipt says, read by code (or Lightning when the format is new). No body text."""
+
+    email_id: str
+    store: str  # apple | google_play
+    received: date
+    kind: str = "receipt"  # receipt | notice (a subscription confirmation or renewal notice: a price, no charge)
+    order_id: str | None = None
+    items: list[StoreItem] = Field(default_factory=list)
+    subtotal: float | None = None
+    tax: float | None = None
+    total: float | None = None
+    read_by: str = "code"  # code | the model id
 
 
 # --- One-time money: findings and the action prepared for each ---------------------------------------
@@ -114,6 +211,10 @@ class Finding(BaseModel):
     rule: RuleRef | None = None
     status: str = "open"  # open | dismissed | done
     found_on: date
+    # Done findings: the bank credit that confirmed the money came back (pipeline/confirm.py).
+    confirmed_amount: float | None = None
+    confirmed_on: date | None = None
+    confirmed_from: str | None = None
     # Facts the action builder needs (order number, flight, fare...). Not sent to the frontend.
     details: dict = Field(default_factory=dict, exclude=True)
 
@@ -170,3 +271,6 @@ class Fact(BaseModel):
     old_price: float | None = None
     new_price: float | None = None
     trial_end: date | None = None
+
+
+Subscription.model_rebuild()  # it refers to Cancellation, defined below it

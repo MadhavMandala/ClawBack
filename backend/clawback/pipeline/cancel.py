@@ -8,7 +8,7 @@ user to confirm agent actions.
 MISSING [cancel-lookup]: outside Apple / Google Play billing, the cancel page comes from a Tavily search that
 nobody has checked. Results are labelled "unverified".
 MISSING [email-drafts]: the email is only shown in the app, not saved as a draft in the user's mailbox.
-MISSING [cancel-confirmation]: nothing checks that the charge actually stopped.
+After the user starts cancelling, pipeline/confirm.py checks on each sync that the next charge doesn't come.
 """
 
 from __future__ import annotations
@@ -99,17 +99,18 @@ def write_email(user_id: str, sub: Subscription) -> dict:
 
 def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
     m = by_name(sub.merchant)
+    billed_by = sub.billed_by or (m.billed_by if m else None)  # e.g. a known app billed as "GOOGLE *<app>"
     links: list[dict] = []
     steps: list[str] = []
     missing: list[str] = []
 
-    if m and m.billed_by == "apple":
+    if billed_by == "apple":
         links.append({"label": "Apple subscriptions page", "url": APPLE_SUBSCRIPTIONS_URL, "verified": True})
         steps = [
             "Open the link on a device signed in to your Apple Account.",
             f"Choose {sub.merchant}, then Cancel Subscription.",
         ]
-    elif m and m.billed_by == "google_play":
+    elif billed_by == "google_play":
         links.append({"label": "Google Play subscriptions", "url": GOOGLE_PLAY_SUBSCRIPTIONS_URL, "verified": True})
         steps = ["Open the link signed in to your Google account.", f"Choose {sub.merchant}, then Cancel."]
     else:
@@ -124,7 +125,9 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
             missing.append("MISSING [cancel-lookup]: no TAVILY_API_KEY, so no cancel page was looked up.")
             steps = ["Sign in on the merchant's website and look for Account > Subscription or Membership."]
 
-    missing.append("MISSING [cancel-confirmation]: ClawBack won't yet check that the next charge stopped.")
+    if sub.next_expected:
+        steps.append(f"After {sub.next_expected:%b} {sub.next_expected.day}, ClawBack checks your bank that the next "
+                     "charge didn't come, and tells you if it did.")
     return {
         "subscription_id": sub.id,
         "merchant": sub.merchant,
