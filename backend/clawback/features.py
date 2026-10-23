@@ -48,6 +48,7 @@ AREAS: tuple[str, ...] = (
     "Trust and safety",
     "Accounts and storage",
     "Dashboard",
+    "Phone app",
     "Submission",
 )
 
@@ -472,6 +473,31 @@ FEATURES: tuple[Feature, ...] = (
       "Email or push alerts aren't planned for the hackathon; alerts stay in the app.",
       "backend/clawback/alerts.py, frontend/app/dashboard/page.tsx", "notifications"),
 
+    # --- Phone app (docs/MOBILE.md) ------------------------------------------------------------------
+    F("installable-app", "Phone app", "Install on your phone", "built",
+      "Installs on a phone's home screen and opens full screen with its own icon, from Chrome's install button or Safari's Add to Home Screen.",
+      "Install it on an Android phone and an iPhone, and check the icons and the notch padding.",
+      "frontend/app/manifest.ts, frontend/app/components/InstallApp.tsx, frontend/public/icons, frontend/app/layout.tsx"),
+    F("shared-api-types", "Phone app", "Shared API types", "planned",
+      "TypeScript types generated from the backend's OpenAPI schema, shared by the website and the phone app instead of copied by hand.",
+      "Generate them with openapi-typescript into a small package both apps import.",
+      NOT_STARTED),
+    F("native-app", "Phone app", "Native phone app", "planned",
+      "A React Native app built with Expo on the same API and sessions, with five screens: your month, to do, details, money back and your data.",
+      "Build the five screens on the demo session, after the shared types (docs/MOBILE.md, stage 2).",
+      NOT_STARTED, "mobile-app"),
+    F("app-sign-in", "Phone app", "Sign-ins that return to the app", "planned",
+      "Email and bank sign-ins that come back to the phone app through an app link instead of the website.",
+      "Add an allowed list of return targets to the email callback, and the Plaid React Native SDK.",
+      NOT_STARTED),
+    F("push-alerts", "Phone app", "Push notifications", "planned",
+      "New alerts from the nightly check and the webhooks reach the phone as push notifications.",
+      "Add routes to register a device's push token, and send each new alert through the Expo push service.",
+      NOT_STARTED),
+    F("app-store-release", "Phone app", "App store release", "planned",
+      "Publishing the native app on the App Store and Google Play.",
+      "Get production email and bank access first, then fill in the store privacy forms from docs/PRIVACY.md.",
+      NOT_STARTED),
     # --- Submission -----------------------------------------------------------------------------------
     # Live: the model-tiers check and the live extraction runs on 2026-10-22 and 2026-10-23 (see above).
     F("token-factory-runtime", "Submission", "Live Token Factory calls", "live",

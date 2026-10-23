@@ -464,6 +464,12 @@ header (`frontend/app/api.ts`, `apiFetch`); an expired session is replaced once,
   today's model use against the limit, and "Delete all my data" with an in-page confirm.
 - `/privacy`: the prototype privacy policy (`docs/PRIVACY.md`).
 
+On a phone [built], the site installs on the home screen and opens full screen: a web app manifest
+(`frontend/app/manifest.ts`), icons drawn from the logo, iPhone home-screen settings, padding for the notch, and an
+install button or steps on the settings page. A native Expo app on the same API, with push notifications and
+sign-ins that return to the app, is [planned] in `docs/MOBILE.md`. The header-based session already suits it: a
+native app keeps the id in secure storage and sends the same header.
+
 ## 12. Security and privacy
 
 - Email is read-only, plus drafts when the person allows them. ClawBack never sends.
