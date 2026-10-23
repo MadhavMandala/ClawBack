@@ -13,15 +13,15 @@ from datetime import date
 from ..findings import rulebook
 from ..findings.bills import bill_flags, promo_notices
 from ..findings.detect import run_findings
-from ..merchants import by_name
+from ..merchants import by_name, same_merchant
 from ..models import Cadence, Subscription
 from ..store import store
 from ..trace import record, start_run, timed
-from . import confirm, recovered, store_billing
+from . import annual, confirm, recovered, store_billing
 from .extract import extract_all
 from .flags import cancel_flags, flag_one, flag_overlaps
-from .naming import name_unknown
-from .recurring import detect_series
+from .naming import categorize_apps, name_unknown
+from .recurring import detect_series, set_aside_count
 from .triage import triage
 from .usage import keep_holds, reraised_by, signal_trust, signals_for, summarize
 from .value import included_elsewhere, membership_value
@@ -39,8 +39,10 @@ def run(user_id: str, today: date | None = None) -> dict:
     receipts = store_billing.read_receipts(user_id, u.emails, facts)
 
     with timed(user_id, "recurring", "code") as info:
-        found, series = detect_series(u.transactions, today, bill_for, include_stopped=True)
+        hint = annual.hint_for(annual.hints(u.emails, receipts))
+        found, series = detect_series(u.transactions, today, bill_for, include_stopped=True, annual_hint=hint)
         found = store_billing.resolve(found, series, receipts)
+        aside = set_aside_count(u.transactions, bill_for)
         subs = [s for s in found if s.status != "stopped"]
         stopped = [s for s in found if s.status == "stopped"]
         n_bills = sum(1 for s in subs if s.kind == "bill")
@@ -49,13 +51,17 @@ def run(user_id: str, today: date | None = None) -> dict:
         info["note"] = (f"{len(u.transactions)} transactions -> {len(subs) - n_bills} subscriptions and {n_bills} bills"
                         + (f"; {store_named} app-store charges named from receipts, {unmatched} unmatched"
                            if store_named or unmatched else "")
+                        + (f"; set aside as not subscriptions: "
+                           + ", ".join(f"{n} {k.replace('_', ' ')}" for k, n in sorted(aside.items())) if aside else "")
                         + ("" if rules else " (MISSING: no rule data, so bills aren't recognised)"))
     name_unknown(user_id, subs, series)
+    categorize_apps(user_id, subs)
 
     # Email-only: free trials that haven't charged yet.
     known = {s.merchant for s in subs}
     for f in facts:
-        if f.kind == "trial" and f.trial_end and f.trial_end >= today and f.merchant and f.merchant not in known:
+        if (f.kind == "trial" and f.trial_end and f.trial_end >= today and f.merchant
+                and not any(same_merchant(f.merchant, k) for k in known)):
             m = by_name(f.merchant)
             subs.append(Subscription(
                 id=re.sub(r"[^a-z0-9]+", "-", f.merchant.lower()).strip("-"),

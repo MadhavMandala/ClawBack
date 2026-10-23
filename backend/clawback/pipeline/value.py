@@ -36,7 +36,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict
 
 from ..findings.util import money
-from ..merchants import by_name
+from ..merchants import by_name, same_merchant
 from ..models import Email, Flag, MembershipValue, Subscription
 from .extract import Fact
 
@@ -211,7 +211,7 @@ def membership_value(sub: Subscription, facts: list[Fact], today: date,
     if emails is None:  # facts only (older callers): the orders the extraction read, with what they saved
         orders = [Order(on=f.received, subtotal=f.amount, delivery_fee=None, shipping_fee=None,
                         stated=f.saved_amount, ride=False, mode=None, key=f.email_id)
-                  for f in facts if f.merchant == sub.merchant and f.kind == "delivery_order"
+                  for f in facts if same_merchant(f.merchant, sub.merchant) and f.kind == "delivery_order"
                   and today - f.received <= PERIOD]
     else:
         orders = orders_for(m, emails, facts, today)

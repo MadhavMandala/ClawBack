@@ -173,3 +173,39 @@ def find_in_text(text: str) -> Merchant | None:
             if len(term) > best_len and _word(term).search(text or ""):
                 best, best_len = m, len(term)
     return best
+
+
+# Words that don't tell two services apart ("Spotify Premium" is Spotify), and umbrella brands that do
+# (Apple Music and Apple TV are different services).
+GENERIC_WORDS = {"the", "inc", "llc", "co", "com", "corp", "plus", "premium", "subscription", "membership", "member",
+                 "monthly", "annual", "yearly", "weekly", "app", "apps", "pro", "plan", "one", "super", "service",
+                 "services", "online", "digital", "usa", "us", "and", "of", "for", "my", "your", "bill", "billing",
+                 "payment", "auto", "pay", "account", "order", "orders", "mega", "fan", "ultimate", "basic", "standard",
+                 "family", "individual", "student", "duo", "unlimited", "plus+", "with", "ads", "no"}
+UMBRELLA_BRANDS = {"apple", "google", "amazon", "amzn", "microsoft", "msft", "youtube", "meta", "disney", "att",
+                   "verizon", "comcast", "xfinity", "uber", "prime"}
+
+
+def name_tokens(name: str) -> frozenset[str]:
+    return frozenset(t for t in re.findall(r"[a-z0-9]+", (name or "").lower()) if len(t) >= 2 and t not in GENERIC_WORDS)
+
+
+@lru_cache(maxsize=8192)
+def same_merchant(a: str | None, b: str | None) -> bool:
+    """Do two names mean the same service? ("Crunchyroll" and "Crunchyroll Mega Fan", "Max" and "HBO Max".)
+
+    Equal names, or the same row of the merchant list; when the list knows both, they must be the same row.
+    Otherwise one name's words must contain the other's (ignoring plan words such as Premium or Plus), sharing
+    more than an umbrella brand: "Apple Music" and "Apple TV" are not the same service."""
+    if not a or not b:
+        return False
+    if a.strip().lower() == b.strip().lower():
+        return True
+    ma, mb = by_name(a) or find_in_text(a), by_name(b) or find_in_text(b)
+    if ma and mb:
+        return ma is mb
+    ta, tb = name_tokens(a), name_tokens(b)
+    shared = ta & tb
+    if not shared or shared <= UMBRELLA_BRANDS:
+        return False
+    return ta <= tb or tb <= ta

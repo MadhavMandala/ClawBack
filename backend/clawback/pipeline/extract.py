@@ -21,6 +21,7 @@ from ..merchants import find_in_text, match_sender
 from ..models import Email, Fact
 from ..store import store
 from ..trace import record
+from .store_billing import parse_receipt, store_of
 
 __all__ = ["Fact", "extract_all"]
 
@@ -63,7 +64,8 @@ Return ONLY a JSON object with these keys (null when the email does not say):
 def _extract_rules(email: Email) -> Fact:
     text = f"{email.subject}. {email.body_text}"
     low = text.lower()
-    m = match_sender(email.sender)
+    store_name = store_of(email)
+    m = None if store_name else match_sender(email.sender)  # Apple / Google mail is about the app, not the sender
     merchant = m.name if m else None
     fact = Fact(email_id=email.id, received=email.received_at.date(), kind="other", merchant=merchant)
 
@@ -80,12 +82,13 @@ def _extract_rules(email: Email) -> Fact:
         fact.trial_end = fact.received + timedelta(days=int(d.group(1)))
         if a := re.search(MONEY + r"\s*/\s*month", low):
             fact.amount = float(a.group(1))
-    elif "receipt from apple" in low or "google play" in low:
+    elif store_name:
+        # The app comes from the receipt body (pipeline/store_billing.py reads it), never from the sender.
         fact.kind = "store_receipt"
-        item = find_in_text(text)
-        fact.merchant = item.name if item else None
-        if a := re.search(MONEY, text):
-            fact.amount = float(a.group(1))
+        r = parse_receipt(email, store_name)
+        item = next((i for i in r.items if i.price is not None), None)
+        fact.merchant = (item.merchant or _plain_name(item.name)) if item else None
+        fact.amount = item.price if item else None
     return fact
 
 
@@ -138,11 +141,15 @@ def _known_merchant(model_name, kind: str, email: Email) -> str | None:
     App Store / Google Play receipts come from Apple or Google, so the app named in the receipt wins over the sender."""
     name = model_name if isinstance(model_name, str) and model_name.strip() else None
     sender = match_sender(email.sender)
-    if kind == "store_receipt" or (sender and sender.billed_by):
+    if kind == "store_receipt" or store_of(email) or (sender and sender.billed_by):
+        # An app-store email: the app named in it, never the store or the sender's own service.
         if name and (m := find_in_text(name)):
             return m.name
-        if m := find_in_text(f"{email.subject}. {email.body_text}"):
-            return m.name
+        if name:
+            return _plain_name(name)
+        r = parse_receipt(email, store_of(email) or "apple")
+        item = next((i for i in r.items if i.name), None)
+        return (item.merchant or _plain_name(item.name)) if item else None
     if sender:
         return sender.name
     if name and (m := find_in_text(name)):

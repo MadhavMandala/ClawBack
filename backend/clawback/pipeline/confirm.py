@@ -6,7 +6,7 @@ Cancellations (UserData.cancel_pending, snapshots in UserData.cancellations)
   - A charge in the same series dated after the day cancelling started means "charged again after you started
     cancelling" (status charged_again, a high flag). A charge on that same day counts as before.
   - No charge by the next expected date (one period after the latest charge seen) plus a grace period (3 days for
-    weekly plans, 6 monthly, 10 annual) means confirmed cancelled. The subscription shows as cancelled and leaves the
+    weekly plans, 6 monthly, 8 quarterly, 10 annual) means confirmed cancelled. The subscription shows as cancelled and leaves the
     monthly totals, and the history gets a dated event with its monthly saving and the charges that didn't come.
   - A confirmed cancellation stays confirmed when old charges roll out of the bank's window. A new charge in the
     series after it was confirmed reopens it as charged_again.
@@ -39,7 +39,7 @@ from ..models import Cadence, Cancellation, Finding, RecoveryEvent, RefundWatch,
 from ..store import UserData
 from .recurring import CADENCES, key_matches, series_key
 
-GRACE = {Cadence.weekly: 3, Cadence.monthly: 6, Cadence.annual: 10}
+GRACE = {Cadence.weekly: 3, Cadence.monthly: 6, Cadence.quarterly: 8, Cadence.annual: 10}
 LOOKBACK = timedelta(days=7)
 TAX_MAX = 0.12
 CENT = 0.01
