@@ -1,0 +1,2632 @@
+{
+ "synthetic": true,
+ "person": {
+  "id": "p1",
+  "name": "Maya Chen (synthetic)",
+  "address": "maya.chen@example.com",
+  "about": "Product designer in Atlanta. Subscription-heavy: streaming, two AI assistants, Apple-billed apps, a Spotify family plan she organises."
+ },
+ "today": "2026-10-20",
+ "history_start": "2026-04-21",
+ "transactions": [
+  {
+   "id": "p1-t001",
+   "date": "2026-04-21",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 12.99
+  },
+  {
+   "id": "p1-t002",
+   "date": "2026-04-22",
+   "description": "ADOBE *CREATIVE CLD 408-536-6000",
+   "amount": 59.99
+  },
+  {
+   "id": "p1-t003",
+   "date": "2026-04-22",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 10.62
+  },
+  {
+   "id": "p1-t004",
+   "date": "2026-04-23",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 105.67
+  },
+  {
+   "id": "p1-t005",
+   "date": "2026-04-24",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t006",
+   "date": "2026-04-25",
+   "description": "HBO MAX 855-442-6629",
+   "amount": 15.99
+  },
+  {
+   "id": "p1-t007",
+   "date": "2026-04-26",
+   "description": "SHELL OIL 57444",
+   "amount": 49.58
+  },
+  {
+   "id": "p1-t008",
+   "date": "2026-04-27",
+   "description": "PROG DIRECT INS 800-776-4737",
+   "amount": 118.4
+  },
+  {
+   "id": "p1-t009",
+   "date": "2026-04-27",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 11.79
+  },
+  {
+   "id": "p1-t010",
+   "date": "2026-05-01",
+   "description": "ACH DEBIT GREYSTONE APTS RENT",
+   "amount": 1850.0
+  },
+  {
+   "id": "p1-t011",
+   "date": "2026-05-01",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 42.06
+  },
+  {
+   "id": "p1-t012",
+   "date": "2026-05-02",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 9.63
+  },
+  {
+   "id": "p1-t013",
+   "date": "2026-05-03",
+   "description": "NETFLIX.COM 866-579-7172 CA",
+   "amount": 17.99
+  },
+  {
+   "id": "p1-t014",
+   "date": "2026-05-06",
+   "description": "GOOGLE *FIBER 855-418-8326",
+   "amount": 70.0
+  },
+  {
+   "id": "p1-t015",
+   "date": "2026-05-06",
+   "description": "SHELL OIL 57444",
+   "amount": 38.14
+  },
+  {
+   "id": "p1-t016",
+   "date": "2026-05-06",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 11.18
+  },
+  {
+   "id": "p1-t017",
+   "date": "2026-05-07",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 111.75
+  },
+  {
+   "id": "p1-t018",
+   "date": "2026-05-08",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t019",
+   "date": "2026-05-08",
+   "description": "OPENAI *CHATGPT SUBSCR",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t020",
+   "date": "2026-05-09",
+   "description": "TST* HOMEGROWN DECATUR",
+   "amount": 45.36
+  },
+  {
+   "id": "p1-t021",
+   "date": "2026-05-10",
+   "description": "DUKE ENERGY PAYMENT",
+   "amount": 96.12
+  },
+  {
+   "id": "p1-t022",
+   "date": "2026-05-12",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 19.99
+  },
+  {
+   "id": "p1-t023",
+   "date": "2026-05-13",
+   "description": "ZELLE FROM PRIYA CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t024",
+   "date": "2026-05-14",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 2.99
+  },
+  {
+   "id": "p1-t025",
+   "date": "2026-05-14",
+   "description": "ZELLE FROM DEV CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t026",
+   "date": "2026-05-15",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 46.91
+  },
+  {
+   "id": "p1-t027",
+   "date": "2026-05-15",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 10.25
+  },
+  {
+   "id": "p1-t028",
+   "date": "2026-05-16",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 19.15
+  },
+  {
+   "id": "p1-t029",
+   "date": "2026-05-16",
+   "description": "CLAUDE.AI SUBSCRIPTION",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t030",
+   "date": "2026-05-17",
+   "description": "SHELL OIL 57444",
+   "amount": 49.24
+  },
+  {
+   "id": "p1-t031",
+   "date": "2026-05-18",
+   "description": "AMAZON MKTPL*2K4LP0QX1",
+   "amount": 26.49
+  },
+  {
+   "id": "p1-t032",
+   "date": "2026-05-18",
+   "description": "T-MOBILE*AUTO PAY",
+   "amount": 140.0
+  },
+  {
+   "id": "p1-t033",
+   "date": "2026-05-20",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 5.67
+  },
+  {
+   "id": "p1-t034",
+   "date": "2026-05-21",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 12.99
+  },
+  {
+   "id": "p1-t035",
+   "date": "2026-05-22",
+   "description": "ADOBE *CREATIVE CLD 408-536-6000",
+   "amount": 59.99
+  },
+  {
+   "id": "p1-t036",
+   "date": "2026-05-22",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t037",
+   "date": "2026-05-22",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 99.12
+  },
+  {
+   "id": "p1-t038",
+   "date": "2026-05-25",
+   "description": "HBO MAX 855-442-6629",
+   "amount": 15.99
+  },
+  {
+   "id": "p1-t039",
+   "date": "2026-05-26",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 4.4
+  },
+  {
+   "id": "p1-t040",
+   "date": "2026-05-27",
+   "description": "PROG DIRECT INS 800-776-4737",
+   "amount": 118.4
+  },
+  {
+   "id": "p1-t041",
+   "date": "2026-05-29",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 78.03
+  },
+  {
+   "id": "p1-t042",
+   "date": "2026-05-30",
+   "description": "SHELL OIL 57444",
+   "amount": 33.2
+  },
+  {
+   "id": "p1-t043",
+   "date": "2026-05-30",
+   "description": "UBER *TRIP HELP.UBER.COM",
+   "amount": 17.85
+  },
+  {
+   "id": "p1-t044",
+   "date": "2026-06-01",
+   "description": "ACH DEBIT GREYSTONE APTS RENT",
+   "amount": 1850.0
+  },
+  {
+   "id": "p1-t045",
+   "date": "2026-06-03",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 14.3
+  },
+  {
+   "id": "p1-t046",
+   "date": "2026-06-03",
+   "description": "NETFLIX.COM 866-579-7172 CA",
+   "amount": 17.99
+  },
+  {
+   "id": "p1-t047",
+   "date": "2026-06-04",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 5.72
+  },
+  {
+   "id": "p1-t048",
+   "date": "2026-06-05",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t049",
+   "date": "2026-06-05",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 101.08
+  },
+  {
+   "id": "p1-t050",
+   "date": "2026-06-05",
+   "description": "TST* HOMEGROWN DECATUR",
+   "amount": 39.97
+  },
+  {
+   "id": "p1-t051",
+   "date": "2026-06-06",
+   "description": "GOOGLE *FIBER 855-418-8326",
+   "amount": 70.0
+  },
+  {
+   "id": "p1-t052",
+   "date": "2026-06-08",
+   "description": "OPENAI *CHATGPT SUBSCR",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t053",
+   "date": "2026-06-10",
+   "description": "DUKE ENERGY PAYMENT",
+   "amount": 132.4
+  },
+  {
+   "id": "p1-t054",
+   "date": "2026-06-11",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 9.83
+  },
+  {
+   "id": "p1-t055",
+   "date": "2026-06-12",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 19.99
+  },
+  {
+   "id": "p1-t056",
+   "date": "2026-06-13",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 111.08
+  },
+  {
+   "id": "p1-t057",
+   "date": "2026-06-13",
+   "description": "SHELL OIL 57444",
+   "amount": 37.18
+  },
+  {
+   "id": "p1-t058",
+   "date": "2026-06-13",
+   "description": "ZELLE FROM PRIYA CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t059",
+   "date": "2026-06-14",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 2.99
+  },
+  {
+   "id": "p1-t060",
+   "date": "2026-06-14",
+   "description": "DRSQUATCH.COM 8885556789",
+   "amount": 28.0
+  },
+  {
+   "id": "p1-t061",
+   "date": "2026-06-14",
+   "description": "ZELLE FROM DEV CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t062",
+   "date": "2026-06-16",
+   "description": "CLAUDE.AI SUBSCRIPTION",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t063",
+   "date": "2026-06-18",
+   "description": "T-MOBILE*AUTO PAY",
+   "amount": 140.0
+  },
+  {
+   "id": "p1-t064",
+   "date": "2026-06-19",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t065",
+   "date": "2026-06-19",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 86.81
+  },
+  {
+   "id": "p1-t066",
+   "date": "2026-06-19",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 4.26
+  },
+  {
+   "id": "p1-t067",
+   "date": "2026-06-21",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 12.99
+  },
+  {
+   "id": "p1-t068",
+   "date": "2026-06-22",
+   "description": "ADOBE *CREATIVE CLD 408-536-6000",
+   "amount": 59.99
+  },
+  {
+   "id": "p1-t069",
+   "date": "2026-06-23",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 4.73
+  },
+  {
+   "id": "p1-t070",
+   "date": "2026-06-24",
+   "description": "SHELL OIL 57444",
+   "amount": 44.17
+  },
+  {
+   "id": "p1-t071",
+   "date": "2026-06-25",
+   "description": "HBO MAX 855-442-6629",
+   "amount": 15.99
+  },
+  {
+   "id": "p1-t072",
+   "date": "2026-06-26",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 6.49
+  },
+  {
+   "id": "p1-t073",
+   "date": "2026-06-27",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 14.11
+  },
+  {
+   "id": "p1-t074",
+   "date": "2026-06-27",
+   "description": "PROG DIRECT INS 800-776-4737",
+   "amount": 118.4
+  },
+  {
+   "id": "p1-t075",
+   "date": "2026-06-27",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 49.07
+  },
+  {
+   "id": "p1-t076",
+   "date": "2026-06-30",
+   "description": "TST* HOMEGROWN DECATUR",
+   "amount": 48.4
+  },
+  {
+   "id": "p1-t077",
+   "date": "2026-07-01",
+   "description": "ACH DEBIT GREYSTONE APTS RENT",
+   "amount": 1850.0
+  },
+  {
+   "id": "p1-t078",
+   "date": "2026-07-01",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 10.35
+  },
+  {
+   "id": "p1-t079",
+   "date": "2026-07-02",
+   "description": "AMAZON MKTPL*7HB31RT20",
+   "amount": 54.1
+  },
+  {
+   "id": "p1-t080",
+   "date": "2026-07-03",
+   "description": "NETFLIX.COM 866-579-7172 CA",
+   "amount": 17.99
+  },
+  {
+   "id": "p1-t081",
+   "date": "2026-07-03",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t082",
+   "date": "2026-07-03",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 79.33
+  },
+  {
+   "id": "p1-t083",
+   "date": "2026-07-05",
+   "description": "SHELL OIL 57444",
+   "amount": 39.96
+  },
+  {
+   "id": "p1-t084",
+   "date": "2026-07-05",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 4.69
+  },
+  {
+   "id": "p1-t085",
+   "date": "2026-07-06",
+   "description": "GOOGLE *FIBER 855-418-8326",
+   "amount": 70.0
+  },
+  {
+   "id": "p1-t086",
+   "date": "2026-07-08",
+   "description": "OPENAI *CHATGPT SUBSCR",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t087",
+   "date": "2026-07-09",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 48.23
+  },
+  {
+   "id": "p1-t088",
+   "date": "2026-07-10",
+   "description": "DUKE ENERGY PAYMENT",
+   "amount": 171.85
+  },
+  {
+   "id": "p1-t089",
+   "date": "2026-07-11",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 12.39
+  },
+  {
+   "id": "p1-t090",
+   "date": "2026-07-11",
+   "description": "UBER *TRIP HELP.UBER.COM",
+   "amount": 31.4
+  },
+  {
+   "id": "p1-t091",
+   "date": "2026-07-12",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 19.99
+  },
+  {
+   "id": "p1-t092",
+   "date": "2026-07-13",
+   "description": "ZELLE FROM PRIYA CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t093",
+   "date": "2026-07-14",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 2.99
+  },
+  {
+   "id": "p1-t094",
+   "date": "2026-07-14",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 10.43
+  },
+  {
+   "id": "p1-t095",
+   "date": "2026-07-14",
+   "description": "ZELLE FROM DEV CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t096",
+   "date": "2026-07-15",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 115.48
+  },
+  {
+   "id": "p1-t097",
+   "date": "2026-07-16",
+   "description": "CLAUDE.AI SUBSCRIPTION",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t098",
+   "date": "2026-07-17",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t099",
+   "date": "2026-07-17",
+   "description": "SHELL OIL 57444",
+   "amount": 38.92
+  },
+  {
+   "id": "p1-t100",
+   "date": "2026-07-18",
+   "description": "T-MOBILE*AUTO PAY",
+   "amount": 140.0
+  },
+  {
+   "id": "p1-t101",
+   "date": "2026-07-19",
+   "description": "ATM WITHDRAWAL FEE",
+   "amount": 3.0
+  },
+  {
+   "id": "p1-t102",
+   "date": "2026-07-19",
+   "description": "NON-NETWORK ATM WITHDRAWAL",
+   "amount": 60.0
+  },
+  {
+   "id": "p1-t103",
+   "date": "2026-07-21",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 12.99
+  },
+  {
+   "id": "p1-t104",
+   "date": "2026-07-21",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 64.75
+  },
+  {
+   "id": "p1-t105",
+   "date": "2026-07-22",
+   "description": "ADOBE *CREATIVE CLD 408-536-6000",
+   "amount": 59.99
+  },
+  {
+   "id": "p1-t106",
+   "date": "2026-07-23",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 8.5
+  },
+  {
+   "id": "p1-t107",
+   "date": "2026-07-25",
+   "description": "MAX.COM 855-442-6629",
+   "amount": 16.99
+  },
+  {
+   "id": "p1-t108",
+   "date": "2026-07-27",
+   "description": "PROG DIRECT INS 800-776-4737",
+   "amount": 118.4
+  },
+  {
+   "id": "p1-t109",
+   "date": "2026-07-28",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 62.98
+  },
+  {
+   "id": "p1-t110",
+   "date": "2026-07-28",
+   "description": "SHELL OIL 57444",
+   "amount": 41.08
+  },
+  {
+   "id": "p1-t111",
+   "date": "2026-07-29",
+   "description": "TST* HOMEGROWN DECATUR",
+   "amount": 32.3
+  },
+  {
+   "id": "p1-t112",
+   "date": "2026-07-30",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 4.55
+  },
+  {
+   "id": "p1-t113",
+   "date": "2026-07-31",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t114",
+   "date": "2026-08-01",
+   "description": "ACH DEBIT GREYSTONE APTS RENT",
+   "amount": 1850.0
+  },
+  {
+   "id": "p1-t115",
+   "date": "2026-08-01",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 15.86
+  },
+  {
+   "id": "p1-t116",
+   "date": "2026-08-02",
+   "description": "DRSQUATCH.COM 8885556789",
+   "amount": 41.5
+  },
+  {
+   "id": "p1-t117",
+   "date": "2026-08-03",
+   "description": "NETFLIX.COM 866-579-7172 CA",
+   "amount": 17.99
+  },
+  {
+   "id": "p1-t118",
+   "date": "2026-08-04",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 43.69
+  },
+  {
+   "id": "p1-t119",
+   "date": "2026-08-06",
+   "description": "GOOGLE *FIBER 855-418-8326",
+   "amount": 70.0
+  },
+  {
+   "id": "p1-t120",
+   "date": "2026-08-06",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 5.45
+  },
+  {
+   "id": "p1-t121",
+   "date": "2026-08-07",
+   "description": "SHELL OIL 57444",
+   "amount": 54.22
+  },
+  {
+   "id": "p1-t122",
+   "date": "2026-08-08",
+   "description": "OPENAI *CHATGPT SUBSCR",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t123",
+   "date": "2026-08-09",
+   "description": "ADOBE *STOCK 408-536-6000",
+   "amount": 29.99
+  },
+  {
+   "id": "p1-t124",
+   "date": "2026-08-10",
+   "description": "DUKE ENERGY PAYMENT",
+   "amount": 168.02
+  },
+  {
+   "id": "p1-t125",
+   "date": "2026-08-10",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 4.69
+  },
+  {
+   "id": "p1-t126",
+   "date": "2026-08-11",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 88.64
+  },
+  {
+   "id": "p1-t127",
+   "date": "2026-08-12",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 19.99
+  },
+  {
+   "id": "p1-t128",
+   "date": "2026-08-13",
+   "description": "ZELLE FROM PRIYA CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t129",
+   "date": "2026-08-14",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 2.99
+  },
+  {
+   "id": "p1-t130",
+   "date": "2026-08-14",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t131",
+   "date": "2026-08-14",
+   "description": "ZELLE FROM DEV CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t132",
+   "date": "2026-08-15",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 10.63
+  },
+  {
+   "id": "p1-t133",
+   "date": "2026-08-16",
+   "description": "CLAUDE.AI SUBSCRIPTION",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t134",
+   "date": "2026-08-16",
+   "description": "SQ *BLUE DOOR CAFE",
+   "amount": 18.75
+  },
+  {
+   "id": "p1-t135",
+   "date": "2026-08-18",
+   "description": "SHELL OIL 57444",
+   "amount": 53.77
+  },
+  {
+   "id": "p1-t136",
+   "date": "2026-08-18",
+   "description": "T-MOBILE*AUTO PAY",
+   "amount": 140.0
+  },
+  {
+   "id": "p1-t137",
+   "date": "2026-08-18",
+   "description": "TST* HOMEGROWN DECATUR",
+   "amount": 53.96
+  },
+  {
+   "id": "p1-t138",
+   "date": "2026-08-19",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 18.59
+  },
+  {
+   "id": "p1-t139",
+   "date": "2026-08-19",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 106.02
+  },
+  {
+   "id": "p1-t140",
+   "date": "2026-08-21",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 12.99
+  },
+  {
+   "id": "p1-t141",
+   "date": "2026-08-22",
+   "description": "ADOBE *CREATIVE CLD 408-536-6000",
+   "amount": 59.99
+  },
+  {
+   "id": "p1-t142",
+   "date": "2026-08-23",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 10.36
+  },
+  {
+   "id": "p1-t143",
+   "date": "2026-08-25",
+   "description": "MAX.COM 855-442-6629",
+   "amount": 16.99
+  },
+  {
+   "id": "p1-t144",
+   "date": "2026-08-26",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 66.03
+  },
+  {
+   "id": "p1-t145",
+   "date": "2026-08-26",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 6.35
+  },
+  {
+   "id": "p1-t146",
+   "date": "2026-08-27",
+   "description": "AMAZON MKTPL*PQ09ZK1L3",
+   "amount": 18.99
+  },
+  {
+   "id": "p1-t147",
+   "date": "2026-08-27",
+   "description": "PROG DIRECT INS 800-776-4737",
+   "amount": 131.2
+  },
+  {
+   "id": "p1-t148",
+   "date": "2026-08-28",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t149",
+   "date": "2026-08-29",
+   "description": "SHELL OIL 57444",
+   "amount": 42.98
+  },
+  {
+   "id": "p1-t150",
+   "date": "2026-09-01",
+   "description": "ACH DEBIT GREYSTONE APTS RENT",
+   "amount": 1850.0
+  },
+  {
+   "id": "p1-t151",
+   "date": "2026-09-01",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 8.59
+  },
+  {
+   "id": "p1-t152",
+   "date": "2026-09-02",
+   "description": "OVERDRAFT ITEM FEE",
+   "amount": 34.0
+  },
+  {
+   "id": "p1-t153",
+   "date": "2026-09-03",
+   "description": "NETFLIX.COM 866-579-7172 CA",
+   "amount": 17.99
+  },
+  {
+   "id": "p1-t154",
+   "date": "2026-09-03",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 77.69
+  },
+  {
+   "id": "p1-t155",
+   "date": "2026-09-05",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 9.45
+  },
+  {
+   "id": "p1-t156",
+   "date": "2026-09-06",
+   "description": "GOOGLE *FIBER 855-418-8326",
+   "amount": 70.0
+  },
+  {
+   "id": "p1-t157",
+   "date": "2026-09-08",
+   "description": "BEST BUY 00011122 ATLANTA",
+   "amount": 266.86
+  },
+  {
+   "id": "p1-t158",
+   "date": "2026-09-08",
+   "description": "OPENAI *CHATGPT SUBSCR",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t159",
+   "date": "2026-09-09",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 18.8
+  },
+  {
+   "id": "p1-t160",
+   "date": "2026-09-10",
+   "description": "DUKE ENERGY PAYMENT",
+   "amount": 121.33
+  },
+  {
+   "id": "p1-t161",
+   "date": "2026-09-11",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t162",
+   "date": "2026-09-11",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 114.11
+  },
+  {
+   "id": "p1-t163",
+   "date": "2026-09-11",
+   "description": "TST* HOMEGROWN DECATUR",
+   "amount": 32.41
+  },
+  {
+   "id": "p1-t164",
+   "date": "2026-09-12",
+   "description": "SHELL OIL 57444",
+   "amount": 41.91
+  },
+  {
+   "id": "p1-t165",
+   "date": "2026-09-12",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 19.99
+  },
+  {
+   "id": "p1-t166",
+   "date": "2026-09-12",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 4.5
+  },
+  {
+   "id": "p1-t167",
+   "date": "2026-09-13",
+   "description": "ZELLE FROM PRIYA CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t168",
+   "date": "2026-09-14",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 2.99
+  },
+  {
+   "id": "p1-t169",
+   "date": "2026-09-14",
+   "description": "ZELLE FROM DEV CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t170",
+   "date": "2026-09-15",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 5.36
+  },
+  {
+   "id": "p1-t171",
+   "date": "2026-09-16",
+   "description": "CLAUDE.AI SUBSCRIPTION",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t172",
+   "date": "2026-09-17",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 110.95
+  },
+  {
+   "id": "p1-t173",
+   "date": "2026-09-18",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 7.68
+  },
+  {
+   "id": "p1-t174",
+   "date": "2026-09-18",
+   "description": "T-MOBILE*AUTO PAY",
+   "amount": 140.0
+  },
+  {
+   "id": "p1-t175",
+   "date": "2026-09-19",
+   "description": "UBER *TRIP HELP.UBER.COM",
+   "amount": 23.48
+  },
+  {
+   "id": "p1-t176",
+   "date": "2026-09-20",
+   "description": "SQ *BLUE DOOR CAFE",
+   "amount": 23.1
+  },
+  {
+   "id": "p1-t177",
+   "date": "2026-09-21",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 12.99
+  },
+  {
+   "id": "p1-t178",
+   "date": "2026-09-22",
+   "description": "ADOBE *CREATIVE CLD 408-536-6000",
+   "amount": 59.99
+  },
+  {
+   "id": "p1-t179",
+   "date": "2026-09-23",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 79.46
+  },
+  {
+   "id": "p1-t180",
+   "date": "2026-09-25",
+   "description": "MAX.COM 855-442-6629",
+   "amount": 16.99
+  },
+  {
+   "id": "p1-t181",
+   "date": "2026-09-25",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t182",
+   "date": "2026-09-25",
+   "description": "SHELL OIL 57444",
+   "amount": 48.3
+  },
+  {
+   "id": "p1-t183",
+   "date": "2026-09-27",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t184",
+   "date": "2026-09-27",
+   "description": "PROG DIRECT INS 800-776-4737",
+   "amount": 131.2
+  },
+  {
+   "id": "p1-t185",
+   "date": "2026-09-27",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 8.68
+  },
+  {
+   "id": "p1-t186",
+   "date": "2026-09-29",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 55.81
+  },
+  {
+   "id": "p1-t187",
+   "date": "2026-10-01",
+   "description": "ACH DEBIT GREYSTONE APTS RENT",
+   "amount": 1850.0
+  },
+  {
+   "id": "p1-t188",
+   "date": "2026-10-01",
+   "description": "AMAZON.COM*RT2YH77Q1",
+   "amount": 21.95
+  },
+  {
+   "id": "p1-t189",
+   "date": "2026-10-01",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 5.61
+  },
+  {
+   "id": "p1-t190",
+   "date": "2026-10-02",
+   "description": "TST* HOMEGROWN DECATUR",
+   "amount": 24.76
+  },
+  {
+   "id": "p1-t191",
+   "date": "2026-10-03",
+   "description": "NETFLIX.COM 866-579-7172 CA",
+   "amount": 17.99
+  },
+  {
+   "id": "p1-t192",
+   "date": "2026-10-04",
+   "description": "SQ *BLUE DOOR CAFE",
+   "amount": 64.2
+  },
+  {
+   "id": "p1-t193",
+   "date": "2026-10-04",
+   "description": "SQ *BLUE DOOR CAFE",
+   "amount": 64.2
+  },
+  {
+   "id": "p1-t194",
+   "date": "2026-10-05",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 91.15
+  },
+  {
+   "id": "p1-t195",
+   "date": "2026-10-05",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 11.4
+  },
+  {
+   "id": "p1-t196",
+   "date": "2026-10-06",
+   "description": "GOOGLE *FIBER 855-418-8326",
+   "amount": 70.0
+  },
+  {
+   "id": "p1-t197",
+   "date": "2026-10-06",
+   "description": "SHELL OIL 57444",
+   "amount": 33.7
+  },
+  {
+   "id": "p1-t198",
+   "date": "2026-10-08",
+   "description": "OPENAI *CHATGPT SUBSCR",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t199",
+   "date": "2026-10-09",
+   "description": "NORTHWIND DESIGN PAYROLL",
+   "amount": -2950.0
+  },
+  {
+   "id": "p1-t200",
+   "date": "2026-10-09",
+   "description": "UBER *TRIP HELP.UBER.COM",
+   "amount": 14.22
+  },
+  {
+   "id": "p1-t201",
+   "date": "2026-10-10",
+   "description": "DUKE ENERGY PAYMENT",
+   "amount": 88.5
+  },
+  {
+   "id": "p1-t202",
+   "date": "2026-10-11",
+   "description": "TARGET 00022345 ATLANTA GA",
+   "amount": 405.29
+  },
+  {
+   "id": "p1-t203",
+   "date": "2026-10-12",
+   "description": "SPOTIFY USA 877-778-1161",
+   "amount": 19.99
+  },
+  {
+   "id": "p1-t204",
+   "date": "2026-10-13",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 108.87
+  },
+  {
+   "id": "p1-t205",
+   "date": "2026-10-13",
+   "description": "ZELLE FROM PRIYA CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t206",
+   "date": "2026-10-14",
+   "description": "APPLE.COM/BILL 866-712-7753 CA",
+   "amount": 2.99
+  },
+  {
+   "id": "p1-t207",
+   "date": "2026-10-14",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 8.79
+  },
+  {
+   "id": "p1-t208",
+   "date": "2026-10-14",
+   "description": "ZELLE FROM DEV CHEN",
+   "amount": -6.66
+  },
+  {
+   "id": "p1-t209",
+   "date": "2026-10-16",
+   "description": "CLAUDE.AI SUBSCRIPTION",
+   "amount": 20.0
+  },
+  {
+   "id": "p1-t210",
+   "date": "2026-10-17",
+   "description": "CHICK-FIL-A #01234",
+   "amount": 14.14
+  },
+  {
+   "id": "p1-t211",
+   "date": "2026-10-17",
+   "description": "STARBUCKS STORE 08812",
+   "amount": 11.2
+  },
+  {
+   "id": "p1-t212",
+   "date": "2026-10-18",
+   "description": "T-MOBILE*AUTO PAY",
+   "amount": 140.0
+  },
+  {
+   "id": "p1-t213",
+   "date": "2026-10-19",
+   "description": "PUBLIX #1234 ATLANTA GA",
+   "amount": 44.04
+  },
+  {
+   "id": "p1-t214",
+   "date": "2026-10-20",
+   "description": "SHELL OIL 57444",
+   "amount": 45.84
+  }
+ ],
+ "emails": [
+  {
+   "received_at": "2026-06-14T20:11:00+00:00",
+   "from": "orders@drsquatch.com",
+   "from_name": "Dr. Squatch",
+   "subject": "Order #DS-418822 confirmed",
+   "body": "Thanks for your order, Maya!\n\nPine Tar Bar Soap (Natural) x2  $14.00\nCedar Citrus Bar Soap (Natural) x2  $14.00\n\nSubtotal $28.00\nShipping FREE\nTotal $28.00\n\nWe'll send tracking when it ships.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Dr. Squatch",
+    "names": [
+     "squatch"
+    ],
+    "note": null
+   },
+   "id": "p1-e01"
+  },
+  {
+   "received_at": "2026-06-26T17:00:00+00:00",
+   "from": "noreply@email.max.com",
+   "from_name": "Max",
+   "subject": "An update about your Max subscription",
+   "body": "Hi Maya,\n\nWe're writing to let you know that the price of your Max Ad-Free monthly plan is increasing from $15.99 to $16.99 per month. The new price takes effect on your next billing date on or after July 25, 2026.\n\nThank you for being a member. You can review or change your plan at any time in Settings.\n\nMax, a WBD service. Questions? help.max.com",
+   "format": "text",
+   "label": {
+    "kind": "price_change",
+    "merchant": "Max",
+    "names": [
+     "max",
+     "hbo max"
+    ],
+    "note": null
+   },
+   "id": "p1-e02"
+  },
+  {
+   "received_at": "2026-08-02T13:47:00+00:00",
+   "from": "orders@drsquatch.com",
+   "from_name": "Dr. Squatch",
+   "subject": "Order #DS-502917 confirmed",
+   "body": "Thanks for your order, Maya!\n\nWood Barrel Bourbon Bar Soap (Natural) x3  $21.00\nNatural Deodorant - Fresh Falls  $13.00\nTravel Bag  $7.50\n\nSubtotal $41.50\nShipping FREE\nTotal $41.50",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Dr. Squatch",
+    "names": [
+     "squatch"
+    ],
+    "note": null
+   },
+   "id": "p1-e03"
+  },
+  {
+   "received_at": "2026-08-05T13:00:00+00:00",
+   "from": "progressive@email.progressive.com",
+   "from_name": "Progressive",
+   "subject": "Your auto policy renewal is ready",
+   "body": "Hi Maya,\n\nYour Progressive auto policy renews on August 27, 2026. Your new monthly payment will be $131.20 (your current payment is $118.40). Rates in your area changed this term.\n\nWant to lower it? Review your discounts and coverages online.\n\nProgressive Casualty Insurance Company",
+   "format": "text",
+   "label": {
+    "kind": "price_change",
+    "merchant": "Progressive",
+    "names": [
+     "progressive",
+     "prog direct"
+    ],
+    "note": null
+   },
+   "id": "p1-e04"
+  },
+  {
+   "received_at": "2026-08-09T19:03:00+00:00",
+   "from": "mail@mail.adobe.com",
+   "from_name": "Adobe",
+   "subject": "Your Adobe Stock purchase receipt",
+   "body": "Thank you for your purchase.\n\nOrder number: 9876543210\nDate: August 9, 2026\n\nAdobe Stock - Standard license, 1 image  $29.99\nTotal  $29.99\n\nThis is a one-time purchase. Your Creative Cloud membership is not affected.\n\nAdobe Inc., 345 Park Avenue, San Jose, CA",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Adobe Creative Cloud",
+    "names": [
+     "adobe"
+    ],
+    "note": "One-off purchase from a subscription merchant."
+   },
+   "id": "p1-e05"
+  },
+  {
+   "received_at": "2026-09-02T22:04:00+00:00",
+   "from": "alerts@northpointbank.example",
+   "from_name": "Northpoint Bank",
+   "subject": "Overdraft notice",
+   "body": "An overdraft fee of $34.00 was charged to Everyday Checking ...1182 on 09/02/2026. Your balance is -$61.30. Make a deposit to avoid more fees.\n\nNorthpoint Bank (synthetic)",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p1-e06"
+  },
+  {
+   "received_at": "2026-09-08T18:02:00+00:00",
+   "from": "BestBuyInfo@emailinfo.bestbuy.com",
+   "from_name": "Best Buy",
+   "subject": "Thanks for your order",
+   "body": "Order Number: BBY01-807766554433\nOrder Date: Sep 8, 2026\n\nBose QuietComfort Ultra Earbuds - Black\nQty 1  $249.99\n\nSubtotal $249.99\nTax $16.87\nTotal $266.86\n\nStore pickup: Atlanta Midtown. We'll email you when it's ready.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Best Buy",
+    "names": [
+     "best buy"
+    ],
+    "note": null
+   },
+   "id": "p1-e07"
+  },
+  {
+   "received_at": "2026-09-12T16:05:00+00:00",
+   "from": "info@mailer.netflix.com",
+   "from_name": "Netflix",
+   "subject": "New on Netflix: the shows everyone is talking about",
+   "body": "Hi Maya,\n\nHere's what's new this week.\n\nBecause you watched The Crown:\n- The Gilded Age of Glass (new series)\n- Northern Lights, Season 2\n\nTrending now: Stillwater Bay, The Long Field, Kitchen Wars.\n\nWatch now\n\nYou're receiving this email because you're a Netflix member. Questions? Visit the Help Center.\nNetflix, Inc. | Unsubscribe | Terms of Use",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Netflix",
+    "names": [
+     "netflix"
+    ],
+    "note": "Newsletter from a subscribed merchant. Recommendations are not a usage summary."
+   },
+   "id": "p1-e08"
+  },
+  {
+   "received_at": "2026-09-20T03:41:00+00:00",
+   "from": "noreply@uber.com",
+   "from_name": "Uber",
+   "subject": "Your Saturday night trip with Uber",
+   "body": "Thanks for riding, Maya.\n\nTotal $23.48\nTrip fare $18.62\nBooking fee $2.86\nTip $2.00\n\nPickup 11:02 PM, Edgewood Ave\nDropoff 11:21 PM, Highland Ave",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Uber",
+    "names": [
+     "uber"
+    ],
+    "note": null
+   },
+   "id": "p1-e09"
+  },
+  {
+   "received_at": "2026-09-21T08:55:00+00:00",
+   "from": "no_reply@email.apple.com",
+   "from_name": "Apple",
+   "subject": "Your receipt from Apple.",
+   "body": "Receipt\n\nAPPLE ACCOUNT  maya.chen@example.com\nBILLED TO  Visa .... 4417\nDATE  Sep 21, 2026\nORDER ID  MT7V1RC9QW\nDOCUMENT NO.  182736118344\n\nHeadspace: Sleep & Meditation\nHeadspace Monthly (Monthly)\nRenews Oct 21, 2026\n$12.99\n\nSubtotal  $12.99\nTax  $0.00\nTOTAL  $12.99\n\nApple Account | Terms of Sale | Privacy Policy",
+   "format": "text",
+   "label": {
+    "kind": "store_receipt",
+    "merchant": "Headspace",
+    "names": [
+     "headspace"
+    ],
+    "note": null
+   },
+   "id": "p1-e10"
+  },
+  {
+   "received_at": "2026-09-22T14:00:00+00:00",
+   "from": "no-reply@spotify.com",
+   "from_name": "Spotify",
+   "subject": "Your September in music",
+   "body": "Maya, here's your month.\n\nYou streamed 52 hours of music and podcasts in September.\nTop artist: Phoebe Bridgers\nTop song: Kyoto\nNew discovery: 14 artists you hadn't played before.\n\nSee your stats in the app.\n\nSpotify USA Inc.",
+   "format": "text",
+   "label": {
+    "kind": "engagement",
+    "merchant": "Spotify",
+    "names": [
+     "spotify"
+    ],
+    "note": null
+   },
+   "id": "p1-e11"
+  },
+  {
+   "received_at": "2026-09-24T17:15:00+00:00",
+   "from": "mail@mail.adobe.com",
+   "from_name": "Adobe Creative Cloud",
+   "subject": "What's new in Photoshop and Illustrator",
+   "body": "New in Creative Cloud this month: Generative Expand in Illustrator, faster Remove in Photoshop, and three new Adobe Fonts collections.\n\nUpdate your apps from the Creative Cloud desktop app.\n\nAdobe Inc. | Unsubscribe",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Adobe Creative Cloud",
+    "names": [
+     "adobe"
+    ],
+    "note": "Product newsletter."
+   },
+   "id": "p1-e12"
+  },
+  {
+   "received_at": "2026-09-27T17:30:00+00:00",
+   "from": "chick-fil-a@email.chick-fil-a.com",
+   "from_name": "Chick-fil-A",
+   "subject": "You've earned a reward!",
+   "body": "Your free Chick-fil-A Nuggets reward is waiting in the app. Expires in 14 days.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p1-e13"
+  },
+  {
+   "received_at": "2026-09-30T16:45:00+00:00",
+   "from": "hello@headspace.com",
+   "from_name": "Headspace",
+   "subject": "Save 40% when you switch to annual",
+   "body": "Hi Maya,\n\nGet a full year of Headspace for 40% less than paying monthly. Switch to an annual plan before October 31 to lock in the lower price.\n\nSwitch now\n\nOffer valid for current monthly members. Headspace Inc.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Headspace",
+    "names": [
+     "headspace"
+    ],
+    "note": "Promotion from a subscribed merchant, not a receipt or a price change."
+   },
+   "id": "p1-e14"
+  },
+  {
+   "received_at": "2026-10-01T14:00:00+00:00",
+   "from": "hello@drsquatch.com",
+   "from_name": "Dr. Squatch",
+   "subject": "New scent drop: Fresh Falls",
+   "body": "It's here. Fresh Falls bar soap, deodorant and body wash. Free shipping on orders over $25 this week only.\n\nShop now\n\nDr. Squatch | Unsubscribe",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Dr. Squatch",
+    "names": [
+     "squatch"
+    ],
+    "note": "Promotion."
+   },
+   "id": "p1-e15"
+  },
+  {
+   "received_at": "2026-10-01T21:10:00+00:00",
+   "from": "shipment-tracking@amazon.com",
+   "from_name": "Amazon.com",
+   "subject": "Your Amazon.com order of \"Moleskine Classic Notebook...\" has shipped",
+   "body": "Hello Maya,\n\nYour package is on the way. Arriving Friday, Oct 3.\n\nMoleskine Classic Notebook, Large, Ruled  $21.95\n\nTrack package",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Amazon",
+    "names": [
+     "amazon"
+    ],
+    "note": null
+   },
+   "id": "p1-e16"
+  },
+  {
+   "received_at": "2026-10-02T11:00:00+00:00",
+   "from": "noreply@duke-energy.com",
+   "from_name": "Duke Energy",
+   "subject": "Your Duke Energy bill is ready",
+   "body": "Your bill for service Sep 3 - Oct 1 is $88.50, due Oct 10. Usage this month: 702 kWh, down 27% from last month.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Duke Energy",
+    "names": [
+     "duke energy"
+    ],
+    "note": null
+   },
+   "id": "p1-e17"
+  },
+  {
+   "received_at": "2026-10-02T15:10:00+00:00",
+   "from": "noreply@email.max.com",
+   "from_name": "Max",
+   "subject": "This month on Max",
+   "body": "<html><head><style>.hero{font-size:28px}td{padding:8px}</style></head><body><table width='100%'><tr><td class='hero'>New HBO Originals this October</td></tr><tr><td><img src='https://img.example/max/oct.jpg' alt='October on Max'></td></tr><tr><td>The Quiet Hours, Season 3 &middot; Ember &middot; Midnight Diner</td></tr><tr><td><a href='https://www.max.com/'>Stream now</a></td></tr><tr><td style='font-size:11px;color:#888'>You are receiving this email because you have a Max account. Unsubscribe.</td></tr></table></body></html>",
+   "format": "html",
+   "label": {
+    "kind": "other",
+    "merchant": "Max",
+    "names": [
+     "max",
+     "hbo max"
+    ],
+    "note": "Newsletter from a subscribed merchant."
+   },
+   "id": "p1-e18"
+  },
+  {
+   "received_at": "2026-10-03T06:30:00+00:00",
+   "from": "noreply-fiber@google.com",
+   "from_name": "Google Fiber",
+   "subject": "Your Google Fiber bill is ready",
+   "body": "Your bill for 1 Gig internet is $70.00 and is due Oct 6, 2026. AutoPay will charge your card on file.\n\nView your bill at fiber.google.com.",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Google Fiber",
+    "names": [
+     "google fiber",
+     "fiber"
+    ],
+    "note": null
+   },
+   "id": "p1-e19"
+  },
+  {
+   "received_at": "2026-10-04T15:46:00+00:00",
+   "from": "receipts@messaging.squareup.com",
+   "from_name": "Blue Door Cafe",
+   "subject": "Receipt from Blue Door Cafe",
+   "body": "Blue Door Cafe\n$64.20\n\n2 x Brunch Plate  $36.00\n2 x Oat Latte  $11.50\nTax  $4.30\nTip  $12.40\nTotal  $64.20\n\nVisa 4417  Oct 4, 2026 11:42 AM\n\nPowered by Square",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Blue Door Cafe",
+    "names": [
+     "blue door"
+    ],
+    "note": "One order, but the bank shows it charged twice."
+   },
+   "id": "p1-e20"
+  },
+  {
+   "received_at": "2026-10-05T12:00:00+00:00",
+   "from": "residents@greystoneapts.example",
+   "from_name": "Greystone Apartments",
+   "subject": "October community events",
+   "body": "Pool closes for the season Oct 15. Fall cookout on the lawn Oct 24. Rent is due on the 1st as always.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p1-e21"
+  },
+  {
+   "received_at": "2026-10-06T13:45:00+00:00",
+   "from": "no-reply@spotify.com",
+   "from_name": "Spotify",
+   "subject": "Your top songs this week, Maya",
+   "body": "This week you listened for 14 hours.\n\n1. Kyoto - Phoebe Bridgers\n2. Motion Sickness - Phoebe Bridgers\n3. Silk Chiffon - MUNA\n\nOpen your Weekly Top Songs playlist.\n\nSpotify USA Inc.",
+   "format": "text",
+   "label": {
+    "kind": "engagement",
+    "merchant": "Spotify",
+    "names": [
+     "spotify"
+    ],
+    "note": null
+   },
+   "id": "p1-e22"
+  },
+  {
+   "received_at": "2026-10-07T16:00:00+00:00",
+   "from": "hello@figma.com",
+   "from_name": "Figma",
+   "subject": "Config recordings are live",
+   "body": "Every Config 2026 talk is now online. Catch up on the keynote and the design systems track.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p1-e23"
+  },
+  {
+   "received_at": "2026-10-08T10:31:00+00:00",
+   "from": "invoice+statements@openai.com",
+   "from_name": "OpenAI",
+   "subject": "Your receipt from OpenAI, LLC #2381-4410",
+   "body": "Receipt from OpenAI, LLC\n\n$20.00 paid October 8, 2026\n\nReceipt number 2381-4410\nPayment method Visa - 4417\n\nChatGPT Plus Subscription  Qty 1  $20.00\nSubtotal $20.00\nTotal $20.00\nAmount paid $20.00\n\nQuestions? Visit help.openai.com",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "ChatGPT Plus",
+    "names": [
+     "chatgpt",
+     "openai"
+    ],
+    "note": null
+   },
+   "id": "p1-e24"
+  },
+  {
+   "received_at": "2026-10-09T12:00:00+00:00",
+   "from": "hello@headspace.com",
+   "from_name": "Headspace",
+   "subject": "Your practice is waiting for you",
+   "body": "Hi Maya,\n\nIt has been 34 days since your last session. Even three minutes can help you reset.\n\nPick up where you left off: Basics, Session 6.\n\nBreathe easy,\nThe Headspace team\n\nUnsubscribe | Headspace Inc., Santa Monica, CA",
+   "format": "text",
+   "label": {
+    "kind": "inactivity",
+    "merchant": "Headspace",
+    "names": [
+     "headspace"
+    ],
+    "note": null
+   },
+   "id": "p1-e25"
+  },
+  {
+   "received_at": "2026-10-10T15:30:00+00:00",
+   "from": "info@mailer.netflix.com",
+   "from_name": "Netflix",
+   "subject": "Coming to Netflix in November",
+   "body": "Mark your calendar, Maya.\n\nNov 6: Harbor Lights (film)\nNov 13: The Weight of Snow, Part 1\nNov 27: Holiday Bake-Off Returns\n\nAdd to My List so you don't miss them.\n\nNetflix | Unsubscribe",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Netflix",
+    "names": [
+     "netflix"
+    ],
+    "note": "Newsletter from a subscribed merchant."
+   },
+   "id": "p1-e26"
+  },
+  {
+   "received_at": "2026-10-11T15:22:00+00:00",
+   "from": "orders@oe.target.com",
+   "from_name": "Target",
+   "subject": "Thanks for your order!",
+   "body": "Hi Maya, we got your order.\n\nOrder #912003456781\nPlaced Oct 11, 2026\n\nKitchenAid Artisan 5qt Tilt-Head Stand Mixer - Empire Red\nQty: 1  $379.99\n\nSubtotal  $379.99\nEstimated tax  $25.30\nTotal  $405.29\n\nShip to: Maya C.\nArrives by Wed, Oct 15\n\nTarget.com",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Target",
+    "names": [
+     "target"
+    ],
+    "note": null
+   },
+   "id": "p1-e27"
+  },
+  {
+   "received_at": "2026-10-12T07:02:00+00:00",
+   "from": "no-reply@spotify.com",
+   "from_name": "Spotify",
+   "subject": "Your Spotify Premium receipt",
+   "body": "Thanks for your payment, Maya.\n\nPremium Family\nPeriod: Oct 12 - Nov 11, 2026\nAmount: $19.99\nPaid with Visa ending in 4417\n\nPlan members: Maya (manager), Priya, Dev\n\nManage your plan at spotify.com/account.\n\nSpotify USA Inc., 150 Greenwich Street, New York, NY",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Spotify",
+    "names": [
+     "spotify"
+    ],
+    "note": "A receipt from the merchant itself, not an App Store or Google Play receipt."
+   },
+   "id": "p1-e28"
+  },
+  {
+   "received_at": "2026-10-13T18:20:00+00:00",
+   "from": "alerts@northpointbank.example",
+   "from_name": "Northpoint Bank",
+   "subject": "You received $6.66 from PRIYA CHEN",
+   "body": "Zelle payment received.\n\nFrom: PRIYA CHEN\nAmount: $6.66\nMemo: spotify fam\nDeposited to: Everyday Checking ...1182\n\nNorthpoint Bank (synthetic)",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": null,
+    "names": [],
+    "note": "Family members pay their share of the Spotify Family plan back."
+   },
+   "id": "p1-e29"
+  },
+  {
+   "received_at": "2026-10-14T08:40:00+00:00",
+   "from": "no_reply@email.apple.com",
+   "from_name": "Apple",
+   "subject": "Your receipt from Apple.",
+   "body": "Receipt\n\nAPPLE ACCOUNT  maya.chen@example.com\nBILLED TO  Visa .... 4417\nDATE  Oct 14, 2026\nORDER ID  MT8Q2XK4LP\nDOCUMENT NO.  182736451902\n\niCloud+\niCloud+ with 200 GB (Monthly)\nRenews Nov 14, 2026\n$2.99\n\nSubtotal  $2.99\nTax  $0.00\nTOTAL  $2.99\n\nApple Account | Terms of Sale | Privacy Policy",
+   "format": "text",
+   "label": {
+    "kind": "store_receipt",
+    "merchant": "iCloud+",
+    "names": [
+     "icloud"
+    ],
+    "note": null
+   },
+   "id": "p1-e30"
+  },
+  {
+   "received_at": "2026-10-14T09:30:00+00:00",
+   "from": "no-reply@audible.com",
+   "from_name": "Audible",
+   "subject": "Reminder: your Audible Premium Plus free trial ends October 28",
+   "body": "Hi Maya,\n\nYour 30-day free trial of Audible Premium Plus ends on October 28, 2026. After that, your membership continues at $14.95 a month and you'll get 1 credit each month.\n\nYou can cancel anytime before October 28 from the Account Details page.\n\nHappy listening,\nAudible",
+   "format": "text",
+   "label": {
+    "kind": "trial",
+    "merchant": "Audible",
+    "names": [
+     "audible"
+    ],
+    "note": "Trial end given as a date, not as days left."
+   },
+   "id": "p1-e31"
+  },
+  {
+   "received_at": "2026-10-15T04:12:00+00:00",
+   "from": "billing@netf1ix-billing.com",
+   "from_name": "Netflix Support",
+   "subject": "Your subscription has failed - action required",
+   "body": "Dear Customer,\n\nWe were unable to process your payment for your Netflix membership. Your subscription will be suspended within 24 hours unless you update your billing details.\n\nUPDATE PAYMENT: https://netf1ix-billing.com/account/verify\n\nIf you do not update your details, your account will be closed and your viewing history deleted.\n\nThe Netflix Billing Team",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": null,
+    "names": [],
+    "note": "Phishing look-alike (netf1ix with a digit 1). The real Netflix charge went through on Oct 3."
+   },
+   "id": "p1-e32"
+  },
+  {
+   "received_at": "2026-10-15T09:12:00+00:00",
+   "from": "t-mobile@email.t-mobile.com",
+   "from_name": "T-Mobile",
+   "subject": "Your T-Mobile bill is ready",
+   "body": "Hi Maya, your bill of $140.00 for 2 lines is ready. AutoPay is scheduled for Oct 18.\n\nT-Mobile",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "T-Mobile",
+    "names": [
+     "t mobile",
+     "tmobile"
+    ],
+    "note": null
+   },
+   "id": "p1-e33"
+  },
+  {
+   "received_at": "2026-10-16T11:05:00+00:00",
+   "from": "invoice+statements@mail.anthropic.com",
+   "from_name": "Anthropic, PBC",
+   "subject": "Your receipt from Anthropic, PBC #2194-9932",
+   "body": "Receipt from Anthropic, PBC\n\n$20.00 paid October 16, 2026\n\nClaude Pro  Oct 16 - Nov 16, 2026  $20.00\nTotal $20.00\nAmount paid $20.00\n\nPayment method: Visa - 4417",
+   "format": "text",
+   "label": {
+    "kind": "other",
+    "merchant": "Claude Pro",
+    "names": [
+     "claude",
+     "anthropic"
+    ],
+    "note": null
+   },
+   "id": "p1-e34"
+  },
+  {
+   "received_at": "2026-10-17T19:22:00+00:00",
+   "from": "jess.w@example.com",
+   "from_name": "Jess Wu",
+   "subject": "dinner saturday?",
+   "body": "are you free saturday? thinking that new ramen place on Edgewood, 7ish. bring dev if he's around",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p1-e35"
+  },
+  {
+   "received_at": "2026-10-18T14:03:00+00:00",
+   "from": "notifications@github.com",
+   "from_name": "GitHub",
+   "subject": "[northwind/design-tokens] Pull request #212 merged",
+   "body": "Merged #212 into main: update spacing scale for mobile breakpoints.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p1-e36"
+  },
+  {
+   "received_at": "2026-10-19T06:15:00+00:00",
+   "from": "noreply@medium.com",
+   "from_name": "Medium Daily Digest",
+   "subject": "Stories for you",
+   "body": "Design systems at scale; Why your color tokens drift; The case for boring UI.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p1-e37"
+  },
+  {
+   "received_at": "2026-10-19T08:00:00+00:00",
+   "from": "messages-noreply@linkedin.com",
+   "from_name": "LinkedIn",
+   "subject": "You appeared in 9 searches this week",
+   "body": "Maya, you appeared in 9 searches this week. See who's looking at your profile.",
+   "format": "text",
+   "label": {
+    "kind": "irrelevant",
+    "merchant": null,
+    "names": [],
+    "note": null
+   },
+   "id": "p1-e38"
+  }
+ ],
+ "simulated_prices": [
+  {
+   "store": "Target",
+   "item_contains": "stand mixer",
+   "price_now": 329.99
+  },
+  {
+   "store": "Best Buy",
+   "item_contains": "quietcomfort ultra",
+   "price_now": 199.0
+  }
+ ],
+ "labels": {
+  "subscriptions": [
+   {
+    "id": "netflix",
+    "merchant": "Netflix",
+    "names": [
+     "netflix"
+    ],
+    "kind": "subscription",
+    "category": "video_streaming",
+    "cadence": "monthly",
+    "amount": 17.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "unknown",
+    "bank": [
+     "NETFLIX.COM"
+    ],
+    "evidence_emails": [],
+    "note": "No usage evidence; newsletters only."
+   },
+   {
+    "id": "spotify",
+    "merchant": "Spotify",
+    "names": [
+     "spotify"
+    ],
+    "kind": "subscription",
+    "category": "music",
+    "cadence": "monthly",
+    "amount": 19.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "used",
+    "bank": [
+     "SPOTIFY USA"
+    ],
+    "evidence_emails": [],
+    "note": "Premium Family. Maya pays $19.99 and two family members send $6.66 each back, so her own share is $6.67 a month."
+   },
+   {
+    "id": "max",
+    "merchant": "Max",
+    "names": [
+     "max",
+     "hbo max"
+    ],
+    "kind": "subscription",
+    "category": "video_streaming",
+    "cadence": "monthly",
+    "amount": 16.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [
+     "price_increase"
+    ],
+    "usage": "unknown",
+    "bank": [
+     "HBO MAX",
+     "MAX.COM"
+    ],
+    "evidence_emails": [],
+    "note": "Descriptor changed from HBO MAX to MAX.COM in July, at the same time as the price went from $15.99 to $16.99."
+   },
+   {
+    "id": "chatgpt",
+    "merchant": "ChatGPT Plus",
+    "names": [
+     "chatgpt",
+     "openai"
+    ],
+    "kind": "subscription",
+    "category": "ai_assistant",
+    "cadence": "monthly",
+    "amount": 20.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [
+     "overlap"
+    ],
+    "usage": "unknown",
+    "bank": [
+     "OPENAI *CHATGPT"
+    ],
+    "evidence_emails": [],
+    "note": "Two AI assistant subscriptions (with Claude Pro)."
+   },
+   {
+    "id": "claude",
+    "merchant": "Claude Pro",
+    "names": [
+     "claude",
+     "anthropic"
+    ],
+    "kind": "subscription",
+    "category": "ai_assistant",
+    "cadence": "monthly",
+    "amount": 20.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [
+     "overlap"
+    ],
+    "usage": "unknown",
+    "bank": [
+     "CLAUDE.AI"
+    ],
+    "evidence_emails": [],
+    "note": "Two AI assistant subscriptions (with ChatGPT Plus)."
+   },
+   {
+    "id": "icloud",
+    "merchant": "iCloud+",
+    "names": [
+     "icloud"
+    ],
+    "kind": "subscription",
+    "category": "cloud_storage",
+    "cadence": "monthly",
+    "amount": 2.99,
+    "variable": false,
+    "billed_by": "apple",
+    "status": "active",
+    "flags": [],
+    "usage": "unknown",
+    "bank": [
+     "APPLE.COM/BILL"
+    ],
+    "evidence_emails": [
+     "p1-e30"
+    ],
+    "note": "Apple-billed; named only by the Apple receipt."
+   },
+   {
+    "id": "headspace",
+    "merchant": "Headspace",
+    "names": [
+     "headspace"
+    ],
+    "kind": "subscription",
+    "category": "wellness",
+    "cadence": "monthly",
+    "amount": 12.99,
+    "variable": false,
+    "billed_by": "apple",
+    "status": "active",
+    "flags": [
+     "unused"
+    ],
+    "usage": "unused",
+    "bank": [
+     "APPLE.COM/BILL"
+    ],
+    "evidence_emails": [
+     "p1-e10"
+    ],
+    "note": "Apple-billed. Headspace says 34 days since the last session."
+   },
+   {
+    "id": "adobe",
+    "merchant": "Adobe Creative Cloud",
+    "names": [
+     "adobe"
+    ],
+    "kind": "subscription",
+    "category": "software_creative",
+    "cadence": "monthly",
+    "amount": 59.99,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "unknown",
+    "bank": [
+     "ADOBE *CREATIVE CLD"
+    ],
+    "evidence_emails": [],
+    "note": "A one-off ADOBE *STOCK purchase on Aug 9 sits in the same merchant's charges."
+   },
+   {
+    "id": "audible",
+    "merchant": "Audible",
+    "names": [
+     "audible"
+    ],
+    "kind": "subscription",
+    "category": "audiobooks",
+    "cadence": "monthly",
+    "amount": 14.95,
+    "variable": false,
+    "billed_by": null,
+    "status": "trial",
+    "flags": [
+     "trial_ending"
+    ],
+    "usage": "unknown",
+    "bank": [],
+    "evidence_emails": [
+     "p1-e31"
+    ],
+    "note": "Free trial ending Oct 28, 2026, then $14.95 a month. Email only, no charge yet."
+   },
+   {
+    "id": "google-fiber",
+    "merchant": "Google Fiber",
+    "names": [
+     "google fiber",
+     "fiber"
+    ],
+    "kind": "bill",
+    "category": "internet",
+    "cadence": "monthly",
+    "amount": 70.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "unknown",
+    "bank": [
+     "GOOGLE *FIBER"
+    ],
+    "evidence_emails": [],
+    "note": "A bill that starts with GOOGLE *, not a Google Play charge."
+   },
+   {
+    "id": "t-mobile",
+    "merchant": "T-Mobile",
+    "names": [
+     "t mobile",
+     "tmobile"
+    ],
+    "kind": "bill",
+    "category": "mobile",
+    "cadence": "monthly",
+    "amount": 140.0,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "unknown",
+    "bank": [
+     "T-MOBILE"
+    ],
+    "evidence_emails": [],
+    "note": ""
+   },
+   {
+    "id": "progressive",
+    "merchant": "Progressive",
+    "names": [
+     "progressive",
+     "prog direct"
+    ],
+    "kind": "bill",
+    "category": "insurance",
+    "cadence": "monthly",
+    "amount": 131.2,
+    "variable": false,
+    "billed_by": null,
+    "status": "active",
+    "flags": [
+     "bill_increase"
+    ],
+    "usage": "unknown",
+    "bank": [
+     "PROG DIRECT"
+    ],
+    "evidence_emails": [],
+    "note": "$118.40 to $131.20 at the August renewal (+10.8%)."
+   },
+   {
+    "id": "duke-energy",
+    "merchant": "Duke Energy",
+    "names": [
+     "duke energy"
+    ],
+    "kind": "bill",
+    "category": "utility",
+    "cadence": "monthly",
+    "amount": 129.7,
+    "variable": true,
+    "billed_by": null,
+    "status": "active",
+    "flags": [],
+    "usage": "unknown",
+    "bank": [
+     "DUKE ENERGY"
+    ],
+    "evidence_emails": [],
+    "note": "Electricity; swings with the season. Amount is the six-month average."
+   }
+  ],
+  "findings": [
+   {
+    "id": "dup-blue-door",
+    "kind": "duplicate_charge",
+    "merchant": "Blue Door Cafe",
+    "names": [
+     "blue door"
+    ],
+    "amount": 64.2,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "p1-t192",
+      "p1-t193"
+     ],
+     "emails": [
+      "p1-e20"
+     ]
+    },
+    "note": "Charged twice on Oct 4; one Square receipt."
+   },
+   {
+    "id": "fee-overdraft",
+    "kind": "bank_fee",
+    "merchant": "Northpoint Bank",
+    "names": [],
+    "amount": 34.0,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "p1-t152"
+     ],
+     "emails": []
+    },
+    "note": ""
+   },
+   {
+    "id": "fee-atm",
+    "kind": "bank_fee",
+    "merchant": "Northpoint Bank",
+    "names": [],
+    "amount": 3.0,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "p1-t101"
+     ],
+     "emails": []
+    },
+    "note": ""
+   },
+   {
+    "id": "drop-target",
+    "kind": "price_drop",
+    "merchant": "Target",
+    "names": [
+     "target"
+    ],
+    "amount": 50.0,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "p1-t202"
+     ],
+     "emails": [
+      "p1-e27"
+     ]
+    },
+    "note": "Paid $379.99 on Oct 11; simulated price now $329.99; Target adjusts within 14 days."
+   },
+   {
+    "id": "settle-squatch",
+    "kind": "settlement",
+    "merchant": "Dr. Squatch",
+    "names": [
+     "squatch"
+    ],
+    "amount": null,
+    "currency": "USD",
+    "evidence": {
+     "transactions": [
+      "p1-t060",
+      "p1-t116"
+     ],
+     "emails": [
+      "p1-e01",
+      "p1-e03"
+     ]
+    },
+    "note": "Dr. Squatch 'natural' products bought Jun 14 and Aug 2, 2026, inside the class period (Nov 1, 2018 to Aug 29, 2026). Payout is per product, so no single amount."
+   }
+  ],
+  "not_subscriptions": [
+   {
+    "id": "rent",
+    "what": "Rent by ACH",
+    "names": [
+     "greystone",
+     "ach debit"
+    ],
+    "bank": [
+     "GREYSTONE"
+    ]
+   },
+   {
+    "id": "zelle-credits",
+    "what": "Family members paying back their Spotify share (money in)",
+    "names": [
+     "zelle"
+    ],
+    "bank": [
+     "ZELLE FROM"
+    ]
+   },
+   {
+    "id": "groceries",
+    "what": "Groceries",
+    "names": [
+     "publix"
+    ],
+    "bank": [
+     "PUBLIX"
+    ]
+   },
+   {
+    "id": "gas",
+    "what": "Gas",
+    "names": [
+     "shell"
+    ],
+    "bank": [
+     "SHELL OIL"
+    ]
+   },
+   {
+    "id": "coffee",
+    "what": "Coffee",
+    "names": [
+     "starbucks"
+    ],
+    "bank": [
+     "STARBUCKS"
+    ]
+   },
+   {
+    "id": "dining",
+    "what": "Restaurants",
+    "names": [
+     "chick fil a",
+     "homegrown",
+     "blue door",
+     "sq blue"
+    ],
+    "bank": [
+     "CHICK-FIL-A",
+     "HOMEGROWN",
+     "BLUE DOOR"
+    ]
+   },
+   {
+    "id": "rides",
+    "what": "Uber rides",
+    "names": [
+     "uber"
+    ],
+    "bank": [
+     "UBER *TRIP"
+    ]
+   },
+   {
+    "id": "shopping",
+    "what": "One-off shopping",
+    "names": [
+     "amazon",
+     "target",
+     "best buy",
+     "squatch",
+     "drsquatch",
+     "adobe stock"
+    ],
+    "bank": [
+     "AMAZON",
+     "TARGET",
+     "BEST BUY",
+     "DRSQUATCH",
+     "ADOBE *STOCK"
+    ]
+   },
+   {
+    "id": "payroll",
+    "what": "Payroll (money in)",
+    "names": [
+     "payroll",
+     "northwind"
+    ],
+    "bank": [
+     "PAYROLL"
+    ]
+   },
+   {
+    "id": "atm",
+    "what": "ATM cash",
+    "names": [
+     "atm"
+    ],
+    "bank": [
+     "ATM"
+    ]
+   }
+  ],
+  "traps": [
+   {
+    "id": "p1-newsletters",
+    "kind": "newsletter",
+    "description": "Newsletters and promotions from Netflix, Max, Headspace and Dr. Squatch are not usage, receipts or price changes.",
+    "checks": [
+     {
+      "type": "email_kind",
+      "email": "p1-e08",
+      "allowed": [
+       "other",
+       "irrelevant"
+      ]
+     },
+     {
+      "type": "email_kind",
+      "email": "p1-e14",
+      "allowed": [
+       "other",
+       "irrelevant"
+      ]
+     },
+     {
+      "type": "email_kind",
+      "email": "p1-e15",
+      "allowed": [
+       "other",
+       "irrelevant"
+      ]
+     },
+     {
+      "type": "email_kind",
+      "email": "p1-e18",
+      "allowed": [
+       "other",
+       "irrelevant"
+      ]
+     },
+     {
+      "type": "email_kind",
+      "email": "p1-e26",
+      "allowed": [
+       "other",
+       "irrelevant"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "p1-phishing",
+    "kind": "phishing",
+    "description": "A look-alike 'your subscription has failed' email is not a receipt, a price change or a subscription, and raises nothing.",
+    "checks": [
+     {
+      "type": "email_kind",
+      "email": "p1-e32",
+      "allowed": [
+       "other",
+       "irrelevant"
+      ]
+     },
+     {
+      "type": "no_finding",
+      "kind": null,
+      "names": [
+       "netf1ix",
+       "netflix"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "p1-descriptor-change",
+    "kind": "descriptor_change",
+    "description": "HBO MAX became MAX.COM (with a price rise). Max should be found, with its price increase.",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "max"
+     },
+     {
+      "type": "sub_flag",
+      "sub": "max",
+      "kind": "price_increase",
+      "present": true
+     }
+    ]
+   },
+   {
+    "id": "p1-one-off",
+    "kind": "one_off_from_subscription_merchant",
+    "description": "A one-off Adobe Stock purchase should not hide the Adobe Creative Cloud subscription, and is not a subscription itself.",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "adobe"
+     },
+     {
+      "type": "email_kind",
+      "email": "p1-e05",
+      "allowed": [
+       "other",
+       "irrelevant"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "p1-family-plan",
+    "kind": "family_plan_split",
+    "description": "Spotify Family is found at the $19.99 charged; the Zelle paybacks are money in, not subscriptions.",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "spotify"
+     },
+     {
+      "type": "not_sub",
+      "ref": "zelle-credits"
+     }
+    ]
+   },
+   {
+    "id": "p1-google-fiber",
+    "kind": "store_billing_lookalike",
+    "description": "GOOGLE *FIBER is an internet bill, not an unnamed Google Play subscription.",
+    "checks": [
+     {
+      "type": "sub_found",
+      "sub": "google-fiber"
+     }
+    ]
+   },
+   {
+    "id": "p1-window-closed",
+    "kind": "price_drop_window_closed",
+    "description": "The Best Buy earbuds are cheaper now, but the 15-day window closed on Sep 23.",
+    "checks": [
+     {
+      "type": "no_finding",
+      "kind": "price_drop",
+      "names": [
+       "best buy"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "p1-rent",
+    "kind": "noise",
+    "description": "Rent paid by ACH every month is not a subscription.",
+    "checks": [
+     {
+      "type": "not_sub",
+      "ref": "rent"
+     }
+    ]
+   },
+   {
+    "id": "p1-noise",
+    "kind": "noise",
+    "description": "Groceries, gas and coffee are not subscriptions.",
+    "checks": [
+     {
+      "type": "not_sub",
+      "ref": "groceries"
+     },
+     {
+      "type": "not_sub",
+      "ref": "gas"
+     },
+     {
+      "type": "not_sub",
+      "ref": "coffee"
+     }
+    ]
+   }
+  ]
+ }
+}
