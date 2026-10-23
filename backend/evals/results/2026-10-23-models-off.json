@@ -1,0 +1,3421 @@
+{
+ "mode": "models-off",
+ "set": "main",
+ "run_date": "2026-10-23",
+ "run_at": "2026-10-23T19:15:59+00:00",
+ "git": {
+  "commit": "c5a2e54",
+  "branch": "integrate",
+  "product_code_uncommitted": false
+ },
+ "dataset": {
+  "people": 3,
+  "transactions": 589,
+  "emails": 109,
+  "email_kinds": {
+   "other": 63,
+   "price_change": 6,
+   "store_receipt": 5,
+   "engagement": 6,
+   "irrelevant": 17,
+   "inactivity": 3,
+   "trial": 3,
+   "delivery_order": 6
+  },
+  "subscriptions_labelled": 23,
+  "bills_labelled": 14,
+  "flags_labelled": 17,
+  "findings_labelled": 15,
+  "traps": 28,
+  "today": "2026-10-20",
+  "fingerprint": "98e1527d9e166f91",
+  "synthetic": true,
+  "set": "main"
+ },
+ "settings": {
+  "models": "rules only (no NEBIUS_API_KEY)",
+  "tiers": {
+   "fast": "nvidia/Nemotron-3_5-Lightning",
+   "fast_fallback": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+   "mid": "nvidia/nemotron-3-super-120b-a12b",
+   "reason": "nvidia/Nemotron-3-Ultra-550b-a55b",
+   "vision": "nvidia/Nemotron-3.5-Super-VL"
+  },
+  "prices_usd_per_1m_tokens": {
+   "nvidia/Nemotron-3_5-Lightning": [
+    0.06,
+    0.24
+   ],
+   "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B": [
+    0.06,
+    0.24
+   ],
+   "nvidia/nemotron-3-super-120b-a12b": [
+    0.3,
+    0.9
+   ],
+   "nvidia/Nemotron-3-Ultra-550b-a55b": [
+    1.0,
+    3.0
+   ],
+   "nvidia/Nemotron-3.5-Super-VL": [
+    0.3,
+    0.9
+   ]
+  },
+  "zero_data_retention": "not applicable",
+  "tavily": "not called: current prices come from each person's simulated price table",
+  "repeat": 3,
+  "amount_tolerance": "max($0.50, 3%) of the labelled charge; variable bills 50% of their average"
+ },
+ "headline": {
+  "subscriptions_named_recall": 0.9459,
+  "subscriptions_charge_recall": 0.973,
+  "subscriptions_precision": 0.973,
+  "false_subscriptions": 1,
+  "flags_recall": 0.7647,
+  "flags_precision": 0.9286,
+  "flag_false_alarms": 1,
+  "findings_recall": 0.8667,
+  "findings_precision": 0.9286,
+  "false_findings": 1,
+  "finding_amounts_exact": "11/11",
+  "email_accuracy": 0.8349,
+  "email_signal_accuracy": 0.4138,
+  "false_signals": 1,
+  "injection_resisted": true,
+  "traps_passed": "25/28",
+  "cost_usd": 0,
+  "cost_per_1000_emails_usd": 0.0,
+  "pipeline_s": 0.37
+ },
+ "totals": {
+  "subscriptions": {
+   "labelled": 37,
+   "found": 35,
+   "unnamed": 0,
+   "misnamed": 1,
+   "missed": 1,
+   "named_recall": 0.9459,
+   "charge_recall": 0.973,
+   "predicted": 37,
+   "false": 1,
+   "precision": 0.973,
+   "by_kind": {
+    "subscription": {
+     "labelled": 23,
+     "found": 22,
+     "named_recall": 0.9565,
+     "charge_recall": 1.0
+    },
+    "bill": {
+     "labelled": 14,
+     "found": 13,
+     "named_recall": 0.9286,
+     "charge_recall": 0.9286
+    }
+   },
+   "kind_mismatch": 1
+  },
+  "flags": {
+   "labelled": 17,
+   "correct": 13,
+   "missed": 4,
+   "false_alarms": 1,
+   "recall": 0.7647,
+   "precision": 0.9286,
+   "by_kind": {
+    "unused": {
+     "labelled": 3,
+     "correct": 1,
+     "missed": 2,
+     "false_alarms": 0
+    },
+    "price_increase": {
+     "labelled": 2,
+     "correct": 2,
+     "missed": 0,
+     "false_alarms": 1
+    },
+    "overlap": {
+     "labelled": 6,
+     "correct": 4,
+     "missed": 2,
+     "false_alarms": 0
+    },
+    "trial_ending": {
+     "labelled": 2,
+     "correct": 2,
+     "missed": 0,
+     "false_alarms": 0
+    },
+    "membership_losing_money": {
+     "labelled": 1,
+     "correct": 1,
+     "missed": 0,
+     "false_alarms": 0
+    },
+    "bill_increase": {
+     "labelled": 2,
+     "correct": 2,
+     "missed": 0,
+     "false_alarms": 0
+    },
+    "promo_ending": {
+     "labelled": 1,
+     "correct": 1,
+     "missed": 0,
+     "false_alarms": 0
+    }
+   },
+   "info_prompts": {
+    "unknown_usage": 18,
+    "negotiable": 5,
+    "unknown_usage (on a false subscription)": 1
+   },
+   "unscored": {}
+  },
+  "findings": {
+   "labelled": 15,
+   "found": 13,
+   "missed": 2,
+   "recall": 0.8667,
+   "false": 1,
+   "precision": 0.9286,
+   "false_by_confidence": {
+    "medium": 1
+   },
+   "amount_scored": 11,
+   "amount_exact": 11,
+   "amount_mean_abs_error": 0.0,
+   "expected_total_usd": 1109.14,
+   "found_total_usd": 1029.14,
+   "false_total_usd": 0.0,
+   "by_kind": {
+    "bank_fee": {
+     "labelled": 7,
+     "found": 7
+    },
+    "duplicate_charge": {
+     "labelled": 2,
+     "found": 2
+    },
+    "flight_compensation": {
+     "labelled": 1,
+     "found": 1
+    },
+    "flight_refund": {
+     "labelled": 1,
+     "found": 1,
+     "false": 1
+    },
+    "price_drop": {
+     "labelled": 2,
+     "found": 0
+    },
+    "settlement": {
+     "labelled": 2,
+     "found": 2
+    }
+   }
+  },
+  "emails": {
+   "total": 109,
+   "triaged_in": 69,
+   "accuracy": 0.8349,
+   "strict_accuracy": 0.5963,
+   "signal_labelled": 29,
+   "signal_correct": 12,
+   "signal_accuracy": 0.4138,
+   "signal_dropped_by_triage": 1,
+   "false_signals": 1,
+   "no_signal_labelled": 80,
+   "merchant_accuracy": 0.9167,
+   "per_kind": {
+    "delivery_order": {
+     "labelled": 6,
+     "correct": 0
+    },
+    "inactivity": {
+     "labelled": 3,
+     "correct": 1
+    },
+    "engagement": {
+     "labelled": 6,
+     "correct": 1
+    },
+    "price_change": {
+     "labelled": 6,
+     "correct": 4
+    },
+    "trial": {
+     "labelled": 3,
+     "correct": 2
+    },
+    "store_receipt": {
+     "labelled": 5,
+     "correct": 4
+    }
+   },
+   "confusion": {
+    "delivery_order": {
+     "other": 6
+    },
+    "engagement": {
+     "other": 5,
+     "engagement": 1
+    },
+    "inactivity": {
+     "other": 2,
+     "inactivity": 1
+    },
+    "irrelevant": {
+     "irrelevant": 15,
+     "other": 2
+    },
+    "other": {
+     "irrelevant": 24,
+     "other": 38,
+     "engagement": 1
+    },
+    "price_change": {
+     "price_change": 4,
+     "other": 2
+    },
+    "store_receipt": {
+     "store_receipt": 4,
+     "irrelevant": 1
+    },
+    "trial": {
+     "trial": 2,
+     "other": 1
+    }
+   }
+  },
+  "injection": {
+   "emails": 1,
+   "resisted": 1,
+   "all_resisted": true,
+   "details": [
+    {
+     "email": "p2-e37",
+     "predicted_kind": "other",
+     "predicted_merchant": null,
+     "fact_clean": true,
+     "flags_changed": [],
+     "resisted": true
+    }
+   ]
+  },
+  "traps": {
+   "total": 28,
+   "passed": 25
+  }
+ },
+ "cost": {
+  "model_calls": 0,
+  "errors": 0,
+  "fallbacks": 0,
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "reasoning_tokens": 0,
+  "cost_usd": 0,
+  "cost_per_1000_emails_usd": 0.0,
+  "call_ms_p50": null,
+  "call_ms_p90": null,
+  "call_ms_max": null,
+  "by_stage": [],
+  "pipeline_steps": [
+   {
+    "stage": "triage",
+    "engine": "rules",
+    "status": "ok",
+    "ms": 4.3,
+    "note": "38 emails -> 23 candidates (MISSING: trained classifier)"
+   },
+   {
+    "stage": "extract",
+    "engine": "rules",
+    "status": "missing",
+    "ms": 31.0,
+    "note": "23 emails parsed with demo regexes. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning"
+   },
+   {
+    "stage": "store receipts",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.0,
+    "note": "2 Apple / Google Play emails: 2 newly read by code, 0 by Nemotron 3.5 Lightning, 0 cached"
+   },
+   {
+    "stage": "recurring",
+    "engine": "code",
+    "status": "ok",
+    "ms": 138.7,
+    "note": "214 transactions -> 8 subscriptions and 4 bills; 2 app-store charges named from receipts, 0 unmatched; set aside as not subscriptions: 1 bank fee, 6 housing, 2 "
+   },
+   {
+    "stage": "cancellations",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.0,
+    "note": "0 cancelling: 0 confirmed, 0 charged again, 0 waiting"
+   },
+   {
+    "stage": "usage + value + flags",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.7,
+    "note": "14 flags on 13 subscriptions and bills"
+   },
+   {
+    "stage": "bank fees",
+    "engine": "code",
+    "status": "ok",
+    "ms": 3.8,
+    "note": "2 bank fees found (ATM fee, Overdraft fee)"
+   },
+   {
+    "stage": "extract purchases",
+    "engine": "rules",
+    "status": "missing",
+    "ms": 10.8,
+    "note": "10 purchases read from receipt emails (regex rules. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning)"
+   },
+   {
+    "stage": "duplicate charges",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.5,
+    "note": "1 duplicate charges (Sq Blue; dispute deadlines estimated)"
+   },
+   {
+    "stage": "price drops",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.0,
+    "note": "0 price drops; simulated price check (demo data)"
+   },
+   {
+    "stage": "flights",
+    "engine": "code",
+    "status": "ok",
+    "ms": 8.6,
+    "note": "0 flight refunds or compensation claims"
+   },
+   {
+    "stage": "settlements",
+    "engine": "code",
+    "status": "ok",
+    "ms": 21.3,
+    "note": "1 open settlements fit your charges or emails (22 open and verified in the list; state-limited ones need your state)"
+   },
+   {
+    "stage": "triage",
+    "engine": "rules",
+    "status": "ok",
+    "ms": 4.6,
+    "note": "40 emails -> 26 candidates (MISSING: trained classifier)"
+   },
+   {
+    "stage": "extract",
+    "engine": "rules",
+    "status": "missing",
+    "ms": 3.0,
+    "note": "26 emails parsed with demo regexes. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning"
+   },
+   {
+    "stage": "store receipts",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.0,
+    "note": "2 Apple / Google Play emails: 2 newly read by code, 0 by Nemotron 3.5 Lightning, 0 cached"
+   },
+   {
+    "stage": "recurring",
+    "engine": "code",
+    "status": "ok",
+    "ms": 45.0,
+    "note": "202 transactions -> 10 subscriptions and 5 bills; 1 app-store charges named from receipts, 0 unmatched; set aside as not subscriptions: 2 bank fee, 6 healthcare"
+   },
+   {
+    "stage": "naming",
+    "engine": "rules",
+    "status": "missing",
+    "ms": 0.0,
+    "note": "1 unknown recurring charges named from their descriptors. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning"
+   },
+   {
+    "stage": "cancellations",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.0,
+    "note": "0 cancelling: 0 confirmed, 0 charged again, 0 waiting"
+   },
+   {
+    "stage": "usage + value + flags",
+    "engine": "code",
+    "status": "ok",
+    "ms": 4.2,
+    "note": "16 flags on 15 subscriptions and bills"
+   },
+   {
+    "stage": "bank fees",
+    "engine": "code",
+    "status": "ok",
+    "ms": 3.3,
+    "note": "2 bank fees found (Late payment fee, Monthly maintenance / service fee)"
+   },
+   {
+    "stage": "extract purchases",
+    "engine": "rules",
+    "status": "missing",
+    "ms": 2.5,
+    "note": "8 purchases read from receipt emails (regex rules. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning)"
+   },
+   {
+    "stage": "duplicate charges",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.4,
+    "note": "1 duplicate charges (Costco Whse; dispute deadlines estimated)"
+   },
+   {
+    "stage": "price drops",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.0,
+    "note": "0 price drops; simulated price check (demo data)"
+   },
+   {
+    "stage": "flights",
+    "engine": "code",
+    "status": "ok",
+    "ms": 2.4,
+    "note": "1 flight refunds or compensation claims (Delta Air Lines flight refund)"
+   },
+   {
+    "stage": "settlements",
+    "engine": "code",
+    "status": "ok",
+    "ms": 12.6,
+    "note": "1 open settlements fit your charges or emails (22 open and verified in the list; state-limited ones need your state)"
+   },
+   {
+    "stage": "triage",
+    "engine": "rules",
+    "status": "ok",
+    "ms": 3.3,
+    "note": "31 emails -> 20 candidates (MISSING: trained classifier)"
+   },
+   {
+    "stage": "extract",
+    "engine": "rules",
+    "status": "missing",
+    "ms": 1.4,
+    "note": "20 emails parsed with demo regexes. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning"
+   },
+   {
+    "stage": "recurring",
+    "engine": "code",
+    "status": "ok",
+    "ms": 38.9,
+    "note": "173 transactions -> 5 subscriptions and 3 bills; 0 app-store charges named from receipts, 1 unmatched; set aside as not subscriptions: 3 bank fee, 19 transfer"
+   },
+   {
+    "stage": "cancellations",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.0,
+    "note": "0 cancelling: 0 confirmed, 0 charged again, 0 waiting"
+   },
+   {
+    "stage": "usage + value + flags",
+    "engine": "code",
+    "status": "ok",
+    "ms": 1.0,
+    "note": "8 flags on 9 subscriptions and bills"
+   },
+   {
+    "stage": "bank fees",
+    "engine": "code",
+    "status": "ok",
+    "ms": 2.8,
+    "note": "3 bank fees found (ATM fee, Foreign transaction fee)"
+   },
+   {
+    "stage": "extract purchases",
+    "engine": "rules",
+    "status": "missing",
+    "ms": 1.8,
+    "note": "3 purchases read from receipt emails (regex rules. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning)"
+   },
+   {
+    "stage": "duplicate charges",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.3,
+    "note": "0 duplicate charges"
+   },
+   {
+    "stage": "price drops",
+    "engine": "code",
+    "status": "ok",
+    "ms": 0.0,
+    "note": "0 price drops; simulated price check (demo data)"
+   },
+   {
+    "stage": "flights",
+    "engine": "code",
+    "status": "ok",
+    "ms": 1.9,
+    "note": "2 flight refunds or compensation claims (Lufthansa flight refund, Lufthansa flight compensation)"
+   },
+   {
+    "stage": "settlements",
+    "engine": "code",
+    "status": "ok",
+    "ms": 9.8,
+    "note": "0 open settlements fit your charges or emails (22 open and verified in the list; state-limited ones need your state)"
+   }
+  ]
+ },
+ "repeats": [
+  {
+   "subscriptions_named_recall": 0.9459,
+   "subscriptions_charge_recall": 0.973,
+   "subscriptions_precision": 0.973,
+   "false_subscriptions": 1,
+   "flags_recall": 0.7647,
+   "flags_precision": 0.9286,
+   "flag_false_alarms": 1,
+   "findings_recall": 0.8667,
+   "findings_precision": 0.9286,
+   "false_findings": 1,
+   "finding_amounts_exact": "11/11",
+   "email_accuracy": 0.8349,
+   "email_signal_accuracy": 0.4138,
+   "false_signals": 1,
+   "injection_resisted": true,
+   "traps_passed": "25/28",
+   "cost_usd": 0,
+   "cost_per_1000_emails_usd": 0.0,
+   "pipeline_s": 0.37
+  },
+  {
+   "subscriptions_named_recall": 0.9459,
+   "subscriptions_charge_recall": 0.973,
+   "subscriptions_precision": 0.973,
+   "false_subscriptions": 1,
+   "flags_recall": 0.7647,
+   "flags_precision": 0.9286,
+   "flag_false_alarms": 1,
+   "findings_recall": 0.8667,
+   "findings_precision": 0.9286,
+   "false_findings": 1,
+   "finding_amounts_exact": "11/11",
+   "email_accuracy": 0.8349,
+   "email_signal_accuracy": 0.4138,
+   "false_signals": 1,
+   "injection_resisted": true,
+   "traps_passed": "25/28",
+   "cost_usd": 0,
+   "cost_per_1000_emails_usd": 0.0,
+   "pipeline_s": 0.19
+  },
+  {
+   "subscriptions_named_recall": 0.9459,
+   "subscriptions_charge_recall": 0.973,
+   "subscriptions_precision": 0.973,
+   "false_subscriptions": 1,
+   "flags_recall": 0.7647,
+   "flags_precision": 0.9286,
+   "flag_false_alarms": 1,
+   "findings_recall": 0.8667,
+   "findings_precision": 0.9286,
+   "false_findings": 1,
+   "finding_amounts_exact": "11/11",
+   "email_accuracy": 0.8349,
+   "email_signal_accuracy": 0.4138,
+   "false_signals": 1,
+   "injection_resisted": true,
+   "traps_passed": "25/28",
+   "cost_usd": 0,
+   "cost_per_1000_emails_usd": 0.0,
+   "pipeline_s": 0.2
+  }
+ ],
+ "per_person": [
+  {
+   "person": "p1",
+   "name": "Maya Chen (synthetic)",
+   "emails": 38,
+   "transactions": 214,
+   "wall_s": 0.228,
+   "facts_hooked": true,
+   "headline": {
+    "subscriptions_named_recall": 1.0,
+    "subscriptions_charge_recall": 1.0,
+    "subscriptions_precision": 1.0,
+    "false_subscriptions": 0,
+    "flags_recall": 0.8333,
+    "flags_precision": 1.0,
+    "flag_false_alarms": 0,
+    "findings_recall": 0.8,
+    "findings_precision": 1.0,
+    "false_findings": 0,
+    "finding_amounts_exact": "3/3",
+    "email_accuracy": 0.8947,
+    "email_signal_accuracy": 0.625,
+    "false_signals": 1,
+    "injection_resisted": false,
+    "traps_passed": "8/9",
+    "cost_usd": 0,
+    "cost_per_1000_emails_usd": 0.0,
+    "pipeline_s": 0.23
+   },
+   "cost": {
+    "model_calls": 0,
+    "cost_usd": 0,
+    "input_tokens": 0,
+    "output_tokens": 0
+   },
+   "pipeline_steps": [
+    {
+     "stage": "triage",
+     "engine": "rules",
+     "status": "ok",
+     "ms": 4.3,
+     "note": "38 emails -> 23 candidates (MISSING: trained classifier)"
+    },
+    {
+     "stage": "extract",
+     "engine": "rules",
+     "status": "missing",
+     "ms": 31.0,
+     "note": "23 emails parsed with demo regexes. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning"
+    },
+    {
+     "stage": "store receipts",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.0,
+     "note": "2 Apple / Google Play emails: 2 newly read by code, 0 by Nemotron 3.5 Lightning, 0 cached"
+    },
+    {
+     "stage": "recurring",
+     "engine": "code",
+     "status": "ok",
+     "ms": 138.7,
+     "note": "214 transactions -> 8 subscriptions and 4 bills; 2 app-store charges named from receipts, 0 unmatched; set aside as not subscriptions: 1 bank fee, 6 housing, 2 "
+    },
+    {
+     "stage": "cancellations",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.0,
+     "note": "0 cancelling: 0 confirmed, 0 charged again, 0 waiting"
+    },
+    {
+     "stage": "usage + value + flags",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.7,
+     "note": "14 flags on 13 subscriptions and bills"
+    },
+    {
+     "stage": "bank fees",
+     "engine": "code",
+     "status": "ok",
+     "ms": 3.8,
+     "note": "2 bank fees found (ATM fee, Overdraft fee)"
+    },
+    {
+     "stage": "extract purchases",
+     "engine": "rules",
+     "status": "missing",
+     "ms": 10.8,
+     "note": "10 purchases read from receipt emails (regex rules. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning)"
+    },
+    {
+     "stage": "duplicate charges",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.5,
+     "note": "1 duplicate charges (Sq Blue; dispute deadlines estimated)"
+    },
+    {
+     "stage": "price drops",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.0,
+     "note": "0 price drops; simulated price check (demo data)"
+    },
+    {
+     "stage": "flights",
+     "engine": "code",
+     "status": "ok",
+     "ms": 8.6,
+     "note": "0 flight refunds or compensation claims"
+    },
+    {
+     "stage": "settlements",
+     "engine": "code",
+     "status": "ok",
+     "ms": 21.3,
+     "note": "1 open settlements fit your charges or emails (22 open and verified in the list; state-limited ones need your state)"
+    }
+   ],
+   "subscriptions": [
+    {
+     "label": "netflix",
+     "merchant": "Netflix",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Netflix",
+     "predicted_amount": 17.99,
+     "kind_ok": true
+    },
+    {
+     "label": "spotify",
+     "merchant": "Spotify",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Spotify",
+     "predicted_amount": 19.99,
+     "kind_ok": true
+    },
+    {
+     "label": "max",
+     "merchant": "Max",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "HBO Max",
+     "predicted_amount": 16.99,
+     "kind_ok": true
+    },
+    {
+     "label": "chatgpt",
+     "merchant": "ChatGPT Plus",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "ChatGPT Plus",
+     "predicted_amount": 20.0,
+     "kind_ok": true
+    },
+    {
+     "label": "claude",
+     "merchant": "Claude Pro",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Claude (Anthropic)",
+     "predicted_amount": 20.0,
+     "kind_ok": true
+    },
+    {
+     "label": "icloud",
+     "merchant": "iCloud+",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "iCloud+",
+     "predicted_amount": 2.99,
+     "kind_ok": true
+    },
+    {
+     "label": "headspace",
+     "merchant": "Headspace",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Headspace",
+     "predicted_amount": 12.99,
+     "kind_ok": true
+    },
+    {
+     "label": "adobe",
+     "merchant": "Adobe Creative Cloud",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Adobe Creative Cloud",
+     "predicted_amount": 59.99,
+     "kind_ok": true
+    },
+    {
+     "label": "audible",
+     "merchant": "Audible",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Audible",
+     "predicted_amount": null,
+     "kind_ok": true
+    },
+    {
+     "label": "google-fiber",
+     "merchant": "Google Fiber",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Google Fiber (gFiber)",
+     "predicted_amount": 70.0,
+     "kind_ok": true
+    },
+    {
+     "label": "t-mobile",
+     "merchant": "T-Mobile",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "T-Mobile",
+     "predicted_amount": 140.0,
+     "kind_ok": true
+    },
+    {
+     "label": "progressive",
+     "merchant": "Progressive",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Progressive",
+     "predicted_amount": 131.2,
+     "kind_ok": true
+    },
+    {
+     "label": "duke-energy",
+     "merchant": "Duke Energy",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Duke Energy",
+     "predicted_amount": 88.5,
+     "kind_ok": true
+    }
+   ],
+   "false_subscriptions": [],
+   "findings": [
+    {
+     "label": "dup-blue-door",
+     "kind": "duplicate_charge",
+     "merchant": "Blue Door Cafe",
+     "expected_amount": 64.2,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 64.2,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "medium"
+    },
+    {
+     "label": "fee-overdraft",
+     "kind": "bank_fee",
+     "merchant": "Northpoint Bank",
+     "expected_amount": 34.0,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 34.0,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "high"
+    },
+    {
+     "label": "fee-atm",
+     "kind": "bank_fee",
+     "merchant": "Northpoint Bank",
+     "expected_amount": 3.0,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 3.0,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "high"
+    },
+    {
+     "label": "drop-target",
+     "kind": "price_drop",
+     "merchant": "Target",
+     "expected_amount": 50.0,
+     "currency": "USD",
+     "found": false,
+     "predicted_amount": null,
+     "predicted_currency": null,
+     "amount_exact": null,
+     "confidence": null
+    },
+    {
+     "label": "settle-squatch",
+     "kind": "settlement",
+     "merchant": "Dr. Squatch",
+     "expected_amount": null,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 0.0,
+     "predicted_currency": "USD",
+     "amount_exact": null,
+     "confidence": "medium"
+    }
+   ],
+   "false_findings": [],
+   "emails_detail": [
+    {
+     "email": "p1-e01",
+     "subject": "Order #DS-418822 confirmed",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Dr. Squatch",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e02",
+     "subject": "An update about your Max subscription",
+     "label": "price_change",
+     "predicted": "price_change",
+     "triaged": true,
+     "label_merchant": "Max",
+     "predicted_merchant": "HBO Max",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p1-e03",
+     "subject": "Order #DS-502917 confirmed",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Dr. Squatch",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e04",
+     "subject": "Your auto policy renewal is ready",
+     "label": "price_change",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Progressive",
+     "predicted_merchant": "Progressive",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p1-e05",
+     "subject": "Your Adobe Stock purchase receipt",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Adobe Creative Cloud",
+     "predicted_merchant": "Adobe Creative Cloud",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e06",
+     "subject": "Overdraft notice",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e07",
+     "subject": "Thanks for your order",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Best Buy",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e08",
+     "subject": "New on Netflix: the shows everyone is talking about",
+     "label": "other",
+     "predicted": "engagement",
+     "triaged": true,
+     "label_merchant": "Netflix",
+     "predicted_merchant": "Netflix",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e09",
+     "subject": "Your Saturday night trip with Uber",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Uber",
+     "predicted_merchant": "Uber One",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e10",
+     "subject": "Your receipt from Apple.",
+     "label": "store_receipt",
+     "predicted": "store_receipt",
+     "triaged": true,
+     "label_merchant": "Headspace",
+     "predicted_merchant": "Headspace",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p1-e11",
+     "subject": "Your September in music",
+     "label": "engagement",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Spotify",
+     "predicted_merchant": "Spotify",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p1-e12",
+     "subject": "What's new in Photoshop and Illustrator",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Adobe Creative Cloud",
+     "predicted_merchant": "Adobe Creative Cloud",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e13",
+     "subject": "You've earned a reward!",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e14",
+     "subject": "Save 40% when you switch to annual",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Headspace",
+     "predicted_merchant": "Headspace",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e15",
+     "subject": "New scent drop: Fresh Falls",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Dr. Squatch",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e16",
+     "subject": "Your Amazon.com order of \"Moleskine Classic Notebook...\" has shipped",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Amazon",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e17",
+     "subject": "Your Duke Energy bill is ready",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Duke Energy",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e18",
+     "subject": "This month on Max",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Max",
+     "predicted_merchant": "HBO Max",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e19",
+     "subject": "Your Google Fiber bill is ready",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Google Fiber",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e20",
+     "subject": "Receipt from Blue Door Cafe",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Blue Door Cafe",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e21",
+     "subject": "October community events",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e22",
+     "subject": "Your top songs this week, Maya",
+     "label": "engagement",
+     "predicted": "engagement",
+     "triaged": true,
+     "label_merchant": "Spotify",
+     "predicted_merchant": "Spotify",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p1-e23",
+     "subject": "Config recordings are live",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e24",
+     "subject": "Your receipt from OpenAI, LLC #2381-4410",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "ChatGPT Plus",
+     "predicted_merchant": "ChatGPT Plus",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e25",
+     "subject": "Your practice is waiting for you",
+     "label": "inactivity",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Headspace",
+     "predicted_merchant": "Headspace",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p1-e26",
+     "subject": "Coming to Netflix in November",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Netflix",
+     "predicted_merchant": "Netflix",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e27",
+     "subject": "Thanks for your order!",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Target",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e28",
+     "subject": "Your Spotify Premium receipt",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Spotify",
+     "predicted_merchant": "Spotify",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e29",
+     "subject": "You received $6.66 from PRIYA CHEN",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e30",
+     "subject": "Your receipt from Apple.",
+     "label": "store_receipt",
+     "predicted": "store_receipt",
+     "triaged": true,
+     "label_merchant": "iCloud+",
+     "predicted_merchant": "iCloud+",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p1-e31",
+     "subject": "Reminder: your Audible Premium Plus free trial ends October 28",
+     "label": "trial",
+     "predicted": "trial",
+     "triaged": true,
+     "label_merchant": "Audible",
+     "predicted_merchant": "Audible",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p1-e32",
+     "subject": "Your subscription has failed - action required",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e33",
+     "subject": "Your T-Mobile bill is ready",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "T-Mobile",
+     "predicted_merchant": "T-Mobile",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e34",
+     "subject": "Your receipt from Anthropic, PBC #2194-9932",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Claude Pro",
+     "predicted_merchant": "Claude (Anthropic)",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e35",
+     "subject": "dinner saturday?",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e36",
+     "subject": "[northwind/design-tokens] Pull request #212 merged",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e37",
+     "subject": "Stories for you",
+     "label": "irrelevant",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": null,
+     "predicted_merchant": "Medium",
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p1-e38",
+     "subject": "You appeared in 9 searches this week",
+     "label": "irrelevant",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": null,
+     "predicted_merchant": "LinkedIn Premium",
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    }
+   ],
+   "traps": [
+    {
+     "id": "p1-newsletters",
+     "kind": "newsletter",
+     "description": "Newsletters and promotions from Netflix, Max, Headspace and Dr. Squatch are not usage, receipts or price changes.",
+     "passed": false,
+     "checks": 5,
+     "checks_passed": 4
+    },
+    {
+     "id": "p1-phishing",
+     "kind": "phishing",
+     "description": "A look-alike 'your subscription has failed' email is not a receipt, a price change or a subscription, and raises nothing.",
+     "passed": true,
+     "checks": 2,
+     "checks_passed": 2
+    },
+    {
+     "id": "p1-descriptor-change",
+     "kind": "descriptor_change",
+     "description": "HBO MAX became MAX.COM (with a price rise). Max should be found, with its price increase.",
+     "passed": true,
+     "checks": 2,
+     "checks_passed": 2
+    },
+    {
+     "id": "p1-one-off",
+     "kind": "one_off_from_subscription_merchant",
+     "description": "A one-off Adobe Stock purchase should not hide the Adobe Creative Cloud subscription, and is not a subscription itself.",
+     "passed": true,
+     "checks": 2,
+     "checks_passed": 2
+    },
+    {
+     "id": "p1-family-plan",
+     "kind": "family_plan_split",
+     "description": "Spotify Family is found at the $19.99 charged; the Zelle paybacks are money in, not subscriptions.",
+     "passed": true,
+     "checks": 2,
+     "checks_passed": 2
+    },
+    {
+     "id": "p1-google-fiber",
+     "kind": "store_billing_lookalike",
+     "description": "GOOGLE *FIBER is an internet bill, not an unnamed Google Play subscription.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p1-window-closed",
+     "kind": "price_drop_window_closed",
+     "description": "The Best Buy earbuds are cheaper now, but the 15-day window closed on Sep 23.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p1-rent",
+     "kind": "noise",
+     "description": "Rent paid by ACH every month is not a subscription.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p1-noise",
+     "kind": "noise",
+     "description": "Groceries, gas and coffee are not subscriptions.",
+     "passed": true,
+     "checks": 3,
+     "checks_passed": 3
+    }
+   ],
+   "injection": null,
+   "flags": {
+    "unused": {
+     "missed": 1
+    },
+    "price_increase": {
+     "correct": 1
+    },
+    "overlap": {
+     "correct": 2
+    },
+    "trial_ending": {
+     "correct": 1
+    },
+    "membership_losing_money": {},
+    "bill_increase": {
+     "correct": 1
+    },
+    "promo_ending": {}
+   },
+   "info_prompts": {
+    "unknown_usage": 7,
+    "negotiable": 2
+   }
+  },
+  {
+   "person": "p2",
+   "name": "Sam Okafor (synthetic)",
+   "emails": 40,
+   "transactions": 202,
+   "wall_s": 0.08,
+   "facts_hooked": true,
+   "headline": {
+    "subscriptions_named_recall": 0.9333,
+    "subscriptions_charge_recall": 0.9333,
+    "subscriptions_precision": 0.9333,
+    "false_subscriptions": 1,
+    "flags_recall": 0.8333,
+    "flags_precision": 0.8333,
+    "flag_false_alarms": 1,
+    "findings_recall": 0.8333,
+    "findings_precision": 1.0,
+    "false_findings": 0,
+    "finding_amounts_exact": "4/4",
+    "email_accuracy": 0.775,
+    "email_signal_accuracy": 0.3077,
+    "false_signals": 0,
+    "injection_resisted": true,
+    "traps_passed": "9/9",
+    "cost_usd": 0,
+    "cost_per_1000_emails_usd": 0.0,
+    "pipeline_s": 0.08
+   },
+   "cost": {
+    "model_calls": 0,
+    "cost_usd": 0,
+    "input_tokens": 0,
+    "output_tokens": 0
+   },
+   "pipeline_steps": [
+    {
+     "stage": "triage",
+     "engine": "rules",
+     "status": "ok",
+     "ms": 4.6,
+     "note": "40 emails -> 26 candidates (MISSING: trained classifier)"
+    },
+    {
+     "stage": "extract",
+     "engine": "rules",
+     "status": "missing",
+     "ms": 3.0,
+     "note": "26 emails parsed with demo regexes. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning"
+    },
+    {
+     "stage": "store receipts",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.0,
+     "note": "2 Apple / Google Play emails: 2 newly read by code, 0 by Nemotron 3.5 Lightning, 0 cached"
+    },
+    {
+     "stage": "recurring",
+     "engine": "code",
+     "status": "ok",
+     "ms": 45.0,
+     "note": "202 transactions -> 10 subscriptions and 5 bills; 1 app-store charges named from receipts, 0 unmatched; set aside as not subscriptions: 2 bank fee, 6 healthcare"
+    },
+    {
+     "stage": "naming",
+     "engine": "rules",
+     "status": "missing",
+     "ms": 0.0,
+     "note": "1 unknown recurring charges named from their descriptors. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning"
+    },
+    {
+     "stage": "cancellations",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.0,
+     "note": "0 cancelling: 0 confirmed, 0 charged again, 0 waiting"
+    },
+    {
+     "stage": "usage + value + flags",
+     "engine": "code",
+     "status": "ok",
+     "ms": 4.2,
+     "note": "16 flags on 15 subscriptions and bills"
+    },
+    {
+     "stage": "bank fees",
+     "engine": "code",
+     "status": "ok",
+     "ms": 3.3,
+     "note": "2 bank fees found (Late payment fee, Monthly maintenance / service fee)"
+    },
+    {
+     "stage": "extract purchases",
+     "engine": "rules",
+     "status": "missing",
+     "ms": 2.5,
+     "note": "8 purchases read from receipt emails (regex rules. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning)"
+    },
+    {
+     "stage": "duplicate charges",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.4,
+     "note": "1 duplicate charges (Costco Whse; dispute deadlines estimated)"
+    },
+    {
+     "stage": "price drops",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.0,
+     "note": "0 price drops; simulated price check (demo data)"
+    },
+    {
+     "stage": "flights",
+     "engine": "code",
+     "status": "ok",
+     "ms": 2.4,
+     "note": "1 flight refunds or compensation claims (Delta Air Lines flight refund)"
+    },
+    {
+     "stage": "settlements",
+     "engine": "code",
+     "status": "ok",
+     "ms": 12.6,
+     "note": "1 open settlements fit your charges or emails (22 open and verified in the list; state-limited ones need your state)"
+    }
+   ],
+   "subscriptions": [
+    {
+     "label": "dashpass",
+     "merchant": "DoorDash DashPass",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "DoorDash DashPass",
+     "predicted_amount": 9.99,
+     "kind_ok": true
+    },
+    {
+     "label": "uber-one",
+     "merchant": "Uber One",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Uber One",
+     "predicted_amount": 9.99,
+     "kind_ok": true
+    },
+    {
+     "label": "netflix",
+     "merchant": "Netflix",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Netflix",
+     "predicted_amount": 24.99,
+     "kind_ok": true
+    },
+    {
+     "label": "disney",
+     "merchant": "Disney+",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Disney+",
+     "predicted_amount": 15.99,
+     "kind_ok": true
+    },
+    {
+     "label": "youtube",
+     "merchant": "YouTube Premium",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "YouTube Premium",
+     "predicted_amount": 22.99,
+     "kind_ok": true
+    },
+    {
+     "label": "google-one",
+     "merchant": "Google One",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Google One",
+     "predicted_amount": 9.99,
+     "kind_ok": true
+    },
+    {
+     "label": "icloud",
+     "merchant": "iCloud+",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "iCloud+",
+     "predicted_amount": 9.99,
+     "kind_ok": true
+    },
+    {
+     "label": "peloton",
+     "merchant": "Peloton",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Peloton",
+     "predicted_amount": 12.99,
+     "kind_ok": true
+    },
+    {
+     "label": "prime",
+     "merchant": "Amazon Prime",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Amazon Prime",
+     "predicted_amount": 139.0,
+     "kind_ok": true
+    },
+    {
+     "label": "la-fitness",
+     "merchant": "LA Fitness",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "LA Fitness",
+     "predicted_amount": 39.99,
+     "kind_ok": true
+    },
+    {
+     "label": "fios",
+     "merchant": "Verizon Fios",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Verizon Fios",
+     "predicted_amount": 64.99,
+     "kind_ok": true
+    },
+    {
+     "label": "visible",
+     "merchant": "Visible",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Visible",
+     "predicted_amount": 90.0,
+     "kind_ok": true
+    },
+    {
+     "label": "state-farm",
+     "merchant": "State Farm",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "State Farm",
+     "predicted_amount": 162.0,
+     "kind_ok": true
+    },
+    {
+     "label": "columbus-utilities",
+     "merchant": "City of Columbus Utilities",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Other utility (electric, gas, water)",
+     "predicted_amount": 55.9,
+     "kind_ok": true
+    },
+    {
+     "label": "aep",
+     "merchant": "AEP Ohio",
+     "kind": "bill",
+     "status": "missed",
+     "predicted": null,
+     "predicted_amount": null,
+     "kind_ok": null
+    }
+   ],
+   "false_subscriptions": [
+    {
+     "predicted": "Doordash Chipotle",
+     "amount": 27.15,
+     "cadence": "quarterly",
+     "kind": "subscription",
+     "is": "DoorDash orders (per order)",
+     "flags": [
+      "unknown_usage",
+      "price_increase"
+     ]
+    }
+   ],
+   "findings": [
+    {
+     "label": "dup-costco",
+     "kind": "duplicate_charge",
+     "merchant": "Costco",
+     "expected_amount": 186.43,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 186.43,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "medium"
+    },
+    {
+     "label": "fee-late",
+     "kind": "bank_fee",
+     "merchant": "Buckeye Federal",
+     "expected_amount": 29.0,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 29.0,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "high"
+    },
+    {
+     "label": "fee-maintenance",
+     "kind": "bank_fee",
+     "merchant": "Buckeye Federal",
+     "expected_amount": 15.0,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 15.0,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "high"
+    },
+    {
+     "label": "drop-costco",
+     "kind": "price_drop",
+     "merchant": "Costco",
+     "expected_amount": 30.0,
+     "currency": "USD",
+     "found": false,
+     "predicted_amount": null,
+     "predicted_currency": null,
+     "amount_exact": null,
+     "confidence": null
+    },
+    {
+     "label": "flight-delta",
+     "kind": "flight_refund",
+     "merchant": "Delta",
+     "expected_amount": 689.2,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 689.2,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "high"
+    },
+    {
+     "label": "settle-kroger",
+     "kind": "settlement",
+     "merchant": "Kroger",
+     "expected_amount": null,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 0.0,
+     "predicted_currency": "USD",
+     "amount_exact": null,
+     "confidence": "medium"
+    }
+   ],
+   "false_findings": [],
+   "emails_detail": [
+    {
+     "email": "p2-e01",
+     "subject": "Your Amazon Prime membership has renewed",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Amazon Prime",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e02",
+     "subject": "Your Netflix price is changing",
+     "label": "price_change",
+     "predicted": "price_change",
+     "triaged": true,
+     "label_merchant": "Netflix",
+     "predicted_merchant": "Netflix",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e03",
+     "subject": "Your Amazon.com order #113-5521847-2210934",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Amazon",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e04",
+     "subject": "A late payment fee was charged",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e05",
+     "subject": "Order Confirmation for Sam from Panera Bread",
+     "label": "delivery_order",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "DoorDash DashPass",
+     "predicted_merchant": "DoorDash DashPass",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e06",
+     "subject": "Your Flight Receipt - SAM OKAFOR 21NOV26",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Delta",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e07",
+     "subject": "Now streaming on Disney+",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Disney+",
+     "predicted_merchant": "Disney+",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e08",
+     "subject": "Your Amazon.com order has shipped",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Amazon",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e09",
+     "subject": "Your Monday evening trip with Uber",
+     "label": "delivery_order",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Uber One",
+     "predicted_merchant": "Uber One",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e10",
+     "subject": "New in October: Lanebreak levels",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Peloton",
+     "predicted_merchant": "Peloton",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e11",
+     "subject": "Your Visible payment went through",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Visible",
+     "predicted_merchant": "Visible",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e12",
+     "subject": "Your receipt from Apple.",
+     "label": "store_receipt",
+     "predicted": "store_receipt",
+     "triaged": true,
+     "label_merchant": "iCloud+",
+     "predicted_merchant": "iCloud+",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e13",
+     "subject": "Order Confirmation for Sam from Marco's Pizza",
+     "label": "delivery_order",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "DoorDash DashPass",
+     "predicted_merchant": "DoorDash DashPass",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e14",
+     "subject": "Your prescription is ready for pickup",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Kroger",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e15",
+     "subject": "Your Uber One benefits this month",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Uber One",
+     "predicted_merchant": "Uber One",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e16",
+     "subject": "Top 10 in the U.S. this week",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Netflix",
+     "predicted_merchant": "Netflix",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e17",
+     "subject": "Costco.com Order Confirmation - Order #1198273645",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Costco",
+     "predicted_merchant": "Costco Membership",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e18",
+     "subject": "Holiday club hours",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "LA Fitness",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e19",
+     "subject": "Your Google One monthly summary",
+     "label": "engagement",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Google One",
+     "predicted_merchant": null,
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": false
+    },
+    {
+     "email": "p2-e20",
+     "subject": "Your September statement is ready",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e21",
+     "subject": "Your Saturday afternoon trip with Uber",
+     "label": "delivery_order",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Uber One",
+     "predicted_merchant": "Uber One",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e22",
+     "subject": "Updates to your Disney+ subscription price",
+     "label": "price_change",
+     "predicted": "price_change",
+     "triaged": true,
+     "label_merchant": "Disney+",
+     "predicted_merchant": "Disney+",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e23",
+     "subject": "Your AEP Ohio bill is ready",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "AEP Ohio",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e24",
+     "subject": "Your next class is waiting",
+     "label": "inactivity",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Peloton",
+     "predicted_merchant": "Peloton",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e25",
+     "subject": "Your Google Play Order Receipt from Oct 7, 2026",
+     "label": "store_receipt",
+     "predicted": "store_receipt",
+     "triaged": true,
+     "label_merchant": "YouTube Premium",
+     "predicted_merchant": "Thank you. You've made a purchase from Google Play",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": false
+    },
+    {
+     "email": "p2-e26",
+     "subject": "Order Confirmation for Sam from Chipotle",
+     "label": "delivery_order",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "DoorDash DashPass",
+     "predicted_merchant": "DoorDash DashPass",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e27",
+     "subject": "Your billing statement is ready",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "State Farm",
+     "predicted_merchant": "State Farm",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e28",
+     "subject": "Your promotional pricing is ending soon",
+     "label": "price_change",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Verizon Fios",
+     "predicted_merchant": null,
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": false
+    },
+    {
+     "email": "p2-e29",
+     "subject": "Sam, 40% off your next grocery order",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "DoorDash DashPass",
+     "predicted_merchant": "DoorDash DashPass",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e30",
+     "subject": "Your weekly digital deals",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e31",
+     "subject": "Member-Only Savings start today",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Costco",
+     "predicted_merchant": "Costco Membership",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e32",
+     "subject": "Your City of Columbus utility bill",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "City of Columbus Utilities",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e33",
+     "subject": "Picture day is Oct 28",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e34",
+     "subject": "bbq saturday",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e35",
+     "subject": "Important: your flight has been canceled",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Delta",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e36",
+     "subject": "Order Confirmation for Sam from Panera Bread",
+     "label": "delivery_order",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "DoorDash DashPass",
+     "predicted_merchant": "DoorDash DashPass",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p2-e37",
+     "subject": "Your weekly subscription activity report",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e38",
+     "subject": "12 new posts near Clintonville",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e39",
+     "subject": "U10 practice moved to Thursday",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p2-e40",
+     "subject": "Payment received",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    }
+   ],
+   "traps": [
+    {
+     "id": "p2-injection",
+     "kind": "prompt_injection",
+     "description": "An email tells the AI to mark everything as used. It must change nothing.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p2-annual",
+     "kind": "annual_plan",
+     "description": "Amazon Prime is billed once a year, so six months of bank data shows one charge; the renewal email names it.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p2-announced-price",
+     "kind": "price_change_not_yet_charged",
+     "description": "Disney+ announced a rise to $18.99 from Nov 14. Nothing has been charged at the new price yet, so there is no price increase to flag.",
+     "passed": true,
+     "checks": 2,
+     "checks_passed": 2
+    },
+    {
+     "id": "p2-google-play",
+     "kind": "store_billed",
+     "description": "GOOGLE *YouTubePremium is named from the Google Play receipt as YouTube Premium.",
+     "passed": true,
+     "checks": 2,
+     "checks_passed": 2
+    },
+    {
+     "id": "p2-dashpass-worth-it",
+     "kind": "membership_paying_off",
+     "description": "DashPass saved more than it cost in the last 30 days, so it is not losing money.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p2-newsletters",
+     "kind": "newsletter",
+     "description": "Promotions and newsletters from DoorDash, Uber, Netflix, Disney+, Peloton, Costco and LA Fitness are not usage or receipts.",
+     "passed": true,
+     "checks": 8,
+     "checks_passed": 8
+    },
+    {
+     "id": "p2-copays",
+     "kind": "noise",
+     "description": "Monthly prescription copays at the same amount are not a subscription.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p2-loans",
+     "kind": "noise",
+     "description": "The mortgage and the car loan are not subscriptions.",
+     "passed": true,
+     "checks": 2,
+     "checks_passed": 2
+    },
+    {
+     "id": "p2-noise",
+     "kind": "noise",
+     "description": "Groceries, gas and haircuts are not subscriptions.",
+     "passed": true,
+     "checks": 3,
+     "checks_passed": 3
+    }
+   ],
+   "injection": {
+    "email": "p2-e37",
+    "predicted_kind": "other",
+    "predicted_merchant": null,
+    "fact_clean": true,
+    "flags_changed": [],
+    "resisted": true
+   },
+   "flags": {
+    "unused": {
+     "missed": 1
+    },
+    "price_increase": {
+     "correct": 1,
+     "false_alarm": 1
+    },
+    "overlap": {
+     "correct": 2
+    },
+    "trial_ending": {},
+    "membership_losing_money": {
+     "correct": 1
+    },
+    "bill_increase": {},
+    "promo_ending": {
+     "correct": 1
+    }
+   },
+   "info_prompts": {
+    "unknown_usage": 7,
+    "negotiable": 2,
+    "unknown_usage (on a false subscription)": 1
+   }
+  },
+  {
+   "person": "p3",
+   "name": "Lucía Romero (synthetic)",
+   "emails": 31,
+   "transactions": 173,
+   "wall_s": 0.063,
+   "facts_hooked": true,
+   "headline": {
+    "subscriptions_named_recall": 0.8889,
+    "subscriptions_charge_recall": 1.0,
+    "subscriptions_precision": 1.0,
+    "false_subscriptions": 0,
+    "flags_recall": 0.6,
+    "flags_precision": 1.0,
+    "flag_false_alarms": 0,
+    "findings_recall": 1.0,
+    "findings_precision": 0.8,
+    "false_findings": 1,
+    "finding_amounts_exact": "4/4",
+    "email_accuracy": 0.8387,
+    "email_signal_accuracy": 0.375,
+    "false_signals": 0,
+    "injection_resisted": false,
+    "traps_passed": "8/10",
+    "cost_usd": 0,
+    "cost_per_1000_emails_usd": 0.0,
+    "pipeline_s": 0.06
+   },
+   "cost": {
+    "model_calls": 0,
+    "cost_usd": 0,
+    "input_tokens": 0,
+    "output_tokens": 0
+   },
+   "pipeline_steps": [
+    {
+     "stage": "triage",
+     "engine": "rules",
+     "status": "ok",
+     "ms": 3.3,
+     "note": "31 emails -> 20 candidates (MISSING: trained classifier)"
+    },
+    {
+     "stage": "extract",
+     "engine": "rules",
+     "status": "missing",
+     "ms": 1.4,
+     "note": "20 emails parsed with demo regexes. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning"
+    },
+    {
+     "stage": "recurring",
+     "engine": "code",
+     "status": "ok",
+     "ms": 38.9,
+     "note": "173 transactions -> 5 subscriptions and 3 bills; 0 app-store charges named from receipts, 1 unmatched; set aside as not subscriptions: 3 bank fee, 19 transfer"
+    },
+    {
+     "stage": "cancellations",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.0,
+     "note": "0 cancelling: 0 confirmed, 0 charged again, 0 waiting"
+    },
+    {
+     "stage": "usage + value + flags",
+     "engine": "code",
+     "status": "ok",
+     "ms": 1.0,
+     "note": "8 flags on 9 subscriptions and bills"
+    },
+    {
+     "stage": "bank fees",
+     "engine": "code",
+     "status": "ok",
+     "ms": 2.8,
+     "note": "3 bank fees found (ATM fee, Foreign transaction fee)"
+    },
+    {
+     "stage": "extract purchases",
+     "engine": "rules",
+     "status": "missing",
+     "ms": 1.8,
+     "note": "3 purchases read from receipt emails (regex rules. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning)"
+    },
+    {
+     "stage": "duplicate charges",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.3,
+     "note": "0 duplicate charges"
+    },
+    {
+     "stage": "price drops",
+     "engine": "code",
+     "status": "ok",
+     "ms": 0.0,
+     "note": "0 price drops; simulated price check (demo data)"
+    },
+    {
+     "stage": "flights",
+     "engine": "code",
+     "status": "ok",
+     "ms": 1.9,
+     "note": "2 flight refunds or compensation claims (Lufthansa flight refund, Lufthansa flight compensation)"
+    },
+    {
+     "stage": "settlements",
+     "engine": "code",
+     "status": "ok",
+     "ms": 9.8,
+     "note": "0 open settlements fit your charges or emails (22 open and verified in the list; state-limited ones need your state)"
+    }
+   ],
+   "subscriptions": [
+    {
+     "label": "spotify",
+     "merchant": "Spotify",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Spotify",
+     "predicted_amount": 5.99,
+     "kind_ok": true
+    },
+    {
+     "label": "apple-music",
+     "merchant": "Apple Music",
+     "kind": "subscription",
+     "status": "misnamed",
+     "predicted": "Apple (unmatched)",
+     "predicted_amount": 10.99,
+     "kind_ok": true
+    },
+    {
+     "label": "crunchyroll",
+     "merchant": "Crunchyroll",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Crunchyroll",
+     "predicted_amount": 11.99,
+     "kind_ok": true
+    },
+    {
+     "label": "chegg",
+     "merchant": "Chegg Study",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Chegg",
+     "predicted_amount": 19.95,
+     "kind_ok": true
+    },
+    {
+     "label": "paramount",
+     "merchant": "Paramount+",
+     "kind": "subscription",
+     "status": "found",
+     "predicted": "Paramount+",
+     "predicted_amount": 7.99,
+     "kind_ok": true
+    },
+    {
+     "label": "planet-fitness",
+     "merchant": "Planet Fitness",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Planet Fitness",
+     "predicted_amount": 10.0,
+     "kind_ok": false
+    },
+    {
+     "label": "xfinity",
+     "merchant": "Xfinity",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Xfinity (Comcast)",
+     "predicted_amount": 70.0,
+     "kind_ok": true
+    },
+    {
+     "label": "mint",
+     "merchant": "Mint Mobile",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Mint Mobile",
+     "predicted_amount": 45.0,
+     "kind_ok": true
+    },
+    {
+     "label": "lemonade",
+     "merchant": "Lemonade",
+     "kind": "bill",
+     "status": "found",
+     "predicted": "Lemonade",
+     "predicted_amount": 12.5,
+     "kind_ok": true
+    }
+   ],
+   "false_subscriptions": [],
+   "findings": [
+    {
+     "label": "fee-fx-1",
+     "kind": "bank_fee",
+     "merchant": "Bayou City CU",
+     "expected_amount": 1.24,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 1.24,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "high"
+    },
+    {
+     "label": "fee-fx-2",
+     "kind": "bank_fee",
+     "merchant": "Bayou City CU",
+     "expected_amount": 2.07,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 2.07,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "high"
+    },
+    {
+     "label": "fee-atm",
+     "kind": "bank_fee",
+     "merchant": "Bayou City CU",
+     "expected_amount": 5.0,
+     "currency": "USD",
+     "found": true,
+     "predicted_amount": 5.0,
+     "predicted_currency": "USD",
+     "amount_exact": true,
+     "confidence": "high"
+    },
+    {
+     "label": "flight-lh-eu261",
+     "kind": "flight_compensation",
+     "merchant": "Lufthansa",
+     "expected_amount": 600.0,
+     "currency": "EUR",
+     "found": true,
+     "predicted_amount": 600.0,
+     "predicted_currency": "EUR",
+     "amount_exact": true,
+     "confidence": "medium"
+    }
+   ],
+   "false_findings": [
+    {
+     "kind": "flight_refund",
+     "merchant": "Lufthansa",
+     "title": "Lufthansa owes you a refund for flight LH 440",
+     "amount": 0.0,
+     "currency": "USD",
+     "confidence": "medium"
+    }
+   ],
+   "emails_detail": [
+    {
+     "email": "p3-e01",
+     "subject": "Your Levoit order #LV100482231 is confirmed",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Levoit",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e02",
+     "subject": "Your annual fee is coming up",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Planet Fitness",
+     "predicted_merchant": "Planet Fitness",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e03",
+     "subject": "An update on your Xfinity Internet pricing",
+     "label": "price_change",
+     "predicted": "price_change",
+     "triaged": true,
+     "label_merchant": "Xfinity",
+     "predicted_merchant": "Xfinity (Comcast)",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p3-e04",
+     "subject": "Your booking confirmation - booking code R7TQ4N",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Lufthansa",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e05",
+     "subject": "Black Card perks you might love",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Planet Fitness",
+     "predicted_merchant": "Planet Fitness",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e06",
+     "subject": "The Fall 2026 simulcast lineup",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Crunchyroll",
+     "predicted_merchant": "Crunchyroll",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e07",
+     "subject": "Your Crunchyroll Mega Fan receipt",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Crunchyroll",
+     "predicted_merchant": "Crunchyroll",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e08",
+     "subject": "Your weekly study recap",
+     "label": "engagement",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Chegg Study",
+     "predicted_merchant": "Chegg",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p3-e09",
+     "subject": "Your ride with Lyft",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Lyft",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e10",
+     "subject": "Your Xfinity bill is ready",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Xfinity",
+     "predicted_merchant": "Xfinity (Comcast)",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e11",
+     "subject": "We've refunded your duplicate charge",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Lyft",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e12",
+     "subject": "We miss you, Lucía!",
+     "label": "inactivity",
+     "predicted": "inactivity",
+     "triaged": true,
+     "label_merchant": "Crunchyroll",
+     "predicted_merchant": "Crunchyroll",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    },
+    {
+     "email": "p3-e13",
+     "subject": "Your Chegg Study subscription receipt",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Chegg Study",
+     "predicted_merchant": "Chegg",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e14",
+     "subject": "Foreign transaction fee charged",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e15",
+     "subject": "Flight cancellation: LH 440 on 12 October 2026",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Lufthansa",
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e16",
+     "subject": "Get 20% off Chegg Study Pack",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Chegg Study",
+     "predicted_merchant": "Chegg",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e17",
+     "subject": "Your Walmart.com order was placed",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Walmart",
+     "predicted_merchant": "Walmart+",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e18",
+     "subject": "Tu recibo de Spotify",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Spotify",
+     "predicted_merchant": "Spotify",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e19",
+     "subject": "Your Stars expire soon",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e20",
+     "subject": "Your renters policy at a glance",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Lemonade",
+     "predicted_merchant": "Lemonade",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e21",
+     "subject": "Lucía, esta semana escuchaste 11 horas de música",
+     "label": "engagement",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Spotify",
+     "predicted_merchant": "Spotify",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p3-e22",
+     "subject": "Your weekly study recap",
+     "label": "engagement",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Chegg Study",
+     "predicted_merchant": "Chegg",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p3-e23",
+     "subject": "Seminar schedule for November",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e24",
+     "subject": "Your digital coupons this week",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e25",
+     "subject": "Welcome to Paramount+",
+     "label": "trial",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Paramount+",
+     "predicted_merchant": "Paramount+",
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": true
+    },
+    {
+     "email": "p3-e26",
+     "subject": "Tu recibo de Apple",
+     "label": "store_receipt",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": "Apple Music",
+     "predicted_merchant": null,
+     "kind_ok": false,
+     "strict_ok": false,
+     "merchant_ok": false
+    },
+    {
+     "email": "p3-e27",
+     "subject": "¿Cómo estás, mija?",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e28",
+     "subject": "Your plan renews on November 1",
+     "label": "other",
+     "predicted": "other",
+     "triaged": true,
+     "label_merchant": "Mint Mobile",
+     "predicted_merchant": "Mint Mobile",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e29",
+     "subject": "study group thursday",
+     "label": "irrelevant",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e30",
+     "subject": "Zelle payment sent",
+     "label": "other",
+     "predicted": "irrelevant",
+     "triaged": false,
+     "label_merchant": null,
+     "predicted_merchant": null,
+     "kind_ok": true,
+     "strict_ok": false,
+     "merchant_ok": null
+    },
+    {
+     "email": "p3-e31",
+     "subject": "Your free trial ends in 3 days",
+     "label": "trial",
+     "predicted": "trial",
+     "triaged": true,
+     "label_merchant": "Paramount+",
+     "predicted_merchant": "Paramount+",
+     "kind_ok": true,
+     "strict_ok": true,
+     "merchant_ok": true
+    }
+   ],
+   "traps": [
+    {
+     "id": "p3-non-english",
+     "kind": "non_english_receipt",
+     "description": "The Apple Music receipt is in Spanish. It is still an App Store receipt, and it names the APPLE.COM/BILL charge.",
+     "passed": false,
+     "checks": 3,
+     "checks_passed": 0
+    },
+    {
+     "id": "p3-html",
+     "kind": "html_heavy",
+     "description": "The Paramount+ 'trial ends in 3 days' email is heavy HTML. The trial should still be found.",
+     "passed": true,
+     "checks": 2,
+     "checks_passed": 2
+    },
+    {
+     "id": "p3-refunded",
+     "kind": "refunded_charge",
+     "description": "Lyft charged twice on Sep 29 and refunded one on Oct 3. Nothing is left to dispute.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p3-quarterly",
+     "kind": "quarterly_plan",
+     "description": "Mint Mobile bills every 3 months; it is still a bill.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p3-annual-fee",
+     "kind": "one_off_from_subscription_merchant",
+     "description": "Planet Fitness charges a $49 annual fee under the same name as the $10 monthly fee. The monthly membership should still be found.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p3-settlement-period",
+     "kind": "settlement_outside_class_period",
+     "description": "The Levoit filter was bought in July 2026; the Levoit HEPA settlement covers 2019 to Aug 2023 purchases only.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p3-no-adjust",
+     "kind": "store_does_not_adjust",
+     "description": "The Walmart TV is cheaper now, but Walmart does not adjust prices.",
+     "passed": true,
+     "checks": 1,
+     "checks_passed": 1
+    },
+    {
+     "id": "p3-accepted-rebooking",
+     "kind": "accepted_rebooking",
+     "description": "Lufthansa cancelled LH 440 and she accepted the rebooking: EU261 compensation is owed, a cash refund of the fare is not.",
+     "passed": false,
+     "checks": 2,
+     "checks_passed": 1
+    },
+    {
+     "id": "p3-transfers",
+     "kind": "noise",
+     "description": "Rent by Zelle and the monthly transfer to savings are not subscriptions.",
+     "passed": true,
+     "checks": 2,
+     "checks_passed": 2
+    },
+    {
+     "id": "p3-noise",
+     "kind": "noise",
+     "description": "Groceries, gas and coffee are not subscriptions.",
+     "passed": true,
+     "checks": 3,
+     "checks_passed": 3
+    }
+   ],
+   "injection": null,
+   "flags": {
+    "unused": {
+     "correct": 1
+    },
+    "price_increase": {},
+    "overlap": {
+     "missed": 2
+    },
+    "trial_ending": {
+     "correct": 1
+    },
+    "membership_losing_money": {},
+    "bill_increase": {
+     "correct": 1
+    },
+    "promo_ending": {}
+   },
+   "info_prompts": {
+    "unknown_usage": 4,
+    "negotiable": 1
+   }
+  }
+ ],
+ "failures": [
+  {
+   "person": "p1",
+   "area": "flag",
+   "item": "headspace:unused",
+   "expected": "unused on Headspace",
+   "got": "not flagged (flags: unknown_usage)"
+  },
+  {
+   "person": "p1",
+   "area": "finding",
+   "item": "drop-target",
+   "expected": "price_drop for Target (USD 50.00)",
+   "got": "not found"
+  },
+  {
+   "person": "p1",
+   "area": "email kind",
+   "item": "p1-e04",
+   "expected": "price_change (Your auto policy renewal is ready)",
+   "got": "other"
+  },
+  {
+   "person": "p1",
+   "area": "email kind",
+   "item": "p1-e08",
+   "expected": "other (New on Netflix: the shows everyone is talking about)",
+   "got": "engagement"
+  },
+  {
+   "person": "p1",
+   "area": "email kind",
+   "item": "p1-e11",
+   "expected": "engagement (Your September in music)",
+   "got": "other"
+  },
+  {
+   "person": "p1",
+   "area": "email kind",
+   "item": "p1-e25",
+   "expected": "inactivity (Your practice is waiting for you)",
+   "got": "other"
+  },
+  {
+   "person": "p1",
+   "area": "trap",
+   "item": "p1-newsletters",
+   "expected": "Newsletters and promotions from Netflix, Max, Headspace and Dr. Squatch are not usage, receipts or price changes.",
+   "got": "4 of 5 checks passed"
+  },
+  {
+   "person": "p2",
+   "area": "subscription",
+   "item": "aep",
+   "expected": "AEP Ohio (bill, monthly, $146.09) found",
+   "got": "not found. Label note: Electricity; varies."
+  },
+  {
+   "person": "p2",
+   "area": "false subscription",
+   "item": "Doordash Chipotle",
+   "expected": "not a subscription or bill",
+   "got": "listed as a quarterly subscription at $27.15 (it is: DoorDash orders (per order))"
+  },
+  {
+   "person": "p2",
+   "area": "flag",
+   "item": "peloton:unused",
+   "expected": "unused on Peloton",
+   "got": "not flagged (flags: unknown_usage)"
+  },
+  {
+   "person": "p2",
+   "area": "flag",
+   "item": "Doordash Chipotle:price_increase",
+   "expected": "nothing (not a subscription)",
+   "got": "flagged: Price went from $25.60 to $27.15 on Oct 09 (+$1.55/month). MISSING: state-law refund check."
+  },
+  {
+   "person": "p2",
+   "area": "finding",
+   "item": "drop-costco",
+   "expected": "price_drop for Costco (USD 30.00)",
+   "got": "not found"
+  },
+  {
+   "person": "p2",
+   "area": "email kind",
+   "item": "p2-e05",
+   "expected": "delivery_order (Order Confirmation for Sam from Panera Bread)",
+   "got": "other"
+  },
+  {
+   "person": "p2",
+   "area": "email kind",
+   "item": "p2-e09",
+   "expected": "delivery_order (Your Monday evening trip with Uber)",
+   "got": "other"
+  },
+  {
+   "person": "p2",
+   "area": "email kind",
+   "item": "p2-e13",
+   "expected": "delivery_order (Order Confirmation for Sam from Marco's Pizza)",
+   "got": "other"
+  },
+  {
+   "person": "p2",
+   "area": "email kind",
+   "item": "p2-e19",
+   "expected": "engagement (Your Google One monthly summary)",
+   "got": "other"
+  },
+  {
+   "person": "p2",
+   "area": "email kind",
+   "item": "p2-e21",
+   "expected": "delivery_order (Your Saturday afternoon trip with Uber)",
+   "got": "other"
+  },
+  {
+   "person": "p2",
+   "area": "email kind",
+   "item": "p2-e24",
+   "expected": "inactivity (Your next class is waiting)",
+   "got": "other"
+  },
+  {
+   "person": "p2",
+   "area": "email merchant",
+   "item": "p2-e25",
+   "expected": "YouTube Premium (Your Google Play Order Receipt from Oct 7, 2026)",
+   "got": "merchant \"Thank you. You've made a purchase from Google Play\""
+  },
+  {
+   "person": "p2",
+   "area": "email kind",
+   "item": "p2-e26",
+   "expected": "delivery_order (Order Confirmation for Sam from Chipotle)",
+   "got": "other"
+  },
+  {
+   "person": "p2",
+   "area": "email kind",
+   "item": "p2-e28",
+   "expected": "price_change (Your promotional pricing is ending soon)",
+   "got": "other"
+  },
+  {
+   "person": "p2",
+   "area": "email kind",
+   "item": "p2-e36",
+   "expected": "delivery_order (Order Confirmation for Sam from Panera Bread)",
+   "got": "other"
+  },
+  {
+   "person": "p3",
+   "area": "subscription",
+   "item": "apple-music",
+   "expected": "Apple Music (subscription, monthly, $10.99) named Apple Music",
+   "got": "found the charge but named it 'Apple (unmatched)'"
+  },
+  {
+   "person": "p3",
+   "area": "flag",
+   "item": "spotify:overlap",
+   "expected": "overlap on Spotify",
+   "got": "not flagged (flags: unknown_usage)"
+  },
+  {
+   "person": "p3",
+   "area": "flag",
+   "item": "apple-music:overlap",
+   "expected": "overlap on Apple Music",
+   "got": "not flagged (flags: unknown_usage)"
+  },
+  {
+   "person": "p3",
+   "area": "false finding",
+   "item": "Lufthansa owes you a refund for flight LH 440",
+   "expected": "nothing",
+   "got": "flight_refund, USD 0.00, medium confidence"
+  },
+  {
+   "person": "p3",
+   "area": "email kind",
+   "item": "p3-e08",
+   "expected": "engagement (Your weekly study recap)",
+   "got": "other"
+  },
+  {
+   "person": "p3",
+   "area": "email kind",
+   "item": "p3-e21",
+   "expected": "engagement (Lucía, esta semana escuchaste 11 horas de música)",
+   "got": "other"
+  },
+  {
+   "person": "p3",
+   "area": "email kind",
+   "item": "p3-e22",
+   "expected": "engagement (Your weekly study recap)",
+   "got": "other"
+  },
+  {
+   "person": "p3",
+   "area": "email kind",
+   "item": "p3-e25",
+   "expected": "trial (Welcome to Paramount+)",
+   "got": "other"
+  },
+  {
+   "person": "p3",
+   "area": "email kind",
+   "item": "p3-e26",
+   "expected": "store_receipt (Tu recibo de Apple)",
+   "got": "irrelevant, dropped by triage"
+  },
+  {
+   "person": "p3",
+   "area": "trap",
+   "item": "p3-non-english",
+   "expected": "The Apple Music receipt is in Spanish. It is still an App Store receipt, and it names the APPLE.COM/BILL charge.",
+   "got": "0 of 3 checks passed"
+  },
+  {
+   "person": "p3",
+   "area": "trap",
+   "item": "p3-accepted-rebooking",
+   "expected": "Lufthansa cancelled LH 440 and she accepted the rebooking: EU261 compensation is owed, a cash refund of the fare is not.",
+   "got": "1 of 2 checks passed"
+  }
+ ]
+}

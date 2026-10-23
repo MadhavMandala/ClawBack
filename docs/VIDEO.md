@@ -87,12 +87,12 @@ round up.
 - **On-screen text:**
   - "Nemotron 3.5 Lightning reads every email. Nemotron 3 Super reads plan pages. Nemotron 3 Ultra judges and writes."
   - "All on Nebius Token Factory, with Zero Data Retention."
-  - "[EVAL: cost per 1,000 emails]"
+  - "About 6 cents per 1,000 emails"
 - **Voice-over:** "Every step is logged. Cheap rules run on everything. NVIDIA Nemotron 3.5 Lightning reads the
   emails that matter into plain facts. Nemotron 3 Super reads plan and pricing pages, and Nemotron 3 Ultra only runs
   when you click. All of it runs on Nebius Token Factory, with Zero Data Retention on. On our synthetic test inbox,
-  reading a thousand emails cost `[EVAL: cost per 1,000 emails]`."
-- **Depends on the merge:** the cost line needs `docs/EVAL.md`. If it isn't ready, cut the last sentence.
+  reading a thousand emails cost about six cents."
+- **Source:** the cost is the held-out set's whole-pipeline figure in `docs/EVAL.md` ($0.057 per 1,000 emails).
 
 ### 7. What's built, and what isn't (2:20 to 2:32)
 
@@ -106,7 +106,7 @@ round up.
 - **Screen:** back to the front page's closing line, "See what a month looks like with the highlighter on." Then
   the demo URL and the repo URL on a plain end card.
 - **On-screen text:**
-  - "On our synthetic test set: [EVAL: catch rate] caught, [EVAL: false alarms] false alarms."
+  - "On a held-out synthetic test set: every refund and fee found, 79% of problems flagged, 1 false alarm."
   - "NVIDIA Nemotron on Nebius Token Factory. Tavily search. Nylas email. Plaid banks."
   - the demo URL and the repo URL.
 - **Voice-over:** "ClawBack is for anyone who suspects they're paying for things they don't use, and doesn't have
