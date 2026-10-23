@@ -293,3 +293,25 @@ def test_demo_refund_is_confirmed_on_the_next_sync(client):
     assert found[dup["id"]]["confirmed_amount"] == 129.99 and "DEMO REFUND" in found[dup["id"]]["confirmed_from"]
     kinds = [e["kind"] for e in client.get("/api/recovered").json()["events"]]
     assert sorted(kinds) == ["cancelled_subscription", "refund"]
+
+
+def test_cancelling_an_unmatched_apple_charge_keeps_watching_once_a_receipt_names_it():
+    from datetime import datetime, timezone
+
+    from clawback.models import Email
+
+    charges = [Transaction(id=f"a{k}", date=days_ago(40 + 30 * k), description="APPLE.COM/BILL", amount=16.04)
+               for k in range(4)]
+    u = fresh("c11", charges)
+    u.cancel_pending["apple-bill-16-04"] = days_ago(35)
+    run("c11", TODAY)  # no receipt yet: "Apple (unmatched)"
+    assert u.cancellations["apple-bill-16-04"].merchant == "Apple (unmatched)"
+    d = charges[0].date - timedelta(days=1)
+    body = (f"Receipt\n{d:%B} {d.day}, {d.year}\nOrder ID: MT4KX2P90Z\nApp Store\nCalm: Sleep & Meditation\n"
+            "Calm Premium (Monthly)\n$14.99\nSubtotal $14.99\nTax $1.05\nVisa •••• 4242 $16.04")
+    u.emails = [Email(id="late", received_at=datetime(d.year, d.month, d.day, tzinfo=timezone.utc),
+                      sender="no_reply@email.apple.com", subject="Your receipt from Apple.", body_text=body)]
+    run("c11", TODAY)
+    s = u.subscriptions["apple-bill-16-04"]
+    assert s.merchant == "Calm" and s.status == "cancelled" and len(u.subscriptions) == 1
+    assert u.recovered["cancel:apple-bill-16-04"].merchant == "Calm"

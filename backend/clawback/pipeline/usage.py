@@ -139,8 +139,8 @@ def signals_for(sub: Subscription, facts: list[Fact], checkins, today: date,
     for i, (on, used) in enumerate(answers):
         counts_for = window if i == len(answers) - 1 else RECENT
         if today - on <= counts_for:
-            out.append(UsageSignal(kind="checkin", on=on, detail="you said you used it" if used else "you said you didn't use it",
-                                   weight=2.0 if used else -2.5))
+            detail = "you said you used it" if used else "you said you didn't use it"
+            out.append(UsageSignal(kind="checkin", on=on, detail=detail, weight=2.0 if used else -2.5))
     return out
 
 

@@ -6,8 +6,9 @@ Cancellations (UserData.cancel_pending, snapshots in UserData.cancellations)
   - A charge in the same series dated after the day cancelling started means "charged again after you started
     cancelling" (status charged_again, a high flag). A charge on that same day counts as before.
   - No charge by the next expected date (one period after the latest charge seen) plus a grace period (3 days for
-    weekly plans, 6 monthly, 8 quarterly, 10 annual) means confirmed cancelled. The subscription shows as cancelled and leaves the
-    monthly totals, and the history gets a dated event with its monthly saving and the charges that didn't come.
+    weekly plans, 6 monthly, 8 quarterly, 10 annual) means confirmed cancelled. The subscription shows as cancelled
+    and leaves the monthly totals, and the history gets a dated event with its monthly saving and the charges that
+    didn't come.
   - A confirmed cancellation stays confirmed when old charges roll out of the bank's window. A new charge in the
     series after it was confirmed reopens it as charged_again.
   - Keep (anything that removes the id from cancel_pending) drops the snapshot and its history event.
@@ -109,10 +110,16 @@ def check_cancellations(u: UserData, subs: list[Subscription], stopped: list[Sub
 
     active = {s.id: s for s in subs}
     gone = {s.id: s for s in stopped}
+    by_key = {s.series_key: s for s in [*stopped, *subs] if s.series_key}
     add_back: list[Subscription] = []
     for sid, started in u.cancel_pending.items():
-        sub = active.get(sid) or gone.get(sid)
         snap = u.cancellations.get(sid)
+        sub = active.get(sid) or gone.get(sid)
+        if sub is None and snap is not None and (renamed := by_key.get(snap.series_key)):
+            sub = renamed  # named since (an "Apple (unmatched)" series a receipt now names): same charges
+            series[sid] = series.get(sub.id, [])
+            sub.id = sid
+            snap.merchant, snap.category, snap.billed_by = sub.merchant, sub.category, sub.billed_by
         if snap is None or snap.started_on != started:
             if sub is None:
                 continue  # nothing known about it yet
@@ -123,7 +130,7 @@ def check_cancellations(u: UserData, subs: list[Subscription], stopped: list[Sub
                 id=sid, merchant=snap.merchant, category=snap.category, kind=snap.kind, cadence=snap.cadence,
                 amount=snap.amount, monthly_cost=snap.monthly_cost, last_charged=snap.last_charge,
                 detected_from=["bank"], billed_by=snap.billed_by)
-        if sid not in active:
+        if not any(s is sub for s in subs):
             add_back.append(sub)
         sub.cancellation = snap
         sub.status = "cancelled" if snap.status == "confirmed" else "cancel_pending"
