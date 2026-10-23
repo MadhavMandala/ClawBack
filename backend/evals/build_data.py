@@ -30,7 +30,7 @@ NAMES: dict[str, list[str]] = {
     "T-Mobile": ["t mobile", "tmobile"], "Progressive": ["progressive", "prog direct"], "Duke Energy": ["duke energy"],
     "DoorDash DashPass": ["dashpass", "doordash"], "Uber One": ["uber one"], "Disney+": ["disney"],
     "YouTube Premium": ["youtube"], "Google One": ["google one"], "Peloton": ["peloton"],
-    "Amazon Prime": ["amazon prime", "prime"], "LA Fitness": ["la fitness"], "Verizon Fios": ["fios"],
+    "Amazon Prime": ["amazon prime", "prime"], "LA Fitness": ["la fitness"], "Verizon Fios": ["fios", "verizon"],
     "Visible": ["visible"], "State Farm": ["state farm"], "City of Columbus Utilities": ["columbus", "utility"],
     "AEP Ohio": ["aep"], "Apple Music": ["apple music"], "Crunchyroll": ["crunchyroll"], "Chegg Study": ["chegg"],
     "Paramount+": ["paramount"], "Planet Fitness": ["planet fitness"], "Xfinity": ["xfinity", "comcast"],

@@ -1693,7 +1693,8 @@
     "kind": "price_change",
     "merchant": "Verizon Fios",
     "names": [
-     "fios"
+     "fios",
+     "verizon"
     ],
     "note": "A promotional rate ending: the price rises later."
    },
@@ -2140,7 +2141,8 @@
     "id": "fios",
     "merchant": "Verizon Fios",
     "names": [
-     "fios"
+     "fios",
+     "verizon"
     ],
     "kind": "bill",
     "category": "internet",
