@@ -26,7 +26,10 @@ rules.dispute_deadline("credit_card_billing_error", statement_sent_on)
 | `disputes.json` | Credit card billing errors (Reg Z 1026.13: written notice within 60 days, acknowledgement in 30 days, resolution within 2 billing cycles or 90 days at most). Also card unauthorized use (1026.12(b)), claims and defenses (1026.12(c)), debit/EFT errors (Reg E 1005.11: 60 days, phone OK, 10 business days or 45 days with provisional credit, 90 days for POS/foreign) and remittances (1005.33, 180 days). |
 | `bank_fees.json` | 8 fee kinds (ATM, wire, foreign transaction, returned payment, late payment, overdraft, NSF, monthly maintenance). Each has regex `patterns`, a factual `rule`, a neutral `reversal_tip` and a CFPB/OCC/eCFR source. `exclude_patterns` skips refunds and reversals. |
 | `bills.json` | 27 bill providers: 8 internet, 6 mobile, 5 insurance, 3 named utilities plus 1 generic utility, and 4 gyms. Each has its account page, change/cancel page and notes (cancellation method, ETF, equipment, gym cancellation rules). Utilities are `negotiable: false` and point to budget billing and assistance. |
-| `settlements.json` | 23 open class-action settlements (22 verified) with claim deadlines from 2026-10-26 to 2027-02-10, each with the official claim site. There are no `ftc_refund` rows: the FTC's current refund programs all pay automatically. |
+| `settlements.json` | 23 open class-action settlements (22 verified) with claim deadlines from 2026-10-26 to 2027-02-10, each with the official claim site. There are no `ftc_refund` rows: the FTC's current refund programs all pay automatically. `states` (added 2026-10-23, from each row's own `who_qualifies`) lists the states a state-limited class covers; a finding then needs the user's state. |
+| `auto_renewal.json` | Added 2026-10-23. Automatic-renewal laws for 12 jurisdictions (CA, NY, CO, IL, MN, VA, OR, DC, MA, VT, CT, DE): the rule, a plain `user_right` line for the cancel steps, limits (`applies_when`, `exclude_categories`), a quote and the official source. `federal`: ROSCA (15 U.S.C. 8403) and the status of the FTC's 2024 click-to-cancel amendments, which were vacated on 2025-07-08 and are not in force. |
+| `merchant_sites.json` | Added 2026-10-23. Each subscription merchant's own web domains (33 merchants). A cancel page found by search counts as the merchant's own only on these domains or their subdomains; community and forum pages never count. |
+| `review/` | Not live. `python -m clawback.findings.settlements_refresh` writes `review/settlements_candidates.json` here: candidate settlements for a person to check and copy by hand, rejected ones with reasons, and live rows whose deadline has passed. |
 
 ## How it was checked (2026-10-22)
 
@@ -85,4 +88,15 @@ rules.dispute_deadline("credit_card_billing_error", statement_sent_on)
   LiveHealth mainly need the Claim ID/PIN from a mailed or emailed notice. Apple and Telmate were read
   from Wayback copies because of Cloudflare, and GoodRx from its official PDFs. MDLIVE is
   `verified: false` (court notice only). Aggregators list different dates than the official sites for High 5 and the ATM
-  surcharge settlement; the official dates are used.
+  surcharge settlement; the official dates are used. SeatGeek's class is about Nevada *events*, so its
+  `evidence_words` are Nevada city names rather than a `states` entry (buyers can live anywhere).
+- **auto_renewal.json** (checked 2026-10-23): California's leginfo and mass.gov block scripts, so CA and MA
+  were read from Wayback copies of the official pages. New York's effective date (about 2025-11-05) is
+  180 days after the 2025 budget was signed. Colorado's compiled statutes aren't on a free official site
+  (the session law was read), and its online link is a safe harbor, not a duty, so its line doesn't say
+  "online". DC's code pages disagree about whether the act is implemented; its line shows only during a
+  free trial. Vermont covers yearly contracts only. Connecticut exempts national video streaming.
+  New York City's own rule and Utah's notice-only law are not included.
+- **merchant_sites.json**: domains, not pages. Some help centres answer 403 to scripts but load in a browser.
+  Broad domains (google.com, microsoft.com, apple.com) host user content; the code drops community, forum,
+  groups, sites and docs hosts and /thread/ style paths.
