@@ -32,9 +32,10 @@ BODY_LIMIT = 6000  # characters of body a model sees (the same cut everywhere)
 # Signals that flag an email on their own.
 STRONG: tuple[tuple[str, re.Pattern], ...] = (
     ("ignore-instructions", re.compile(
-        r"\b(?:ignore|disregard|forget|override|bypass)\b\W+(?:\w+\W+){0,4}?(?:previous|prior|above|earlier|preceding|"
-        r"all|any|your|the|system|these|those)\W+(?:\w+\W+){0,2}?(?:instructions?|prompts?|rules|directions|"
-        r"guidelines|messages?|context)\b", re.I)),
+        r"\b(?:ignore|disregard|forget|override|bypass|abandon)\b\W+(?:\w+\W+){0,4}?(?:previous|prior|above|"
+        r"earlier|preceding|all|any|your|the|system|these|those|original|existing|other)\W+(?:\w+\W+){0,2}?"
+        r"(?:instructions?|prompts?|rules|directions|guidelines|guidance|directives?|messages?|context|programming|"
+        r"constraints|polic(?:y|ies)|tasks?)\b", re.I)),
     ("role-change", re.compile(
         r"\byou\s+are\s+(?:now|no\s+longer)\b|\bfrom\s+now\s+on,?\s+(?:you|act|respond|reply|answer)\b|"
         r"\bpretend\s+(?:to\s+be|you\s+are)\b|\bact\s+as\s+(?:an?\s+|the\s+)?(?:ai|assistant|system|admin(?:istrator)?|"
@@ -52,7 +53,9 @@ STRONG: tuple[tuple[str, re.Pattern], ...] = (
         r"\b(?:respond|reply|answer|output|return)\s+(?:only\s+)?(?:with|in)\s+(?:json|the\s+following|this)\b|"
         r"\bset\s+(?:the\s+)?(?:amount|price|total|merchant|store|kind|fare|refund|is_order|source)\s*(?:field\s*)?"
         r"(?:to|=|:)|\b(?:report|classify|mark|label|treat|record)\s+(?:this|the)\s+(?:email|message|amount|price|"
-        r"total|order|fare)\s+as\b", re.I)),
+        r"total|order|fare)\s+as\b|\b(?:mark|label|classify|record|report|flag|count|tag)\s+(?:everything|all|every|each|"
+        r"them|it|this|these|the)\b[^.\n]{0,40}?\bas\s+(?:used|unused|active|inactive|engaged|engagement|relevant|"
+        r"irrelevant|important|safe|paid|a\s+(?:receipt|refund|trial|subscription|price\s+change))\b", re.I)),
     ("new-instructions", re.compile(
         r"\b(?:new|updated|real|hidden|secret|additional)\s+instructions?\s*(?::|follow|for\s+(?:the\s+)?(?:ai|"
         r"assistant|model))|\bsystem\s+prompt\b|\bjailbreak\b|\bprompt\s+injection\b|\bdeveloper\s+mode\b", re.I)),
