@@ -21,7 +21,8 @@ from .. import llm
 from ..findings import rulebook
 from ..merchants import APPLE_SUBSCRIPTIONS_URL, GOOGLE_PLAY_SUBSCRIPTIONS_URL, by_name
 from ..models import Subscription
-from . import cancel_lookup
+from ..store import store
+from . import cancel_lookup, rights
 
 
 PLACEHOLDER = "[your account email]"
@@ -145,6 +146,12 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
         if found.get("note"):
             missing.append(found["note"])
 
+    # The user's rights in one plain line (their state's law when they told us their state, else federal ROSCA).
+    law = rights.rights_for(store.user(user_id).state, sub)
+    steps += [r["text"] for r in law]
+    for r in {r["source_url"]: r for r in law}.values():
+        links.append({"label": f"The law: {r['title']}", "url": r["source_url"], "verified": True})
+
     missing.append("MISSING [cancel-confirmation]: ClawBack won't yet check that the next charge stopped.")
     email = write_email(user_id, sub)
     email["to"] = lookup.get("support_email")  # only an address found on the merchant's own page
@@ -157,6 +164,7 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
         "steps": steps,
         "email": email,
         "lookup": lookup,
+        "rights": law,
         "missing": missing,
         "prepared_on": today.isoformat(),
     }
