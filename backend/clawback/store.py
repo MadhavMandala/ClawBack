@@ -37,6 +37,7 @@ import hashlib
 import json
 import logging
 import threading
+import time
 import typing
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -148,6 +149,11 @@ class _Entry:
     version: int = 0  # the row version this copy was loaded from or last saved as
     digest: str = ""  # hash of the last saved JSON, so unchanged users aren't written again
     cold: bool = False  # loaded from disk in real mode: real emails must be read again before use
+    used: float = field(default_factory=time.monotonic)  # last store.user() call, for evicting idle users
+
+
+MAX_IN_MEMORY = 300  # users kept in memory; past this, users idle for EVICT_AFTER_S are saved and dropped
+EVICT_AFTER_S = 600.0
 
 
 class Store:
@@ -161,8 +167,26 @@ class Store:
         with self._lock:
             entry = self._users.get(user_id)
             if entry is None:
+                self._evict_idle()
                 entry = self._users[user_id] = self._load(user_id) or _Entry(UserData())
+            entry.used = time.monotonic()
             return entry.data
+
+    def _evict_idle(self) -> None:
+        """Keep memory bounded on a public demo. A user idle for 10 minutes has no request or background work
+        running (each touches its user constantly), so it is saved and dropped; it loads again on next use."""
+        if len(self._users) < MAX_IN_MEMORY:
+            return
+        cutoff = time.monotonic() - EVICT_AFTER_S
+        for user_id in sorted((u for u, e in self._users.items() if e.used < cutoff), key=lambda u: self._users[u].used):
+            if len(self._users) < MAX_IN_MEMORY:
+                break
+            try:
+                self.save(user_id)
+            except Exception as exc:  # keep it rather than lose a change
+                log.warning("could not save an idle user before dropping it (%s)", type(exc).__name__)
+                continue
+            self._users.pop(user_id, None)
 
     def reset(self, user_id: str) -> UserData:
         return self.replace(user_id, UserData())

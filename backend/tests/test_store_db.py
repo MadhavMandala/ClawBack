@@ -174,6 +174,22 @@ def test_api_save_never_overwrites_a_newer_row(caplog):
     assert set(store.user("u1").kept) == {"from-nightly"}  # the newer copy on disk won and is loaded
 
 
+def test_idle_users_are_saved_and_dropped_from_memory(monkeypatch):
+    import clawback.store as store_module
+
+    monkeypatch.setattr(store_module, "MAX_IN_MEMORY", 2)
+    for uid in ("u1", "u2"):
+        make_row(uid)
+        store.replace(uid, demo_user())
+    store.user("u1").kept["netflix"] = TODAY  # changed, not saved yet
+    store._users["u1"].used -= 3600  # idle for an hour
+    store.user("u3")  # a third user loads: u1 is saved, then dropped
+    assert "u1" not in store._users and {"u2", "u3"} <= set(store._users)
+    assert store.user("u1").kept == {"netflix": TODAY}  # loads again from disk, change included
+    store.user("u4")  # nobody else is idle: nothing is dropped
+    assert {"u1", "u2", "u4"} <= set(store._users)
+
+
 def test_cors_origins(monkeypatch):
     s = config.settings
     monkeypatch.setattr(s, "frontend_origin", "https://clawback.vercel.app/, http://localhost:3000")

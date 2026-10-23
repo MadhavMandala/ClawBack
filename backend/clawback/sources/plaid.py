@@ -234,6 +234,7 @@ class WebhookInvalid(Exception):
 
 
 def webhook_url() -> str:
+    # TODO(clawback): items linked before PUBLIC_API_URL was set have no webhook; /item/webhook/update would add it.
     return f"{config.settings.public_api_url}{WEBHOOK_PATH}"
 
 
