@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { call, forgetSession, type Me, type Settings as StateSettings } from "../api";
 import { bankNotice, connectBank, connectEmail } from "../connect";
 import { shortDate } from "../format";
+import InstallApp from "../components/InstallApp";
 import SiteNav from "../components/SiteNav";
 import { Check, External } from "../components/icons";
 import "./settings.css";
@@ -205,6 +206,14 @@ export default function Settings() {
                 Everything is kept encrypted in one database on the ClawBack server. The text of your emails is never written
                 to disk: ClawBack keeps the facts it read from each one, like a price or a renewal date.
               </p>
+            </Sec>
+
+            <Sec id="phone" title="On your phone">
+              <p>
+                ClawBack installs on your home screen and opens full screen, like an app. The installed app starts its
+                own session, so connect your email or bank there too.
+              </p>
+              <InstallApp />
             </Sec>
 
             <Sec id="models" title="AI use today">

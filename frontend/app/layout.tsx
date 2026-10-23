@@ -12,10 +12,15 @@ const mono = IBM_Plex_Mono({ subsets: ["latin"], variable: "--font-mono", weight
 
 export const metadata: Metadata = {
   title: "ClawBack",
+  applicationName: "ClawBack",
   description: "ClawBack reads your bank and email, finds money you're losing or owed, and prepares the request to get it back. You make the final click.",
+  // Added to an iPhone's home screen, it opens full screen like an app (docs/MOBILE.md, stage 1).
+  appleWebApp: { capable: true, title: "ClawBack", statusBarStyle: "black-translucent" },
+  formatDetection: { telephone: false },
 };
 
-export const viewport: Viewport = { themeColor: "#07110D", colorScheme: "dark" };
+// viewportFit "cover" lets the installed app draw under the notch; globals.css pads for the safe areas.
+export const viewport: Viewport = { themeColor: "#07110D", colorScheme: "dark", viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

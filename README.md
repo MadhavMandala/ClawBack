@@ -52,6 +52,9 @@ Pages:
 - http://localhost:3000/settings, "Your data": connections, your state, what's stored, delete everything;
 - http://localhost:3000/privacy, the privacy policy.
 
+On a phone, ClawBack installs on the home screen and opens full screen, like an app: the settings page has the
+install button (Android) or the steps (iPhone). A native app is planned; see [docs/MOBILE.md](docs/MOBILE.md).
+
 Each browser gets its own session and its own copy of the demo month. "Reset demo data" reloads it. To share
 one user across browsers in local development, set `CLAWBACK_SESSIONS=single`.
 
@@ -147,6 +150,7 @@ cost. Measured cost on the eval set: about $0.026 per 1,000 emails for the whole
 - [docs/EVAL.md](docs/EVAL.md): the labelled eval set, its results and every failure case
 - [docs/DEPLOY.md](docs/DEPLOY.md): deploy runbook (Nebius VM + Vercel), and the cleanup before going public
 - [docs/PRIVACY.md](docs/PRIVACY.md): the prototype privacy policy
+- [docs/MOBILE.md](docs/MOBILE.md): ClawBack on your phone: the installable web app now, a native app later
 - [docs/WRITEUP.md](docs/WRITEUP.md): the submission write-up draft
 - [docs/VIDEO.md](docs/VIDEO.md): the demo video script
 - [docs/token-factory-feedback.md](docs/token-factory-feedback.md): feedback on Token Factory and the models

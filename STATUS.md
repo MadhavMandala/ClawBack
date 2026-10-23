@@ -68,6 +68,7 @@ The table below is generated from `backend/clawback/missing.py`, the single sour
 | Model trace | Every step logs its tier, engine, time, tokens and cost, and the dashboard shows it | `trace.py` |
 | Front page | One demo month of statement lines with margin notes; live numbers from the backend | `frontend/app/page.tsx` |
 | Dashboard | Spend sentence and bar; money owed; subscriptions and bills grouped by what to do; cancelled subscriptions; Money back; new-since-last-visit alerts; a first-visit guide; panels with drafts; the build board; the trace | `frontend/app/dashboard/page.tsx` |
+| On your phone | Installs on the home screen and opens full screen: manifest, icons, iPhone settings, notch padding, an install button on the settings page. A native app is planned in `docs/MOBILE.md` | `frontend/app/manifest.ts`, `frontend/app/components/InstallApp.tsx` |
 | Settings and privacy | `/settings`: session, connections, state, what's stored, today's model use, delete everything. `/privacy`: the prototype policy | `frontend/app/settings`, `frontend/app/privacy` |
 | Eval | 109 synthetic emails and 589 transactions for three made-up people, with labels. `python -m evals.run` scores rules-only and live-model runs; see `docs/EVAL.md` | `backend/evals` |
 | Tests | 690 offline backend tests and 9 opt-in live tests (`CLAWBACK_LIVE=1`). No network; fake model, Nylas and Plaid clients | `backend/tests/` |
@@ -91,6 +92,7 @@ P0 = needed for the hackathon demo. P1 = needed for a convincing submission. P2 
 | P2 | Pipeline | Optional usage connections for services with APIs (e.g. Spotify listening history) | `not started` |
 | P2 | Pipeline | Browser extension that notices which subscribed sites you actually visit | `not started` |
 | P2 | Product | Alerts by email or push. In-app alerts (GET /api/alerts) are built | `backend/clawback/alerts.py` |
+| P2 | Product | A native phone app (Expo) on the same API, with push notifications and sign-ins that return to the app | `docs/MOBILE.md` |
 
 ### Smaller gaps (not in the table)
 

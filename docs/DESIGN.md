@@ -72,6 +72,10 @@ that way.
 - **Cancelled group and Money back table:** cancelled subscriptions get their own group at the end, out of the spend
   bar. Money back is a plain table: when, from, what happened, how it was checked, amount. "In your bank data" uses
   the green `ok` tag; "You told us" uses the neutral tag.
+- **On a phone:** the app icon is the logo's three highlighter strokes in `--mark` on `--ground`, with a maskable
+  Android version that keeps the strokes inside the safe zone. Installed, the app is full screen with a dark status
+  bar; the nav and footer pad for the notch and home indicator. The install control on the settings page is one
+  white pill on Android and a plain sentence on iPhone.
 - **Who wrote it:** a letter or cancel email has a small neutral tag after its heading, "Written by Nemotron 3 Ultra"
   or "Template", so people can see which ones a model wrote.
 

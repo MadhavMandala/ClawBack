@@ -131,6 +131,14 @@ REGISTRY: list[dict[str, str]] = [
         "where": "not started",
         "note": "Zero Data Retention is on. Needs the hosted demo, a connected inbox and a bank (a real bank needs Plaid Production, so this may use statement uploads).",
     },
+    {
+        "id": "mobile-app",
+        "area": "Product",
+        "priority": "P2",
+        "what": "A native phone app (Expo) on the same API, with push notifications and sign-ins that return to the app",
+        "where": "docs/MOBILE.md",
+        "note": "Stage 1, installing the web app on a phone, is built. Stages 2 and 3 (native app, app stores) are planned in docs/MOBILE.md.",
+    },
 ]
 
 
