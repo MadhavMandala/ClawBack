@@ -3,7 +3,8 @@
 Demo mode: a fixed table (demo_data.PRICE_CHECKS), shown in evidence and the trace as "simulated price check
 (demo data)".
 Real mode (needs TAVILY_API_KEY and NEBIUS_API_KEY): Tavily searches only the store's own site for the item
-(include_domains), and the top two pages on that domain are extracted. Nemotron 3.5 Lightning (Nano as backup,
+(include_domains), and the top two pages on that domain are extracted, skipping refurbished, used and open-box
+listings. Stores that load prices in the browser (Target does) give pages with no price, so no live price. Nemotron 3.5 Lightning (Nano as backup,
 strict JSON) reads the price and says which page it came from. Code then keeps the price only if:
   - the cited page is on the store's own domain (the domain of its verified retailers.json links);
   - the price is written as money in the page text the model read ("$169.99" or "169.99");
@@ -87,6 +88,15 @@ def item_on_page(item: str, text: str) -> bool:
     return bool(plain) and sum(w in page for w in plain) / len(plain) >= 0.6
 
 
+_CONDITION = re.compile(r"refurbished|renewed|pre-?owned|\bused\b|open[- ]box|\bparts\b|replacement", re.I)
+
+
+def other_condition(item: str, result: dict) -> bool:
+    """A refurbished, used, open-box or replacement-part listing, when the item bought wasn't one."""
+    listing = f"{result.get('title') or ''} {result.get('url') or ''}"
+    return bool(_CONDITION.search(listing)) and not _CONDITION.search(item)
+
+
 # The pipeline re-runs on every check-in, so a live check is done at most once per item per day.
 _checked: dict[tuple[str, str, date], PriceCheck | None] = {}
 
@@ -110,13 +120,16 @@ def _live_price(user_id: str, store: str, item: str, domain: str | None, paid: f
         _reject(user_id, store, "no verified store website to search")
         return None
     found = tavily.search(user_id, STAGE, f"{item} price", include_domains=[base])
-    pages = [r for r in found if on_domain(r.get("url", ""), base)][:2]
+    pages = [r for r in found if on_domain(r.get("url", ""), base) and not other_condition(item, r)][:2]
     if not pages:
         _reject(user_id, store, f"no page on {base} came back")
         return None
     texts = tavily.extract(user_id, STAGE, [p["url"] for p in pages])
-    page_text = [guard.clean(texts.get(p["url"]) or p.get("content") or "")[:PAGE_CHARS] for p in pages]
-    numbered = "\n".join(f"[{i}] {p['url']}:\n{t}" for i, (p, t) in enumerate(zip(pages, page_text)))
+    # Each page's text: its title and address, Tavily's search snippet, then the extracted page (all from that page).
+    # Some stores block extraction, so the snippet may be all there is.
+    page_text = [guard.clean(f"{p.get('title') or ''}\n{p['url']}\n{p.get('content') or ''}\n"
+                             f"{texts.get(p['url']) or ''}")[:PAGE_CHARS] for p in pages]
+    numbered = "\n".join(f"[{i}]\n{t}" for i, t in enumerate(page_text))
     data, _ = llm.chat_json(user_id, STAGE, "fast", [
         {"role": "system", "content": PROMPT},
         {"role": "user", "content": f"Store: {store}\nItem: {item}\n" + guard.wrap(numbered, "pages")},
