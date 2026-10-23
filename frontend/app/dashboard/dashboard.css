@@ -289,3 +289,48 @@
   .feat { grid-template-columns: minmax(0, 1fr); padding: 14px 16px; }
   .feat-phase { flex-direction: row; align-items: center; justify-content: flex-start; order: -1; }
 }
+
+/* a heading with a small tag after it (who wrote a letter) */
+h4.with-tag { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+h4.with-tag .tag { font-weight: 500; }
+
+/* ---------- first-visit guide ---------- */
+
+.guide {
+  display: flex; align-items: flex-start; gap: 16px 28px; margin-bottom: 36px; padding: 16px 20px;
+  background: var(--ground-2); border: 1px solid var(--rule); border-radius: 3px;
+}
+.guide ol { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 28px; margin: 0; padding: 0; list-style: none; counter-reset: g; }
+.guide li { position: relative; padding-left: 30px; font-size: var(--t-sm); color: var(--muted); counter-increment: g; text-wrap: pretty; }
+.guide li::before {
+  content: counter(g); position: absolute; left: 0; top: 1px;
+  display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  border: 1px solid var(--rule-strong); font: 500 0.75rem var(--mono); color: var(--ink);
+}
+.guide li b { display: block; color: var(--ink); font-weight: 600; }
+.guide .quiet { margin-top: 2px; font-size: var(--t-sm); }
+
+/* ---------- new since last visit ---------- */
+
+.alerts { margin-bottom: 44px; padding: 16px 20px; background: var(--sheet); border-left: 2px solid var(--ink); border-radius: 2px; }
+.alerts-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.alerts-head h2 { font: 400 var(--t-lead)/1.2 var(--serif); }
+.alerts-head .count { margin-left: 6px; font: 400 var(--t-sm) var(--font); color: var(--muted); }
+.alerts ul { margin: 0; padding: 0; list-style: none; }
+.alerts li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 7px 0; font-size: var(--t-sm); }
+.alerts li + li { border-top: 1px solid var(--rule); }
+.alerts li span { color: var(--muted); }
+.alerts li .hl { color: var(--mark-ink); }
+.alerts li .when { margin-left: auto; font-size: var(--t-xs); color: var(--faint); }
+
+/* ---------- money back + the legend's recovered line ---------- */
+
+.money-back .sheet { margin-top: 12px; }
+.money-back td .tag svg { width: 12px; height: 12px; }
+.legend .recovered { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; }
+.legend .recovered > span { display: inline-flex; align-items: center; gap: 7px; }
+
+@media (max-width: 760px) {
+  .guide { flex-direction: column; }
+  .guide ol { grid-template-columns: minmax(0, 1fr); }
+}

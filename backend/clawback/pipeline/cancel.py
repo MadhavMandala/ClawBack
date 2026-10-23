@@ -53,14 +53,19 @@ def _template(sub: Subscription) -> dict:
     }
 
 
+def _day(d) -> str:
+    """A date the way a person writes it in a letter: "November 19, 2026"."""
+    return f"{d:%B} {d.day}, {d.year}"
+
+
 def _facts(sub: Subscription) -> str:
-    """Facts computed by code, handed to the model as plain lines."""
+    """Facts computed by code, handed to the model as plain lines. Dates are written the way a letter writes them."""
     lines = [f"- Service: {sub.merchant}", f"- Monthly cost: ${sub.monthly_cost:.2f}"]
     if sub.price_change:
         pc = sub.price_change
-        lines.append(f"- Price went from ${pc.old_amount:.2f} to ${pc.new_amount:.2f} on {pc.changed_on.isoformat()}")
+        lines.append(f"- Price went from ${pc.old_amount:.2f} to ${pc.new_amount:.2f} on {_day(pc.changed_on)}")
     if sub.next_expected:
-        lines.append(f"- Next charge expected: {sub.next_expected.isoformat()}")
+        lines.append(f"- Next charge expected: {_day(sub.next_expected)}")
     if sub.status == "trial":
         lines.append("- This is a free trial; they do not want it to convert to a paid plan")
     return "\n".join(lines)

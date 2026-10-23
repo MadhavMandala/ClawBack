@@ -1,0 +1,62 @@
+/* Settings: "Your data". Set like the privacy policy: a serif head on the left of each rule, the detail on the right. */
+
+.st section { scroll-margin-top: 72px; }
+
+.st-hero { padding: 64px 0 36px; }
+.st-hero h1 {
+  max-width: 18ch;
+  font: 400 clamp(2.25rem, 1.2rem + 3.6vw, 4.25rem)/1 var(--serif);
+  font-variation-settings: "opsz" 72; letter-spacing: -0.025em; text-wrap: balance;
+}
+.st-hero h1 em { display: block; color: var(--muted); }
+
+.st-sec {
+  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 12px 56px;
+  padding: 34px 0; border-top: 1px solid var(--rule);
+}
+.st-sec:first-of-type { border-top-color: var(--rule-strong); }
+.st-sec h2 { font: 400 var(--t-h3)/1.15 var(--serif); letter-spacing: -0.01em; }
+
+.st-body { max-width: 70ch; color: var(--muted); text-wrap: pretty; }
+.st-body > * + * { margin-top: 12px; }
+.st-body b { color: var(--ink); font-weight: 600; }
+.st-body a { color: var(--ink); }
+.st-body td:first-child { color: var(--ink); }
+
+.st-conns { list-style: none; margin: 0; padding: 0; background: var(--sheet); border-radius: 2px; }
+.st-conns li { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; padding: 16px 18px; }
+.st-conns li + li { border-top: 1px solid var(--rule); }
+.st-conns li > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.st-conns b { font-weight: 650; }
+.st-conns .tag { align-self: flex-start; }
+
+.st-meter { height: 8px; border-radius: 2px; background: var(--sheet-2); overflow: hidden; max-width: 28rem; }
+.st-meter span { display: block; height: 100%; background: var(--phase-built); }
+
+.st-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 12px 14px; background: var(--bad-bg); border-radius: 3px; }
+.st-confirm span { color: var(--loss); font-weight: 600; margin-right: 4px; }
+button.danger { color: var(--loss); border-color: rgba(255, 143, 128, 0.45); }
+button.danger:hover { border-color: var(--loss); }
+
+.st-done { display: flex; align-items: center; gap: 8px; color: var(--good); font-weight: 600; }
+
+@media (max-width: 960px) {
+  .st-sec { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .st-hero { padding-top: 40px; }
+  .st-conns li { flex-direction: column; align-items: flex-start; }
+}
+
+.st-select { display: inline-flex; align-items: center; gap: 10px; }
+.st-select span { color: var(--ink); font-weight: 600; font-size: var(--t-sm); }
+.st-select select {
+  height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: var(--sheet); color: var(--ink); font: 500 var(--t-sm) var(--font);
+}
+.st-select select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.st-rule { padding: 14px 16px; background: var(--sheet); border-radius: 2px; }
+.st-rule b { display: block; margin-bottom: 4px; }
+.st-rule p { color: var(--ink); margin-bottom: 8px; }
+.st-rule a { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; font-size: var(--t-sm); }
+.st-rule .ext { width: 13px; height: 13px; }

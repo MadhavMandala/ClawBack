@@ -33,8 +33,31 @@ export type Summary = {
   flagged: number;
   owed_total?: number; // one-time money from open findings
   owed_count?: number;
-  recovered_total: number;
+  recovered_total: number; // confirmed + self-reported
+  recovered_confirmed?: number; // matched to a bank credit
+  recovered_self_reported?: number;
+  cancelled?: number; // subscriptions confirmed cancelled
+  cancelled_monthly_savings?: number;
   recovered_note: string;
+};
+
+// GET /api/recovered: money back, confirmed from bank data or self-reported, newest first.
+export type RecoveryEvent = {
+  id: string;
+  kind: "cancelled_subscription" | "refund" | "self_reported";
+  status: "confirmed" | "self_reported";
+  on: string;
+  merchant: string;
+  amount: number; // one-time money back (refunds); for a cancellation, what it has saved so far
+  monthly: number | null; // a cancellation's monthly saving
+  note: string;
+  subscription_id: string | null;
+  finding_id: string | null;
+};
+export type Recovered = {
+  totals: { confirmed: number; self_reported: number; cancelled_monthly: number; cancelled_saved: number; cancelled_count: number };
+  note: string;
+  events: RecoveryEvent[];
 };
 
 export type Finding = {
@@ -61,7 +84,7 @@ export type ActionPrep = {
   channel: "email" | "chat" | "phone" | "form" | "dispute" | "in_person";
   steps: string[];
   links: { label: string; url: string; verified: boolean }[];
-  message: { to: string | null; subject: string | null; body: string } | null;
+  message: { to: string | null; subject: string | null; body: string; written_by?: string | null } | null;
   script: string[] | null;
   deadline: string | null;
   missing: string[];
@@ -93,12 +116,13 @@ export type CancelPrep = {
   links: { label: string; url: string; verified: boolean }[];
   steps: string[];
   // `to` is set only when a support address was found on the merchant's own page.
-  email: { subject: string; body: string; status: string; to?: string | null };
+  email: { subject: string; body: string; status: string; to?: string | null; written_by?: string | null };
   // The user's rights line(s): their state's auto-renewal law when it applies, else federal ROSCA.
   rights?: { scope: "state" | "federal"; state: string | null; text: string; law: string; title: string; source_url: string; checked_on: string }[];
   missing: string[];
 };
 
+// GET /api/settings: the person's state, for the state auto-renewal line in cancel steps.
 export type Settings = {
   state: string | null;
   state_name: string | null;
@@ -141,6 +165,38 @@ export type Feature = {
 };
 export type Features = { phases: Phase[]; areas: string[]; features: Feature[]; counts: Record<PhaseId, number>; updated: string };
 
+// GET /api/me: this browser's session and what ClawBack holds for it. Never tokens or ids.
+export type Me = {
+  session: { kind: string; created_at: string | null; last_seen: string | null; deleted_after_idle_days: number | null };
+  mode: "demo" | "real";
+  connections: {
+    email: { connected: boolean; account?: string | null; provider?: string | null; needs_reconnect?: boolean };
+    plaid: { connected: boolean; institution?: string | null; needs_reconnect?: boolean };
+  };
+  counts: Record<"subscriptions" | "bills" | "findings" | "emails" | "transactions" | "alerts", number>;
+  model_spend_today_usd: number;
+  model_daily_limit_usd: number;
+};
+
+// GET /api/alerts: things a background run (new mail, the nightly check) found since you last looked.
+export type Alert = {
+  id: number; kind: "flag" | "finding"; ref: string; title: string; message: string; amount: number;
+  created_at: string; seen: boolean;
+};
+export type Alerts = { alerts: Alert[]; unseen: number };
+
+// POST .../email-draft: the email saved to the Drafts folder of the connected mailbox. ClawBack never sends it.
+export type DraftResult = { saved: boolean; provider?: string | null; message: string };
+
+/** Who wrote a letter: a Nemotron model id, or "template" when the model was off or its draft failed a check. */
+export function writtenBy(id?: string | null): string | null {
+  if (!id) return null;
+  if (id === "template") return "Template";
+  if (/ultra/i.test(id)) return "Written by Nemotron 3 Ultra";
+  if (/super/i.test(id)) return "Written by Nemotron 3 Super";
+  return `Written by ${id.replace(/^nvidia\//, "")}`;
+}
+
 // --- Session ------------------------------------------------------------------------------------------
 // Each browser gets its own demo session (backend/clawback/sessions.py). The id lives in localStorage and goes
 // to the API as the X-ClawBack-Session header: a header, not a cookie, because the API is on another domain.
@@ -182,6 +238,16 @@ export async function session(replacing?: string): Promise<string> {
   if (current && current !== replacing) return current;
   if (!creating) creating = createSession().finally(() => { creating = null; });
   return creating;
+}
+
+/** Forget this browser's session (after "Delete all my data"). The next request starts a fresh demo. */
+export function forgetSession() {
+  memorySession = null;
+  try {
+    window.localStorage.removeItem(SESSION_KEY);
+  } catch {
+    // nothing stored
+  }
 }
 
 /** fetch() for the ClawBack API: adds the session header and, on "session expired", makes a new session and retries once. */
