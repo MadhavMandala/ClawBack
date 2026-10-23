@@ -5,22 +5,57 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date, timedelta
 
-from ..merchants import OVERLAP_CATEGORIES
+from ..findings.util import times
+from ..merchants import OVERLAP_CATEGORIES, same_merchant
 from ..models import Flag, Subscription
 
 KEEP_QUIET = timedelta(days=90)  # after "keep", don't nag about usage for 90 days
 
 
+def _day(d: date) -> str:
+    return f"{d:%b} {d.day}"
+
+
+def cancel_flags(sub: Subscription) -> list[Flag]:
+    """What the bank shows since the user started cancelling (pipeline/confirm.py)."""
+    c = sub.cancellation
+    if c is None:
+        return []
+    if c.status == "charged_again" and c.charged_again_on:
+        return [Flag(
+            kind="charged_after_cancel", severity="high",
+            message=(f"Charged again after you started cancelling: ${c.charged_again_amount or 0:.2f} on "
+                     f"{_day(c.charged_again_on)}. Check that the cancellation went through, and ask "
+                     f"{sub.merchant} to refund that charge."),
+            monthly_savings=sub.monthly_cost,
+        )]
+    if c.status == "confirmed":
+        since = f" since {_day(c.last_charge)}" if c.last_charge else ""
+        return [Flag(
+            kind="cancel_confirmed", severity="info",
+            message=f"Cancelled: no charge{since}. That's ${c.monthly_cost:.2f} a month you keep.",
+        )]
+    when = f" after {_day(c.expected_by)}" if c.expected_by else " on the next sync"
+    return [Flag(
+        kind="cancel_pending", severity="info",
+        message=f"You started cancelling on {_day(c.started_on)}. ClawBack checks your bank for a new charge{when}.",
+    )]
+
+
 def flag_one(sub: Subscription, kept_on: date | None, today: date) -> list[Flag]:
-    flags: list[Flag] = []
+    if sub.status == "cancelled":
+        return cancel_flags(sub)
+    flags: list[Flag] = cancel_flags(sub)
     quiet = kept_on is not None and today - kept_on < KEEP_QUIET
 
     if sub.status == "trial" and sub.next_expected:
         days = (sub.next_expected - today).days
         when = "today" if days == 0 else "tomorrow" if days == 1 else f"in {days} days"
+        # The trial email doesn't always say the price; then say it starts charging, without a number.
+        then = f"Then ${sub.amount:.2f}/month." if sub.amount is not None else "Then it starts charging."
         flags.append(Flag(
             kind="trial_ending", severity="high",
-            message=f"Free trial ends {sub.next_expected:%b %d} ({when}). Then ${sub.amount:.2f}/month.",
+            message=f"Free trial ends {sub.next_expected:%b %d} ({when}). {then}",
             monthly_savings=sub.monthly_cost,
         ))
 
@@ -31,15 +66,17 @@ def flag_one(sub: Subscription, kept_on: date | None, today: date) -> list[Flag]
                 message=f"Looks unused ({sub.usage.evidence[0].split(': ', 1)[-1]}). It costs ${sub.monthly_cost:.2f}/month.",
                 monthly_savings=sub.monthly_cost,
             ))
-        if sub.value is not None and sub.value.net < 0:
-            v = sub.value
+        v = sub.value
+        if v is not None and v.verdict == "losing_money" and v.net < 0:
+            saved = "it saved you" if v.basis == "stated" else "it saved you at most"
             flags.append(Flag(
-                kind="membership_losing_money", severity="high",
-                message=(f"Cost ${v.period_fee:.2f} in the last 30 days. You ordered {v.uses} time(s) and it saved "
-                         f"you ${v.savings:.2f}. Net: -${-v.net:.2f}."),
+                kind="membership_losing_money", severity="high" if v.basis == "stated" and not v.note else "medium",
+                message=(f"Cost ${v.period_fee:.2f} in the last 30 days. You ordered {v.uses} time(s) and {saved} "
+                         f"${v.savings:.2f}. Net: -${-v.net:.2f}." + (f" {v.note}" if v.note else "")),
                 monthly_savings=round(-v.net, 2),
             ))
-        if sub.usage.level == "unknown" and sub.status != "trial" and sub.value is None:
+        if (sub.usage.level == "unknown" and sub.status != "trial"
+                and (v is None or v.verdict == "not_enough_receipts")):
             flags.append(Flag(
                 kind="unknown_usage", severity="info",
                 message=f"No sign of use in your email. Did you use {sub.merchant} this month?",
@@ -56,11 +93,44 @@ def flag_one(sub: Subscription, kept_on: date | None, today: date) -> list[Flag]
     return flags
 
 
+def _billing(s: Subscription) -> str:
+    return {"apple": "through Apple", "google_play": "through Google Play"}.get(s.billed_by or "", "directly")
+
+
 def flag_overlaps(subs: list[Subscription]) -> None:
+    """Two paid plans doing one job (overlap), and one service paid for twice (paid_twice).
+
+    Services are told apart with merchants.same_merchant, so "Spotify" billed through Apple and "Spotify" billed
+    directly are one service paid twice, never an overlap with itself."""
+    active = [s for s in subs if s.status in ("active", "kept") and not s.merchant.endswith("(unmatched)")]
+    services: list[list[Subscription]] = []
+    for s in active:
+        home = next((g for g in services if same_merchant(g[0].merchant, s.merchant)), None)
+        if home is None:
+            services.append([s])
+        else:
+            home.append(s)
+
+    for group in services:
+        if len(group) < 2:
+            continue
+        total = sum(s.monthly_cost for s in group)
+        keep = min(group, key=lambda s: s.monthly_cost)
+        how = ", ".join(_billing(s) for s in group)
+        for s in group:
+            s.flags.append(Flag(
+                kind="paid_twice", severity="medium",
+                message=(f"You seem to pay for {group[0].merchant} {times(len(group))} ({how}), ${total:.2f}/month "
+                         f"together. If {'both are' if len(group) == 2 else 'they are all'} yours, keeping one saves "
+                         f"${total - keep.monthly_cost:.2f}/month."),
+                monthly_savings=0.0 if s is keep else s.monthly_cost,
+            ))
+
     by_cat: dict[str, list[Subscription]] = defaultdict(list)
-    for s in subs:
-        if s.status in ("active", "kept") and s.category in OVERLAP_CATEGORIES:
-            by_cat[s.category].append(s)
+    for group in services:
+        first = group[0]
+        if first.category in OVERLAP_CATEGORIES:
+            by_cat[first.category].append(first)
     for cat, group in by_cat.items():
         if len(group) < 2:
             continue

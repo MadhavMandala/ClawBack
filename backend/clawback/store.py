@@ -47,7 +47,8 @@ from pydantic import BaseModel, TypeAdapter
 from pydantic_core import to_jsonable_python
 
 from . import crypto, db
-from .models import Email, Fact, Finding, Subscription, TraceStep, Transaction
+from .models import (Cancellation, Email, Fact, Finding, RecoveryEvent, RefundWatch, StoreReceipt, Subscription,
+                     TraceStep, Transaction)
 
 log = logging.getLogger("clawback.store")
 
@@ -61,19 +62,31 @@ class UserData:
     transactions: list[Transaction] = field(default_factory=list)
     emails: list[Email] = field(default_factory=list)
     subscriptions: dict[str, Subscription] = field(default_factory=dict)
-    # What the user told us: subscription id -> list of (date, used?)
+    # What the user told us: subscription id -> list of (date, used?). Every dated answer is kept (pipeline/usage.py
+    # learns from the history: two "no" in a row, three "yes" in a row, a "no" after "keep").
     checkins: dict[str, list[tuple[date, bool]]] = field(default_factory=lambda: defaultdict(list))
     # Subscriptions the user chose to keep: id -> date decided (suppresses nagging for 90 days)
     kept: dict[str, date] = field(default_factory=dict)
-    # Subscriptions the user started cancelling: id -> date. MISSING [cancel-confirmation]: never confirmed.
+    # Subscriptions the user started cancelling: id -> date. pipeline/confirm.py checks the charges stop.
     cancel_pending: dict[str, date] = field(default_factory=dict)
+    # Per cancelling subscription: what it looked like when cancelling started, and what the bank shows since.
+    cancellations: dict[str, Cancellation] = field(default_factory=dict)
     trace: list[TraceStep] = field(default_factory=list)
     # One-time money (duplicate charges, fees, refunds, settlements), rebuilt by each pipeline run.
     findings: dict[str, Finding] = field(default_factory=dict)
     # What the user decided about a finding: id -> dismissed | done. Survives re-runs (ids are stable).
     finding_status: dict[str, str] = field(default_factory=dict)
-    # Self-reported money back per finding marked done. MISSING [cancel-confirmation]: not checked against the bank.
+    # Self-reported money back per finding marked done. Confirmed separately against bank credits (refund_watch).
     got_back: dict[str, float] = field(default_factory=dict)
+    # When each finding was marked done, and the bank credit each done finding waits for (pipeline/confirm.py).
+    done_on: dict[str, date] = field(default_factory=dict)
+    refund_watch: dict[str, RefundWatch] = field(default_factory=dict)
+    # Money recovered, confirmed from bank data: event id -> event. Self-reported events are derived from got_back.
+    recovered: dict[str, RecoveryEvent] = field(default_factory=dict)
+    # Apple / Google Play receipts read into facts (items, tax, total), by email id. No body text.
+    store_receipts: dict[str, StoreReceipt] = field(default_factory=dict)
+    # Names proposed for unknown recurring charges, by normalised bank descriptor (pipeline/naming.py).
+    merchant_names: dict[str, dict] = field(default_factory=dict)
     # Per bill: its rules/bills.json entry and its charge amounts (oldest first), for the negotiation script.
     bill_info: dict[str, dict] = field(default_factory=dict)
     # Plaid /transactions/sync position of the transactions held in memory. None = pull from the start.
@@ -225,8 +238,10 @@ class Store:
             u.subscriptions = {}
             u.checkins = defaultdict(list)
             u.kept = {}
-            u.cancel_pending = {}
+            u.cancel_pending, u.cancellations = {}, {}
             u.findings, u.finding_status, u.got_back = {}, {}, {}
+            u.done_on, u.refund_watch, u.recovered = {}, {}, {}
+            # store_receipts and merchant_names stay, like facts: keyed by email id or by descriptor alone.
             u.plaid_cursor = None
             u.trace = [t for t in u.trace if t.engine in ("nylas", "plaid")]  # trace.SOURCE_ENGINES (no import: cycle)
         return u

@@ -30,6 +30,7 @@ def _build(today: date) -> UserData:
     book = rulebook.current()
     if book:
         u.emails += demo_data.settlement_story(today, u.transactions, u.emails, book)
+    demo_data.decisions(u, today)  # what the demo user already did: one cancellation, started weeks ago
     run(TEMPLATE_USER, today)
     data = store.user(TEMPLATE_USER)
     store.forget(TEMPLATE_USER)
