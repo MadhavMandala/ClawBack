@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date, timedelta
 
+from ..findings.util import times
 from ..merchants import OVERLAP_CATEGORIES, same_merchant
 from ..models import Flag, Subscription
 
@@ -117,8 +118,9 @@ def flag_overlaps(subs: list[Subscription]) -> None:
         for s in group:
             s.flags.append(Flag(
                 kind="paid_twice", severity="medium",
-                message=(f"You seem to pay for {group[0].merchant} {len(group)} times ({how}), ${total:.2f}/month "
-                         f"together. If they're all yours, keeping one saves ${total - keep.monthly_cost:.2f}/month."),
+                message=(f"You seem to pay for {group[0].merchant} {times(len(group))} ({how}), ${total:.2f}/month "
+                         f"together. If {'both are' if len(group) == 2 else 'they are all'} yours, keeping one saves "
+                         f"${total - keep.monthly_cost:.2f}/month."),
                 monthly_savings=0.0 if s is keep else s.monthly_cost,
             ))
 
