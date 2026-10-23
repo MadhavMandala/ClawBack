@@ -11,6 +11,7 @@ dependencies = [
     "tavily-python>=0.5",
     "httpx>=0.27",           # Nylas and Plaid REST calls (no vendor SDKs)
     "python-dotenv>=1.0",
+    "cryptography>=43",      # Fernet for saved tokens and stored data; ES256 for Plaid webhook signatures
 ]
 
 [project.optional-dependencies]

@@ -148,7 +148,7 @@ class TraceStep(BaseModel):
     at: datetime
     stage: str
     engine: str  # model ID, "code", "tavily", or "rules"
-    status: str  # ok | missing | error | fallback
+    status: str  # ok | missing | error | fallback | skipped (daily model limit reached)
     tier: str = ""  # fast | fast_fallback | mid | reason | vision ("" for non-model steps)
     ms: float = 0.0
     input_tokens: int = 0
