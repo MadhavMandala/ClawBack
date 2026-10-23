@@ -191,9 +191,19 @@ def to_transaction(t: dict) -> Transaction | None:
             description=_description(t),
             amount=round(float(t["amount"]), 2),  # positive = money out, as in our model
             source="plaid",
+            category=_category(t),
         )
     except (TypeError, ValueError):
         return None
+
+
+def _category(t: dict) -> str | None:
+    """Plaid's personal finance category, detailed if given (recurring detection sets transfers and loans aside)."""
+    pfc = t.get("personal_finance_category")
+    if not isinstance(pfc, dict):
+        return None
+    value = pfc.get("detailed") or pfc.get("primary")
+    return str(value) if value else None
 
 
 def _description(t: dict) -> str:

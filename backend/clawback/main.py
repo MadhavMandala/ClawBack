@@ -28,7 +28,9 @@ from .findings.detect import sort_key
 from .models import ActionPrep, Finding
 from .missing import REGISTRY, Missing, missing
 from .pipeline.cancel import cancel_prep
+from .pipeline.confirm import mark_done
 from .pipeline.recommend import alternatives
+from .pipeline.recovered import history
 from .pipeline.run import best_saving, run, summary
 from .sessions import UserId, user_scope
 from .sources import nylas, plaid
@@ -255,6 +257,7 @@ def dismiss_finding(user_id: UserId, finding_id: str):
     u = store.user(user_id)
     u.finding_status[f.id] = f.status = "dismissed"
     u.got_back.pop(f.id, None)
+    u.done_on.pop(f.id, None)
     return f
 
 
@@ -264,12 +267,17 @@ class Done(BaseModel):
 
 @app.post("/api/findings/{finding_id}/done", response_model=Finding)
 def finding_done(user_id: UserId, finding_id: str, body: Done | None = None):
-    """Mark it done. `got_back` is what the user says they recovered (self-reported, not checked)."""
+    """Mark it done. `got_back` is what the user says they recovered (self-reported). The next sync looks for the
+    matching bank credit and, when it finds one, counts the money as confirmed (pipeline/confirm.py)."""
     f = _finding(user_id, finding_id)
-    u = store.user(user_id)
-    u.finding_status[f.id] = f.status = "done"
-    u.got_back[f.id] = round(body.got_back if body else 0.0, 2)
+    mark_done(store.user(user_id), f, body.got_back if body else 0.0, date.today())
     return f
+
+
+@app.get("/api/recovered")
+def recovered_history(user_id: UserId):
+    """Money recovered: totals (confirmed from bank data, self-reported, cancellations per month) and dated events."""
+    return history(user_id)
 
 
 # --- Data in --------------------------------------------------------------------------------------

@@ -6,7 +6,11 @@ Each subscription is there to exercise one flag:
 - Netflix: price went up (price_increase)
 - Hulu: a "we miss you" email (unused)
 - DoorDash DashPass: one order a month, saving less than the fee (membership_losing_money)
-- iCloud+ and Google One: two cloud storage plans (overlap); iCloud+ appears only as APPLE.COM/BILL
+- iCloud+ and Google One: two cloud storage plans (overlap); iCloud+ appears only as APPLE.COM/BILL and is named
+  from an Apple receipt with no tax ($2.99)
+- Calm, billed by Apple: $14.99 plus $1.05 tax ($16.04 APPLE.COM/BILL), named from its Apple receipts. The demo user
+  started cancelling it after the fourth charge (decisions()); no charge has come since, so the cancellation is
+  confirmed: it leaves the monthly total and shows in the history of money recovered
 - Spotify: weekly listening emails (in use, no flag)
 - Adobe, ChatGPT Plus: no usage evidence at all (needs a check-in)
 - Super Duolingo: free trial about to convert, email only (trial_ending)
@@ -29,13 +33,16 @@ One-time money (findings):
   nationwide one (today Amazon's return-policy settlement), so the demo always shows a match that fits.
 
 PRICE_CHECKS is the simulated current-price table for demo mode (tools/prices.py says so in evidence and trace).
+refund_credit() is the simulated bank for demo mode: when the user marks a finding done, the demo bank posts the
+refund as a credit dated that day, so the next sync confirms it (pipeline/confirm.py). Its description says
+"DEMO" so it reads as simulated.
 """
 
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta, timezone
 
-from .models import Email, Transaction
+from .models import Email, Finding, Transaction
 
 # Simulated "current price" checks for demo mode: (store, words in the item name) -> price now.
 PRICE_CHECKS: dict[tuple[str, str], float] = {
@@ -118,7 +125,71 @@ def transactions(today: date) -> list[Transaction]:
     add(today - timedelta(days=95), "AMAZON MKTPL*2K4LP0", 34.18)
     add(today - timedelta(days=12), "AMAZON MKTPL*9Q1ZZ3", 12.49)
 
+    # Calm through Apple: $14.99 + $1.05 tax, four months, then cancelled (decisions()). Added last: ids stay stable.
+    for d in calm_dates(today):
+        add(d, "APPLE.COM/BILL 866-712-7753 CA", 16.04)
+
     return sorted(tx, key=lambda t: t.date)
+
+
+def calm_dates(today: date) -> list[date]:
+    """The demo's four Calm charges: the 11th of the month, stopping two months before today's."""
+    return _monthly_dates(today, 11)[:4]
+
+
+def decisions(u, today: date) -> None:
+    """What the demo user already did before today: started cancelling Calm nine days after its last charge."""
+    u.cancel_pending["calm"] = calm_dates(today)[-1] + timedelta(days=9)
+
+
+def refund_credit(f: Finding, today: date) -> Transaction | None:
+    """The simulated demo bank: the refund for a finding marked done, as a credit dated today. None for
+    settlements (they pay months later) and for EUR / GBP amounts."""
+    d = f.details or {}
+    if f.currency != "USD" or f.amount <= 0 or f.kind == "settlement":
+        return None
+    if f.kind == "duplicate_charge":
+        desc = f"{d.get('description') or f.merchant.upper()} DEMO REFUND"
+    elif f.kind == "bank_fee":
+        desc = f"DEMO {d.get('description') or 'FEE'} REFUND"
+    elif f.kind == "price_drop":
+        desc = f"{(d.get('store') or f.merchant).upper()} DEMO PRICE ADJUSTMENT"
+    else:
+        desc = f"{(d.get('airline') or f.merchant).upper()} DEMO REFUND"
+    return Transaction(id=f"demo-credit-{f.id}", date=today, description=desc, amount=-round(f.amount, 2))
+
+
+def apple_receipt(on: date, order_id: str, section: str, app: str, plan: str, price: float, tax: float) -> str:
+    """An Apple receipt as text, in the layout Apple has used since 2025 once its HTML is stripped: the header
+    fields, one block per item (app, plan, renewal date, price), then Subtotal, Tax and the card line that carries
+    the total charged."""
+    renews = _monthly_dates(on + timedelta(days=40), on.day, 1)[0]
+    document = sum(ord(c) * 7919 ** i for i, c in enumerate(order_id)) % 10**12
+    return "\n".join([
+        "Receipt",
+        f"{on:%B} {on.day}, {on.year}",
+        f"Order ID: {order_id}",
+        f"Document: {document:012d}",
+        "Apple Account: alex.demo@example.com",
+        "",
+        section,
+        app,
+        plan,
+        f"Renews {renews:%B} {renews.day}, {renews.year}",
+        f"${price:.2f}",
+        "",
+        "Billing and Payment",
+        "Alex Demo",
+        "Atlanta, GA 30301",
+        "USA",
+        f"Subtotal ${price:.2f}",
+        f"Tax ${tax:.2f}",
+        f"Visa •••• 4242 ${price + tax:.2f}",
+        "",
+        "You can turn off renewal receipts to stop getting emails each time your subscriptions renew.",
+        "Turn Off Renewal Receipt Emails",
+        "Manage Subscriptions › Purchase History › Report a Problem › Visit Apple Support ›",
+    ])
 
 
 def emails(today: date) -> list[Email]:
@@ -143,8 +214,14 @@ def emails(today: date) -> list[Email]:
     netflix_change = _monthly_dates(today, 5)[4] - timedelta(days=30)
     add(netflix_change, "info@account.netflix.com", "We're updating your Netflix price",
         "Starting with your next billing date, your monthly price will change from $15.49 to $17.99.")
-    add(today - timedelta(days=10), "no_reply@email.apple.com", "Your receipt from Apple",
-        "Apple Account receipt. iCloud+ with 200 GB (Monthly) $2.99. Billed to Visa.")
+    add(today - timedelta(days=10), "no_reply@email.apple.com", "Your receipt from Apple.",
+        apple_receipt(today - timedelta(days=10), "MT8Q2KX7LD", "iCloud", "iCloud+", "iCloud+ with 200 GB (Monthly)",
+                      2.99, 0.00))
+    for k, d in enumerate(calm_dates(today)):
+        receipt_day = d - timedelta(days=1)
+        add(receipt_day, "no_reply@email.apple.com", "Your receipt from Apple.",
+            apple_receipt(receipt_day, f"MT4KX2P9{k}Z", "App Store", "Calm: Sleep & Meditation",
+                          "Calm Premium (Monthly)", 14.99, 1.05))
     add(today - timedelta(days=2), "hello@duolingo.com", "Your Super Duolingo free trial ends in 3 days",
         "Your free trial ends in 3 days. After that you'll be charged $12.99/month unless you cancel.")
 
