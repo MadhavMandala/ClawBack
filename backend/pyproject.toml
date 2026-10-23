@@ -14,6 +14,7 @@ dependencies = [
     "pypdf>=5.0",            # text from PDF receipts (pure Python)
     "pypdfium2>=4.30",       # render scanned PDF receipts to an image (native; optional at runtime, imported lazily)
     "pillow>=10.0",          # resize receipt images and save rendered pages (native; optional at runtime)
+    "cryptography>=43",      # Fernet for saved tokens and stored data; ES256 for Plaid webhook signatures
 ]
 
 [project.optional-dependencies]

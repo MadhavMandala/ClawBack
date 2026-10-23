@@ -130,8 +130,66 @@ export type Feature = {
 };
 export type Features = { phases: Phase[]; areas: string[]; features: Feature[]; counts: Record<PhaseId, number>; updated: string };
 
+// --- Session ------------------------------------------------------------------------------------------
+// Each browser gets its own demo session (backend/clawback/sessions.py). The id lives in localStorage and goes
+// to the API as the X-ClawBack-Session header: a header, not a cookie, because the API is on another domain.
+
+const SESSION_KEY = "clawback.session";
+export const SESSION_HEADER = "X-ClawBack-Session";
+
+function storedSession(): string | null {
+  try {
+    return typeof window === "undefined" ? null : window.localStorage.getItem(SESSION_KEY);
+  } catch {
+    return null; // private mode or blocked storage: the session lasts for this page load
+  }
+}
+
+let memorySession: string | null = null; // used when localStorage is unavailable
+let creating: Promise<string> | null = null; // one new session at a time, however many requests are waiting
+
+async function createSession(): Promise<string> {
+  const res = await fetch(`${API}/api/session`, { method: "POST", cache: "no-store" });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || typeof body.session_id !== "string") {
+    throw new Error(body.detail ?? `${res.status} ${res.statusText}`);
+  }
+  const id: string = body.session_id;
+  memorySession = id;
+  try {
+    window.localStorage.setItem(SESSION_KEY, id);
+  } catch {
+    // keep it in memory only
+  }
+  return id;
+}
+
+/** This browser's session id, made on first use. `replacing`: an id the API just said has expired. */
+export async function session(replacing?: string): Promise<string> {
+  // Memory first: if saving to localStorage failed, an old stored id must not keep winning over the new one.
+  const current = memorySession ?? storedSession();
+  if (current && current !== replacing) return current;
+  if (!creating) creating = createSession().finally(() => { creating = null; });
+  return creating;
+}
+
+/** fetch() for the ClawBack API: adds the session header and, on "session expired", makes a new session and retries once. */
+export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const send = (id: string) => {
+    const headers = new Headers(init.headers);
+    headers.set(SESSION_HEADER, id);
+    return fetch(`${API}${path}`, { cache: "no-store", ...init, headers });
+  };
+  const id = await session();
+  const res = await send(id);
+  if (res.status !== 401) return res;
+  const body = await res.clone().json().catch(() => ({}));
+  if (body.detail !== "session expired") return res;
+  return send(await session(id));
+}
+
 export async function call<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API}${path}`, { cache: "no-store", ...init });
+  const res = await apiFetch(path, init);
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.missing ?? body.detail ?? `${res.status} ${res.statusText}`);
   return body as T;

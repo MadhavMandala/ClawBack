@@ -9,23 +9,39 @@ Built:
   - to_transaction(): Plaid amounts are positive for money out, the same as ours. Description is merchant_name,
     except that raw names our matchers use (APPLE.COM/BILL, GOOGLE *..., known merchants) are kept.
   - remove_item(): /item/remove on disconnect (best effort).
+  - Webhooks (checked against plaid.com/docs on 2026-10-23): with PUBLIC_API_URL set, Link tokens carry
+    `webhook` = {PUBLIC_API_URL}/api/ingest/plaid/webhook. verify_webhook() checks the Plaid-Verification
+    header: a JWT whose header must say alg ES256 and name a `kid`; the key comes from
+    /webhook_verification_key/get (cached by kid, refused once Plaid marks it expired); the ES256 signature must
+    verify; `iat` must be under 5 minutes old; and `request_body_sha256` must equal the hex SHA-256 of the raw
+    body (constant-time compare). TRANSACTIONS / SYNC_UPDATES_AVAILABLE means new data for that item;
+    ITEM / ERROR, PENDING_EXPIRATION, PENDING_DISCONNECT and USER_PERMISSION_REVOKED mean a new Link sign-in is
+    needed, and ITEM / LOGIN_REPAIRED means it is fixed.
   Plaid's /transactions/recurring/get is a paid add-on, so recurring detection stays ours (pipeline/recurring.py).
 
-MISSING [plaid-webhook]: SYNC_UPDATES_AVAILABLE webhook. New transactions arrive only when the user presses Sync.
 MISSING [plaid-production]: real banks need Production access; OAuth banks also need a redirect URI in Link.
 """
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
+import json
+import threading
 import time
 from dataclasses import dataclass, field
 
 import httpx
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 
 from .. import config
 from ..connections import PlaidConnection, now
 from ..merchants import APPLE_BILL_PATTERN, GOOGLE_PLAY_PATTERN, match_bank
-from ..missing import Missing, missing
+from ..missing import Missing
 from ..models import Transaction
 from ..trace import timed
 from . import net
@@ -79,15 +95,18 @@ def _post(path: str, body: dict) -> dict:
 
 def create_link_token(user_id: str) -> str:
     require_config()
+    body = {
+        "client_name": "ClawBack",
+        "user": {"client_user_id": user_id},
+        "products": ["transactions"],
+        "transactions": {"days_requested": DAYS_REQUESTED},
+        "country_codes": ["US"],
+        "language": "en",
+    }
+    if config.settings.public_api_url:
+        body["webhook"] = webhook_url()
     with timed(user_id, "plaid: link token", ENGINE) as info:
-        data = _post("/link/token/create", {
-            "client_name": "ClawBack",
-            "user": {"client_user_id": user_id},
-            "products": ["transactions"],
-            "transactions": {"days_requested": DAYS_REQUESTED},
-            "country_codes": ["US"],
-            "language": "en",
-        })
+        data = _post("/link/token/create", body)
         if not data.get("link_token"):
             raise PlaidError("Plaid didn't return a link token.")
         info["note"] = f"Link token created ({config.settings.plaid_env})"
@@ -187,15 +206,97 @@ def _description(t: dict) -> str:
     return merchant
 
 
-def remove_item(user_id: str, access_token: str) -> None:
-    """Best effort: end the Item at Plaid. The saved token is forgotten either way."""
+def remove_item(user_id: str, access_token: str) -> bool:
+    """Best effort: end the Item at Plaid. The saved token is forgotten either way. True when Plaid confirmed."""
     try:
         with timed(user_id, "plaid: remove item", ENGINE) as info:
             _post("/item/remove", {"access_token": access_token})
             info["note"] = "bank connection removed at Plaid"
+        return True
     except Exception:
-        pass
+        return False
 
 
-def handle_webhook(payload: dict) -> None:
-    missing("plaid-webhook")
+# --- Webhooks ----------------------------------------------------------------------------------------
+
+WEBHOOK_PATH = "/api/ingest/plaid/webhook"
+MAX_AGE_S = 5 * 60
+RECONNECT_ITEM_CODES = frozenset({"ERROR", "PENDING_EXPIRATION", "PENDING_DISCONNECT", "USER_PERMISSION_REVOKED"})
+KEY_TTL_S = 3600  # a cached key is fetched again after this, so an expiry or rotation at Plaid is seen
+MAX_KEY_FETCHES_PER_MIN = 10  # all kids together: unsigned requests with random kids can't make us call Plaid often
+
+_keys: dict[str, tuple[dict, float]] = {}  # kid -> (JWK from /webhook_verification_key/get, when fetched)
+_fetches: list[float] = []  # when the last key lookups were made
+_keys_lock = threading.Lock()
+
+
+class WebhookInvalid(Exception):
+    """The Plaid-Verification header is missing or doesn't check out. The reason is safe to log."""
+
+
+def webhook_url() -> str:
+    # TODO(clawback): items linked before PUBLIC_API_URL was set have no webhook; /item/webhook/update would add it.
+    return f"{config.settings.public_api_url}{WEBHOOK_PATH}"
+
+
+def _b64url(part: str) -> bytes:
+    return base64.urlsafe_b64decode(part + "=" * (-len(part) % 4))
+
+
+def _verification_key(kid: str) -> dict:
+    t = time.time()
+    with _keys_lock:
+        if kid in _keys and t - _keys[kid][1] < KEY_TTL_S:
+            return _keys[kid][0]
+        _fetches[:] = [f for f in _fetches if t - f < 60]
+        if len(_fetches) >= MAX_KEY_FETCHES_PER_MIN:
+            raise WebhookInvalid("too many key lookups; try later")
+        _fetches.append(t)
+    try:
+        key = _post("/webhook_verification_key/get", {"key_id": kid}).get("key")
+    except PlaidError as exc:
+        raise WebhookInvalid("verification key not found") from exc
+    if not isinstance(key, dict):
+        raise WebhookInvalid("verification key not found")
+    with _keys_lock:
+        if len(_keys) >= 20:  # Plaid uses a handful of keys at a time
+            _keys.clear()
+        _keys[kid] = (key, t)
+    return key
+
+
+def verify_webhook(raw: bytes, token: str | None, now: float | None = None) -> dict:
+    """Check a Plaid webhook's Plaid-Verification JWT against the raw body. Returns the JWT claims."""
+    require_config()
+    if not token or token.count(".") != 2:
+        raise WebhookInvalid("no Plaid-Verification header")
+    head_b64, claims_b64, sig_b64 = token.split(".")
+    try:
+        header = json.loads(_b64url(head_b64))
+        claims = json.loads(_b64url(claims_b64))
+        signature = _b64url(sig_b64)
+    except ValueError as exc:
+        raise WebhookInvalid("malformed token") from exc
+    if not isinstance(header, dict) or header.get("alg") != "ES256" or not header.get("kid"):
+        raise WebhookInvalid("token is not ES256 or has no key id")
+    key = _verification_key(str(header["kid"]))
+    if key.get("expired_at"):
+        raise WebhookInvalid("verification key has expired")
+    try:
+        public = ec.EllipticCurvePublicNumbers(int.from_bytes(_b64url(key["x"]), "big"),
+                                               int.from_bytes(_b64url(key["y"]), "big"), ec.SECP256R1()).public_key()
+        if len(signature) != 64:
+            raise ValueError("ES256 signatures are 64 bytes")
+        der = encode_dss_signature(int.from_bytes(signature[:32], "big"), int.from_bytes(signature[32:], "big"))
+        public.verify(der, f"{head_b64}.{claims_b64}".encode("ascii"), ec.ECDSA(hashes.SHA256()))
+    except (InvalidSignature, KeyError, TypeError, ValueError) as exc:
+        raise WebhookInvalid("signature does not verify") from exc
+    if not isinstance(claims, dict) or not isinstance(claims.get("iat"), (int, float)):
+        raise WebhookInvalid("token has no iat")
+    age = (now or time.time()) - claims["iat"]
+    if age > MAX_AGE_S or age < -MAX_AGE_S:
+        raise WebhookInvalid("token is too old")
+    body_hash = hashlib.sha256(raw).hexdigest()
+    if not hmac.compare_digest(body_hash, str(claims.get("request_body_sha256") or "")):
+        raise WebhookInvalid("body does not match the token")
+    return claims

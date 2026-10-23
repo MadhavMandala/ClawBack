@@ -1,5 +1,7 @@
-"""Shared test setup: no network, no backend/.env, no model or Tavily calls, and never the real
-backend/.local/connections.json. Live checks (tests/test_live.py, CLAWBACK_LIVE=1) read backend/.env."""
+"""Shared test setup: no network, no backend/.env, no model or Tavily calls, and never the real backend/.local
+(each test gets its own database file and key). Single-user mode by default, so the older tests keep using the
+user "demo" with no session header; test_sessions.py switches to visitor sessions.
+Live checks (tests/test_live.py, CLAWBACK_LIVE=1) read backend/.env."""
 
 import os
 
@@ -13,11 +15,16 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from clawback import config, llm
-from clawback.sources import net, nylas
+from cryptography.fernet import Fernet
+
+from clawback import config, crypto, db, demo, llm, sessions
+from clawback.sources import net, nylas, plaid
+from clawback.store import store
 from clawback.tools import tavily
 
 from fakes import FakeLLM
+
+TEST_KEY = Fernet.generate_key().decode()
 
 
 def _no_network(request: httpx.Request) -> httpx.Response:
@@ -36,13 +43,37 @@ def isolated(monkeypatch, tmp_path):
     monkeypatch.setattr(s, "plaid_env", "sandbox")
     monkeypatch.setattr(s, "frontend_origin", "http://localhost:3000")
     monkeypatch.setattr(s, "connections_path", tmp_path / "connections.json")
+    # Storage, sessions and caps: a fresh database and key per test, single-user mode, default limits.
+    monkeypatch.setattr(s, "db_path", tmp_path / "clawback.db")
+    monkeypatch.setattr(s, "secret_key", TEST_KEY)
+    monkeypatch.setattr(s, "secret_key_path", tmp_path / "secret.key")
+    monkeypatch.setattr(s, "sessions", "single")
+    monkeypatch.setattr(s, "session_idle_days", 14)
+    monkeypatch.setattr(s, "sessions_per_ip_hour", 20)
+    monkeypatch.setattr(s, "session_daily_usd", 0.25)
+    monkeypatch.setattr(s, "global_daily_usd", 5.0)
+    monkeypatch.setattr(s, "autoseed_demo", True)
+    monkeypatch.setattr(s, "nylas_webhook_secret", None)
+    monkeypatch.setattr(s, "public_api_url", None)
     monkeypatch.setattr(net, "transport", httpx.MockTransport(_no_network))
     monkeypatch.setattr(nylas, "_sleep", lambda seconds: None)
     nylas._states.clear()
+    plaid._keys.clear()
+    plaid._fetches.clear()
+    _forget_process_state()
     # Tests never reach Token Factory or Tavily, even when backend/.env has real keys.
     monkeypatch.setattr(llm, "available", lambda: False)
     monkeypatch.setattr(tavily, "available", lambda: False)
     yield
+    _forget_process_state()
+
+
+def _forget_process_state() -> None:
+    db.close()
+    crypto.reset()
+    store.clear()
+    demo.clear()
+    sessions.reset()
 
 
 @pytest.fixture()
@@ -68,6 +99,43 @@ def client():
 
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture()
+def visitor(monkeypatch):
+    """Hosted mode: each visitor gets a session (X-ClawBack-Session)."""
+    monkeypatch.setattr(config.settings, "sessions", "visitor")
+
+
+@pytest.fixture()
+def api(visitor):
+    """A test client in visitor mode. Use new_session(api) for a session's headers."""
+    from clawback.main import app
+
+    with TestClient(app) as c:
+        yield c
+
+
+def new_session(c: TestClient) -> dict[str, str]:
+    r = c.post("/api/session")
+    assert r.status_code == 200, r.text
+    return {sessions.HEADER: r.json()["session_id"]}
+
+
+def user_of(headers: dict[str, str]) -> str:
+    """The user id behind a session (tests only; the API never reveals it)."""
+    return sessions.resolve(headers[sessions.HEADER])
+
+
+def connect_both(c: TestClient, headers: dict[str, str]) -> None:
+    """Connect the fake bank and the fake inbox for this session (needs the `fake` fixture)."""
+    from urllib.parse import parse_qs, urlparse
+
+    c.post("/api/connect/plaid/exchange", headers=headers, json={"public_token": "p", "institution": "First Platypus Bank"})
+    url = c.get("/api/connect/email", headers=headers).json()["auth_url"]
+    state = parse_qs(urlparse(url).query)["state"][0]
+    r = c.get("/api/connect/email/callback", params={"code": "good-code", "state": state}, follow_redirects=False)
+    assert r.headers["location"].endswith("?connected=email"), r.headers["location"]
 
 
 # --- Fake Nylas --------------------------------------------------------------------------------------
@@ -107,6 +175,7 @@ class FakeNylas:
         self.messages_status = 200  # e.g. 401 for an expired grant
         self.reject_search = False  # 400 for search_query_native
         self.rate_limit_once = False
+        self.grant_status = "valid"  # what GET /v3/grants/{id} says; "gone" answers 404
         self.calls: list[tuple[str, str, dict]] = []
         self.deleted: list[str] = []
 
@@ -132,8 +201,18 @@ class FakeNylas:
 
         assert request.headers.get("authorization") == "Bearer nylas-key"
         if path == f"/v3/grants/{self.grant_id}" and method == "GET":
+            if self.grant_status == "gone":
+                return httpx.Response(404, json={"request_id": "r", "error": {"type": "not_found_error",
+                                                                              "message": "grant not found"}})
             return httpx.Response(200, json={"request_id": "r", "data": {
-                "id": self.grant_id, "provider": self.provider, "grant_status": "valid", "email": "me@example.com"}})
+                "id": self.grant_id, "provider": self.provider, "grant_status": self.grant_status,
+                "email": "me@example.com"}})
+        if path.startswith(f"/v3/grants/{self.grant_id}/messages/") and method == "GET":  # one message
+            found = next((m for m in self.messages if m["id"] == path.rsplit("/", 1)[-1]), None)
+            if found is None:
+                return httpx.Response(404, json={"request_id": "r", "error": {"type": "not_found_error",
+                                                                              "message": "message not found"}})
+            return httpx.Response(200, json={"request_id": "r", "data": found})
         if path.startswith("/v3/grants/") and path.count("/") == 3 and method == "DELETE":
             self.deleted.append(path.rsplit("/", 1)[-1])
             return httpx.Response(200, json={"request_id": "r"})
@@ -188,6 +267,7 @@ class FakePlaid:
         self.sync_pages: list[dict] = [sync_page(added=netflix_history())]
         self.errors: dict[str, tuple[int, dict]] = {}
         self.calls: list[tuple[str, dict]] = []
+        self.verification_keys: dict[str, dict] = {}  # kid -> JWK, for /webhook_verification_key/get
 
     def __call__(self, request: httpx.Request) -> httpx.Response | None:
         if request.url.host != "sandbox.plaid.com":
@@ -209,6 +289,12 @@ class FakePlaid:
             return httpx.Response(200, json=page)
         if path == "/item/remove":
             return httpx.Response(200, json={"request_id": "r3"})
+        if path == "/webhook_verification_key/get":
+            key = self.verification_keys.get(body.get("key_id"))
+            if key is None:
+                return httpx.Response(400, json={"error_type": "INVALID_INPUT", "error_code": "INVALID_KEY_ID",
+                                                 "error_message": "key not found"})
+            return httpx.Response(200, json={"key": key, "request_id": "r4"})
         return httpx.Response(404, json={"error_message": "unknown path"})
 
     def paths(self) -> list[str]:
