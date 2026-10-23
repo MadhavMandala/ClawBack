@@ -13,7 +13,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date
 
-from .models import Email, Fact, Finding, Subscription, TraceStep, Transaction
+from .models import BankAccount, Email, Fact, Finding, Subscription, TraceStep, Transaction
 
 
 @dataclass
@@ -42,6 +42,10 @@ class UserData:
     plaid_cursor: str | None = None
     # Extracted facts by email id, so each email goes to a model once. Reset demo clears it.
     facts: dict[str, Fact] = field(default_factory=dict)
+    # Plaid accounts by account_id: type, and the last statement date for credit cards (dispute deadlines).
+    bank_accounts: dict[str, BankAccount] = field(default_factory=dict)
+    # The user's US state (two-letter code, e.g. "CA"), for state auto-renewal rules. None = not told us.
+    state: str | None = None
 
 
 class MemoryStore:

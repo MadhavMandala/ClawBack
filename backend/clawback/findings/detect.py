@@ -52,9 +52,10 @@ def run_findings(user_id: str, u: UserData, rules: Rulebook | None, subs: list[S
 
     dups = _step(
         user_id, "duplicate charges",
-        lambda: duplicate_charges(u.transactions, recurring_ids | fee_ids, purchases, rules.disputes, today),
+        lambda: duplicate_charges(u.transactions, recurring_ids | fee_ids, purchases, rules.disputes, today,
+                                  u.bank_accounts),
         lambda r: f"{len(r)} duplicate charges"
-                  + (f" ({', '.join(f.merchant for f in r)}; dispute deadlines estimated)" if r else ""))
+                  + (f" ({', '.join(f.merchant for f in r)}; {_deadline_note(r)})" if r else ""))
 
     drops = _price_step(user_id, u, rules, purchases, today)
 
@@ -73,6 +74,13 @@ def run_findings(user_id: str, u: UserData, rules: Rulebook | None, subs: list[S
     for f in found:
         f.status = u.finding_status.get(f.id, "open")
     return found
+
+
+def _deadline_note(dups: list[Finding]) -> str:
+    real = sum(1 for f in dups if str(f.details.get("statement_source", "")).startswith("plaid"))
+    if real == len(dups):
+        return "dispute deadlines from card statement dates"
+    return "dispute deadlines estimated" if not real else f"{real} of {len(dups)} dispute deadlines from statement dates"
 
 
 def _price_step(user_id: str, u: UserData, rules: Rulebook, purchases: list[Purchase], today: date) -> list[Finding]:

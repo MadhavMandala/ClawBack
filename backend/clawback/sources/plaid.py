@@ -9,6 +9,11 @@ Built:
   - to_transaction(): Plaid amounts are positive for money out, the same as ours. Description is merchant_name,
     except that raw names our matchers use (APPLE.COM/BILL, GOOGLE *..., known merchants) are kept.
   - remove_item(): /item/remove on disconnect (best effort).
+  - fetch_accounts(): /liabilities/get for the Item's accounts (type, name, last 4) and each credit card's
+    last_statement_issue_date, which sets the real Fair Credit Billing Act dispute deadline. Liabilities is asked
+    for in Link as an optional product, so a bank or account without it still connects; any Plaid error here
+    (PRODUCTS_NOT_SUPPORTED, NO_LIABILITY_ACCOUNTS, PRODUCT_NOT_READY, ADDITIONAL_CONSENT_REQUIRED ...) only means
+    no dates, and dispute deadlines fall back to an estimate.
   Plaid's /transactions/recurring/get is a paid add-on, so recurring detection stays ours (pipeline/recurring.py).
 
 MISSING [plaid-webhook]: SYNC_UPDATES_AVAILABLE webhook. New transactions arrive only when the user presses Sync.
@@ -19,6 +24,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from datetime import date
 
 import httpx
 
@@ -26,14 +32,15 @@ from .. import config
 from ..connections import PlaidConnection, now
 from ..merchants import APPLE_BILL_PATTERN, GOOGLE_PLAY_PATTERN, match_bank
 from ..missing import Missing, missing
-from ..models import Transaction
-from ..trace import timed
+from ..models import BankAccount, Transaction
+from ..trace import record, timed
 from . import net
 from .net import SourceError
 
 ENGINE = "plaid"
 API_VERSION = "2020-09-14"
 DAYS_REQUESTED = 180
+OPTIONAL_PRODUCTS = ["liabilities"]  # credit cards' statement dates, when the bank and account support it
 RETRY_WAITS = (1.0, 2.0, 4.0, 8.0)  # seconds between tries while a new Item isn't ready (~15 s in all)
 MAX_PAGES = 200
 # Errors that only the user can fix by going through Link again.
@@ -84,6 +91,8 @@ def create_link_token(user_id: str) -> str:
             "client_name": "ClawBack",
             "user": {"client_user_id": user_id},
             "products": ["transactions"],
+            # An optional product never narrows the bank list or stops Link (Plaid docs, checked 2026-10-23).
+            "optional_products": OPTIONAL_PRODUCTS,
             "transactions": {"days_requested": DAYS_REQUESTED},
             "country_codes": ["US"],
             "language": "en",
@@ -172,6 +181,7 @@ def to_transaction(t: dict) -> Transaction | None:
             description=_description(t),
             amount=round(float(t["amount"]), 2),  # positive = money out, as in our model
             source="plaid",
+            account_id=str(t["account_id"]) if t.get("account_id") else None,
         )
     except (TypeError, ValueError):
         return None
@@ -185,6 +195,42 @@ def _description(t: dict) -> str:
     if not merchant or match_bank(name) or APPLE_BILL_PATTERN.search(name) or GOOGLE_PLAY_PATTERN.search(name):
         return name or merchant or "unknown"
     return merchant
+
+
+def fetch_accounts(user_id: str, access_token: str, today: date) -> dict[str, BankAccount] | None:
+    """The Item's accounts with each credit card's last statement date (/liabilities/get). None when Plaid can't
+    give them (the bank or account doesn't support Liabilities, or it isn't ready yet); never raises."""
+    start = time.perf_counter()
+    try:
+        data = _post("/liabilities/get", {"access_token": access_token})
+    except (PlaidError, Missing) as exc:
+        code = getattr(exc, "code", None) or "not available"
+        record(user_id, "plaid: statement dates", ENGINE, status="missing", ms=(time.perf_counter() - start) * 1000,
+               note=f"no statement dates from Plaid ({code}); dispute deadlines are estimated")
+        return None
+    statements = {}
+    for c in (data.get("liabilities") or {}).get("credit") or []:
+        if isinstance(c, dict) and c.get("account_id"):
+            statements[str(c["account_id"])] = _date(c.get("last_statement_issue_date"))
+    out: dict[str, BankAccount] = {}
+    for a in data.get("accounts") or []:
+        if not isinstance(a, dict) or not a.get("account_id"):
+            continue
+        acc_id = str(a["account_id"])
+        out[acc_id] = BankAccount(account_id=acc_id, kind=str(a.get("type") or "other"), subtype=a.get("subtype"),
+                                  name=a.get("name") or a.get("official_name"), mask=a.get("mask"),
+                                  last_statement_issue_date=statements.get(acc_id), checked_on=today)
+    dated = sum(1 for a in out.values() if a.last_statement_issue_date)
+    record(user_id, "plaid: statement dates", ENGINE, ms=(time.perf_counter() - start) * 1000,
+           note=f"{len(out)} accounts; statement dates for {dated} credit card{'s' if dated != 1 else ''}")
+    return out
+
+
+def _date(value) -> date | None:
+    try:
+        return date.fromisoformat(str(value)[:10]) if value else None
+    except ValueError:
+        return None
 
 
 def remove_item(user_id: str, access_token: str) -> None:
