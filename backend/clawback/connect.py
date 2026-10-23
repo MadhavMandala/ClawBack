@@ -39,6 +39,8 @@ def status(user_id: str) -> dict:
             "last_sync": _iso(e.last_sync) if e else None,
             "error": e.error if e else None,
             "needs_reconnect": bool(e and e.needs_reconnect),
+            # Connected only: reading works, but saving drafts was refused, so connect again to allow drafts.
+            **({"needs_reconsent": e.needs_reconsent, "reconsent_reason": e.reconsent_reason} if e else {}),
         },
         "plaid": {
             "configured": s.plaid_configured(),

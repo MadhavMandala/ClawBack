@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
-from . import connect, demo_data, llm
+from . import connect, demo_data, drafts, llm
 from .config import settings
 from .features import features_payload
 from .findings import actions, rulebook
@@ -287,7 +287,29 @@ def plaid_webhook(payload: dict):
     plaid.handle_webhook(payload)  # raises Missing -> 501
 
 
+# --- Drafts in the user's own mailbox (never sent) ------------------------------------------------
+
+class DraftText(BaseModel):
+    """The email as the app showed it (the user may have edited it). Leave it out to prepare it again."""
+    subject: str | None = None
+    body: str | None = None
+    to: str | None = None  # one email address, or nothing
+
+
 @app.post("/api/subscriptions/{sub_id}/email-draft")
-def save_email_draft(sub_id: str):
-    _sub(sub_id)
-    missing("email-drafts")
+def save_email_draft(sub_id: str, text: DraftText | None = None):
+    """Save the cancellation email as a draft in the connected mailbox. 409 when no email is connected,
+    403 when the connection can only read. Never sends."""
+    t = text or DraftText()
+    return drafts.save_cancel_email(USER, _sub(sub_id), date.today(), t.subject, t.body, t.to)
+
+
+@app.post("/api/findings/{finding_id}/email-draft")
+def save_finding_draft(finding_id: str, text: DraftText | None = None):
+    """Save a finding's prepared letter or request as a draft in the connected mailbox. Never sends."""
+    t = text or DraftText()
+    prep = prepare_finding(finding_id) if not (t.subject and t.body) else None
+    if prep is None:
+        _finding(finding_id)
+        return drafts.save(USER, t.subject, t.body, t.to)
+    return drafts.save_finding_letter(USER, prep, t.subject, t.body, t.to)
