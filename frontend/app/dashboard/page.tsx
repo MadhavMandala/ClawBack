@@ -194,7 +194,7 @@ export default function Dashboard() {
           onConnect={connectBank} onDisconnect={() => post("plaid", "/api/connect/plaid/disconnect")} />
         <label className="btn file-btn">
           Upload a statement
-          <input type="file" accept=".csv" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          <input type="file" accept=".csv,.ofx,.qfx" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
         </label>
         {!demo && <button disabled={busy === "sync"} onClick={() => post("sync", "/api/sync")}>{busy === "sync" ? "Syncing" : "Sync now"}</button>}
       </SiteNav>
