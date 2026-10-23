@@ -1,0 +1,53 @@
+/* The privacy policy. Set like the front page's ledger: a serif head on the left of each rule,
+   plain text on the right. Only the shared tokens from globals.css; no new colours. */
+
+.pp section { scroll-margin-top: 72px; }
+
+.pp-hero { padding: 64px 0 36px; }
+.pp-hero h1 {
+  max-width: 17ch;
+  font: 400 clamp(2.25rem, 1.2rem + 3.6vw, 4.25rem)/1 var(--serif);
+  font-variation-settings: "opsz" 72; letter-spacing: -0.025em; text-wrap: balance;
+}
+.pp-hero h1 em { display: block; color: var(--muted); }
+.pp-meta { margin-top: 18px; font-size: var(--t-sm); color: var(--muted); }
+
+.pp-proto {
+  max-width: 76ch; margin-top: 28px; padding: 16px 20px;
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 3px;
+  color: var(--muted); text-wrap: pretty;
+}
+.pp-proto b { color: var(--ink); font-weight: 600; }
+
+.pp-sec {
+  display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 12px 56px;
+  padding: 34px 0; border-top: 1px solid var(--rule);
+}
+.pp-sec:first-of-type { border-top-color: var(--rule-strong); }
+.pp-sec h2 { font: 400 var(--t-h3)/1.15 var(--serif); letter-spacing: -0.01em; text-wrap: balance; }
+
+.pp-body { max-width: 70ch; color: var(--muted); text-wrap: pretty; }
+.pp-body > * + * { margin-top: 12px; }
+.pp-body b { color: var(--ink); font-weight: 600; }
+.pp-body a { color: var(--ink); }
+.pp-body h3 { margin-top: 26px; font: 600 var(--t-body)/1.4 var(--font); color: var(--ink); }
+.pp-body h3:first-child { margin-top: 0; }
+.pp-body ul { margin-block: 0; padding-left: 1.15em; }
+.pp-body > ul { margin-top: 12px; }
+.pp-body > ul:first-child { margin-top: 0; }
+.pp-body li + li { margin-top: 7px; }
+.pp-body li::marker { color: var(--faint); }
+
+.pp-statement { padding: 2px 0 2px 16px; border-left: 2px solid var(--rule-strong); color: var(--ink); }
+
+.pp-body .table-scroll { margin-top: 4px; }
+.pp-body td { color: var(--muted); }
+.pp-body td:first-child { color: var(--ink); white-space: nowrap; }
+
+@media (max-width: 960px) {
+  .pp-sec { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .pp-hero { padding-top: 40px; }
+}

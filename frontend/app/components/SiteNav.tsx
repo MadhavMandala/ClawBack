@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "./icons";
 
 // The bar along the top of both pages. Each page passes its own controls for the right-hand end.
-export default function SiteNav({ current, children }: { current: "home" | "dashboard"; children?: React.ReactNode }) {
+export default function SiteNav({ current, children }: { current?: "home" | "dashboard"; children?: React.ReactNode }) {
   return (
     <header className="site-nav">
       <a className="skip" href="#content">Skip to content</a>
