@@ -1,0 +1,3 @@
+# Scripts, units and the Caddyfile run on Linux: keep LF line endings even in a Windows checkout,
+# so a file copied straight from this laptop to the VM still runs.
+* text eol=lf
