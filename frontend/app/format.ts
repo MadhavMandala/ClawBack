@@ -23,9 +23,10 @@ export function leadFlag(s: Subscription): Flag | null {
   return [...s.flags].sort((a, b) => RANK[a.severity] - RANK[b.severity] || b.monthly_savings - a.monthly_savings)[0];
 }
 
-export type GroupKey = "decide" | "bills" | "check" | "fine";
+export type GroupKey = "decide" | "bills" | "check" | "fine" | "cancelled";
 
 export function groupOf(s: Subscription): GroupKey {
+  if (s.status === "cancelled") return "cancelled";
   if (!s.flags.length && !(s.kind !== "bill" && s.usage.needs_checkin)) return "fine";
   if (s.kind === "bill") return "bills";
   if (s.flags.some((f) => f.severity === "high")) return "decide";

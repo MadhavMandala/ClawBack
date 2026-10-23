@@ -1,6 +1,6 @@
 "use client";
 
-import type { ActionPrep } from "../api";
+import { writtenBy, type ActionPrep } from "../api";
 import { humanDates, shortDate } from "../format";
 import { CopyButton, Missing } from "./bits";
 import SaveDraft from "./SaveDraft";
@@ -50,7 +50,7 @@ export default function ActionPanel({ a, onClose, draftPath }: { a: ActionPrep; 
         <div>
           {a.message && (
             <>
-              <h4>{CHANNEL[a.channel] ?? "The message"}</h4>
+              <h4 className="with-tag">{CHANNEL[a.channel] ?? "The message"}{writtenBy(a.message.written_by) && <span className="tag">{writtenBy(a.message.written_by)}</span>}</h4>
               <div className="letter">
                 {a.message.to && <p className="letter-to">To: {a.message.to}</p>}
                 {a.message.subject && <p className="letter-subject">{a.message.subject}</p>}

@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   API, call,
-  type ActionPrep, type Alternatives, type CancelPrep, type Connection, type Connections, type Features, type Finding,
-  type Subscription, type Summary, type TraceStep,
+  type ActionPrep, type Alerts, type Alternatives, type CancelPrep, type Connection, type Connections, type Features,
+  type Finding, type Recovered, type Subscription, type Summary, type TraceStep,
 } from "../api";
-import { groupOf, money, reclaimable, type GroupKey } from "../format";
+import { bankNotice, connectBank as openPlaid, connectEmail as openEmailSignIn } from "../connect";
+import { groupOf, humanDates, money, reclaimable, shortDate, type GroupKey } from "../format";
 import BuildStatus from "../components/BuildStatus";
 import FindingRow from "../components/FindingRow";
 import SiteNav from "../components/SiteNav";
@@ -22,9 +23,10 @@ const GROUPS: { key: GroupKey; title: string; short: string }[] = [
   { key: "bills", title: "Bills you could lower", short: "Bills" },
   { key: "check", title: "Worth a look", short: "Worth a look" },
   { key: "fine", title: "Looks fine", short: "Looks fine" },
+  { key: "cancelled", title: "Cancelled", short: "Cancelled" },
 ];
 
-const PLAID_SCRIPT = "https://cdn.plaid.com/link/v2/stable/link-initialize.js";
+const GUIDE_KEY = "clawback.guide.done";
 
 export default function Dashboard() {
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -41,7 +43,19 @@ export default function Dashboard() {
   const [busy, setBusy] = useState<string | null>(null);
   const [intro, setIntro] = useState(true);
   const [ready, setReady] = useState(false);
+  const [alerts, setAlerts] = useState<Alerts | null>(null);
+  const [recovered, setRecovered] = useState<Recovered | null>(null);
+  const [guide, setGuide] = useState(false);
   const loaded = useRef(false);
+
+  // The first-visit guide: three lines, shown once per browser.
+  useEffect(() => {
+    try { setGuide(!window.localStorage.getItem(GUIDE_KEY)); } catch { setGuide(true); }
+  }, []);
+  function closeGuide() {
+    setGuide(false);
+    try { window.localStorage.setItem(GUIDE_KEY, "1"); } catch { /* shown again next visit */ }
+  }
 
   // The page was empty when the browser tried to jump to #anchor; jump once everything has rendered.
   useEffect(() => {
@@ -58,6 +72,8 @@ export default function Dashboard() {
       setSummary(s); setSubs(list); setTrace(t);
       setFindings(await call<Finding[]>("/api/findings").catch(() => []));
       setConns(await call<Connections>("/api/connections").catch(() => null));
+      setAlerts(await call<Alerts>("/api/alerts").catch(() => null));
+      setRecovered(await call<Recovered>("/api/recovered").catch(() => null));
       if (!loaded.current) {
         loaded.current = true;
         setFeatures(await call<Features>("/api/features").catch(() => null));
@@ -101,34 +117,30 @@ export default function Dashboard() {
     });
 
   async function connectEmail() {
-    const out = await act<{ auth_url: string }>("email", "/api/connect/email");
-    if (out?.auth_url) window.location.assign(out.auth_url);
+    setBusy("email");
+    try {
+      await openEmailSignIn();
+    } catch (e) {
+      setNotice({ tone: /^MISSING/i.test((e as Error).message) ? "missing" : "error", text: (e as Error).message });
+      setBusy(null);
+    }
   }
 
   async function connectBank() {
-    const out = await post<{ link_token: string }>("plaid", "/api/connect/plaid/link-token");
-    if (!out?.link_token) return;
+    setBusy("plaid");
     try {
-      const Plaid = await loadPlaid();
-      Plaid.create({
-        token: out.link_token,
-        onSuccess: async (public_token: string, meta: { institution?: { name?: string } }) => {
-          const r = await post<{ added_transactions: number; institution: string | null; pending: boolean }>(
-            "plaid", "/api/connect/plaid/exchange", { public_token, institution: meta?.institution?.name ?? null });
-          if (r) setNotice({
-            tone: "info",
-            text: r.pending
-              ? `${r.institution ?? "Your bank"} is connected. Plaid is still preparing transactions. Press Sync in a minute.`
-              : `${r.institution ?? "Your bank"} is connected. Read ${r.added_transactions} transactions.`,
-          });
-        },
-        onExit: (err: { display_message?: string; error_message?: string } | null) => {
-          if (err) setNotice({ tone: "error", text: err.display_message || err.error_message || "Bank connection didn't finish." });
-        },
-      }).open();
+      const r = await openPlaid();
+      if (r) { setNotice({ tone: "info", text: bankNotice(r) }); await load(); }
     } catch (e) {
-      setNotice({ tone: "error", text: (e as Error).message });
+      setNotice({ tone: /^MISSING/i.test((e as Error).message) ? "missing" : "error", text: (e as Error).message });
+    } finally {
+      setBusy(null);
     }
+  }
+
+  async function seenAlerts() {
+    const out = await post<{ unseen: number }>("alerts", "/api/alerts/seen");
+    if (out) setAlerts((a) => (a ? { alerts: a.alerts.map((x) => ({ ...x, seen: true })), unseen: 0 } : a));
   }
 
   async function upload(file: File) {
@@ -209,14 +221,11 @@ export default function Dashboard() {
                   <HeroSecond save={save} owed={owed} any={summary.subscriptions + (summary.bills ?? 0) > 0} />
                 </span>
               </h1>
-              <Strip subs={subs} onPick={pick} />
+              <Strip subs={subs.filter((x) => x.status !== "cancelled")} onPick={pick} />
               <div className="legend">
                 <span><i className="sw mark" /> Could save</span>
                 <span><i className="sw keep" /> Keeping</span>
-                <span className="recovered">
-                  Recovered so far <b>{money(summary.recovered_total)}</b>
-                  <span className="tag missing" title={summary.recovered_note}>{summary.recovered_total > 0 ? "Self-reported" : "Not tracked yet"}</span>
-                </span>
+                <RecoveredLegend s={summary} />
               </div>
             </>
           )}
@@ -226,15 +235,17 @@ export default function Dashboard() {
       <div className="dash-index">
         <div className="wrap">
           <nav aria-label="On this page">
+            {alerts && alerts.unseen > 0 && <a href="#h-alerts">New<span className="count">{alerts.unseen}</span></a>}
             {openFindings.length > 0 && <a href="#owed">Owed to you<span className="count">{openFindings.length}</span></a>}
             {grouped.filter((g) => g.rows.length).map((g) => (
               <a key={g.key} href={`#g-${g.key}`}>{g.short}<span className="count">{g.rows.length}</span></a>
             ))}
+            {recovered && recovered.events.length > 0 && <a href="#money-back">Money back<span className="count">{recovered.events.length}</span></a>}
             <a href="#build-status">What&apos;s built{features && <span className="count">{features.features.length}</span>}</a>
             <a href="#trace">How it worked</a>
           </nav>
           <div className="demo-actions">
-            <span className="tag">{demo ? "Demo data" : "Your data, in memory only"}</span>
+            <span className="tag">{demo ? "Demo data" : "Your data"}</span>
             {demo && <button className="quiet" disabled={!!busy} onClick={() => post("sync", "/api/sync")}>Re-run</button>}
             <button className="quiet" disabled={!!busy} onClick={() => { setPanel(null); setOpen(null); post("seed", "/api/demo/seed"); }}>
               {demo ? "Reset demo data" : "Switch to demo data"}
@@ -250,6 +261,35 @@ export default function Dashboard() {
             <p>{notice.tone === "missing" ? notice.text.replace(/^MISSING\s*(\[[^\]]+\])?:?\s*/i, "") : notice.text}</p>
             <button className="icon" aria-label="Dismiss" onClick={() => setNotice(null)}><Close /></button>
           </div>
+        )}
+
+        {guide && demo && (
+          <section className="guide" aria-label="How to read this page">
+            <ol>
+              <li><b>This is a made-up demo month.</b> The sentence at the top is what ClawBack found in it.</li>
+              <li><b>Open any row with a yellow amount.</b> You&apos;ll see the evidence, and the email or script ClawBack wrote.</li>
+              <li><b>Try it on your own.</b> Connect your email or Plaid&apos;s test bank. Only this browser sees it, and you can <a href="/settings">delete it</a> any time.</li>
+            </ol>
+            <button className="quiet" onClick={closeGuide}>Got it</button>
+          </section>
+        )}
+
+        {alerts && alerts.unseen > 0 && (
+          <section className="alerts" aria-labelledby="h-alerts">
+            <div className="alerts-head">
+              <h2 id="h-alerts">New since you last looked <span className="count">{alerts.unseen}</span></h2>
+              <button className="quiet" disabled={busy === "alerts"} onClick={seenAlerts}>Mark as seen</button>
+            </div>
+            <ul>
+              {alerts.alerts.filter((a) => !a.seen).slice(0, 6).map((a) => (
+                <li key={a.id}>
+                  <b>{a.title}</b> <span>{humanDates(a.message)}</span>
+                  {a.amount > 0 && <span className="hl num">{money(a.amount)}</span>}
+                  <span className="when">{shortDate(a.created_at)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         {openFindings.length > 0 && (
@@ -286,11 +326,12 @@ export default function Dashboard() {
         {grouped.map((g) => {
           if (!g.rows.length) return null;
           const cost = g.rows.reduce((t, s) => t + s.monthly_cost, 0);
+          const sum = g.key === "cancelled" ? `${money(cost)} a month you no longer pay` : `${money(cost)} a month`;
           return (
             <section key={g.key} className={`group ${g.key}`} id={`g-${g.key}`} aria-labelledby={`h-${g.key}`}>
               <div className="group-head">
                 <h2 id={`h-${g.key}`}>{g.title} <span className="count">{g.rows.length}</span></h2>
-                <span className="group-sum">{money(cost)} a month</span>
+                <span className="group-sum">{sum}</span>
               </div>
               <div className="sheet">
                 <div className="row-line cols" aria-hidden>
@@ -318,6 +359,31 @@ export default function Dashboard() {
             </section>
           );
         })}
+
+        {recovered && recovered.events.length > 0 && (
+          <section className="group money-back" id="money-back" aria-labelledby="h-back">
+            <div className="group-head">
+              <h2 id="h-back">Money back <span className="count">{recovered.events.length}</span></h2>
+              <span className="group-sum">{recovered.note}</span>
+            </div>
+            <div className="table-scroll sheet">
+              <table>
+                <thead><tr><th>When</th><th>From</th><th>What happened</th><th>Checked</th><th className="num">Amount</th></tr></thead>
+                <tbody>
+                  {recovered.events.map((e) => (
+                    <tr key={e.id}>
+                      <td>{shortDate(e.on)}</td>
+                      <td>{e.merchant}</td>
+                      <td>{e.kind === "cancelled_subscription" ? `Cancelled. ${humanDates(e.note)}` : humanDates(e.note)}</td>
+                      <td>{e.status === "confirmed" ? <span className="tag ok"><Check /> In your bank data</span> : <span className="tag">You told us</span>}</td>
+                      <td className="num">{e.monthly ? <>{money(e.monthly)} a month</> : money(e.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
         <BuildStatus data={features} />
 
@@ -400,16 +466,18 @@ function costLabel(trace: TraceStep[]) {
   return `$${total.toFixed(total < 0.01 ? 4 : 2)}`;
 }
 
-type PlaidLink = { create: (o: Record<string, unknown>) => { open: () => void } };
-
-function loadPlaid(): Promise<PlaidLink> {
-  const w = window as unknown as { Plaid?: PlaidLink };
-  if (w.Plaid) return Promise.resolve(w.Plaid);
-  return new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = PLAID_SCRIPT;
-    s.onload = () => (w.Plaid ? resolve(w.Plaid) : reject(new Error("Plaid Link loaded but didn't start.")));
-    s.onerror = () => reject(new Error("Couldn't load Plaid Link. Check your internet connection."));
-    document.head.appendChild(s);
-  });
+function RecoveredLegend({ s }: { s: Summary }) {
+  const confirmed = s.recovered_confirmed ?? 0;
+  const told = s.recovered_self_reported ?? 0;
+  const monthly = s.cancelled_monthly_savings ?? 0;
+  return (
+    <span className="recovered" title={s.recovered_note}>
+      {monthly > 0 && <span>Cancelled <b>{money(monthly)}</b> a month</span>}
+      <span>
+        Got back <b>{money(s.recovered_total)}</b>
+        {confirmed > 0 && told === 0 && <span className="tag ok">In your bank data</span>}
+        {told > 0 && <span className="tag">{confirmed > 0 ? `${money(told)} you told us` : "You told us"}</span>}
+      </span>
+    </span>
+  );
 }

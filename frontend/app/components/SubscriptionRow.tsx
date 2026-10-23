@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ActionPrep, Alternatives, CancelPrep, Subscription } from "../api";
+import { writtenBy, type ActionPrep, type Alternatives, type CancelPrep, type Subscription } from "../api";
 import { humanDates, isBill, leadFlag, money, planLine, reclaimable, shortDate, sources } from "../format";
 import ActionPanel from "./ActionPanel";
 import { Missing } from "./bits";
@@ -74,7 +74,12 @@ export default function SubscriptionRow(p: Props) {
               </p>
             </div>
             <div className="detail-actions">
-              {isBill(s) ? (
+              {s.status === "cancelled" ? (
+                <>
+                  <h3>Cancelled</h3>
+                  <p className="fine-print">ClawBack keeps watching your bank and tells you if {s.merchant} charges you again.</p>
+                </>
+              ) : isBill(s) ? (
                 <>
                   <h3>Pay less for {s.merchant}</h3>
                   <div className="pair">
@@ -121,7 +126,11 @@ function PrimaryAction({ s, busy, onCheckin, onCancel, onCheaper, onNegotiate }:
     const by = shortDate(s.next_expected);
     return <button className="solid" disabled={busy} onClick={onCancel}>{by ? `Cancel before ${by}` : "Help me cancel"}</button>;
   }
-  if (lead.kind === "unused" || lead.kind === "membership_losing_money") {
+  if (lead.kind === "cancel_pending" || lead.kind === "cancel_confirmed") return null;
+  if (lead.kind === "charged_after_cancel") {
+    return <button className="solid" disabled={busy} onClick={onCancel}>Cancel again</button>;
+  }
+  if (lead.kind === "unused" || lead.kind === "membership_losing_money" || lead.kind === "paid_twice" || lead.kind === "included_elsewhere") {
     return <button className="solid" disabled={busy} onClick={onCancel}>Help me cancel</button>;
   }
   if (lead.kind === "overlap" || lead.kind === "price_increase") {
@@ -175,7 +184,7 @@ function CancelPanel({ d, onClose }: { d: CancelPrep; onClose: () => void }) {
           )}
         </div>
         <div>
-          <h4>Or send this email</h4>
+          <h4 className="with-tag">Or send this email{writtenBy(d.email.written_by) && <span className="tag">{writtenBy(d.email.written_by)}</span>}</h4>
           <div className="letter">
             {d.email.to && <p className="letter-to">To: {d.email.to}</p>}
             <p className="letter-subject">{d.email.subject}</p>
