@@ -110,7 +110,9 @@ def set_plaid(user_id: str, conn: PlaidConnection | None) -> None:
     _set(user_id, "plaid", conn)
 
 
-# Sync code saves through these, so a disconnect that lands mid-sync can't bring the token back.
+# Sync code saves through these, so a disconnect that lands mid-sync can't bring the token back, and a
+# "needs a new sign-in" flag that a webhook or the grant check set mid-sync isn't cleared by the sync's older copy.
+# Only a new connection (set_email / set_plaid) or mark_reconnect(needs=False) clears that flag.
 
 def _update(user_id: str, source: str, conn, same) -> bool:
     with db.tx() as c:
@@ -119,6 +121,8 @@ def _update(user_id: str, source: str, conn, same) -> bool:
         current = _decode(source, row["secret"]) if row else None
         if current is None or not same(current, conn):
             return False
+        if current.needs_reconnect and not conn.needs_reconnect:
+            conn = conn.model_copy(update={"needs_reconnect": True, "error": current.error})
         _write(c, user_id, source, conn)
         return True
 

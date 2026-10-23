@@ -59,7 +59,7 @@ def isolated(monkeypatch, tmp_path):
     monkeypatch.setattr(nylas, "_sleep", lambda seconds: None)
     nylas._states.clear()
     plaid._keys.clear()
-    plaid._failed_keys.clear()
+    plaid._fetches.clear()
     _forget_process_state()
     # Tests never reach Token Factory or Tavily, even when backend/.env has real keys.
     monkeypatch.setattr(llm, "available", lambda: False)

@@ -222,10 +222,11 @@ def remove_item(user_id: str, access_token: str) -> bool:
 WEBHOOK_PATH = "/api/ingest/plaid/webhook"
 MAX_AGE_S = 5 * 60
 RECONNECT_ITEM_CODES = frozenset({"ERROR", "PENDING_EXPIRATION", "PENDING_DISCONNECT", "USER_PERMISSION_REVOKED"})
-_FAILED_KEY_RETRY_S = 300
+KEY_TTL_S = 3600  # a cached key is fetched again after this, so an expiry or rotation at Plaid is seen
+MAX_KEY_FETCHES_PER_MIN = 10  # all kids together: unsigned requests with random kids can't make us call Plaid often
 
-_keys: dict[str, dict] = {}  # kid -> JWK from /webhook_verification_key/get
-_failed_keys: dict[str, float] = {}  # kid -> when fetching it failed (so junk kids can't make us call Plaid often)
+_keys: dict[str, tuple[dict, float]] = {}  # kid -> (JWK from /webhook_verification_key/get, when fetched)
+_fetches: list[float] = []  # when the last key lookups were made
 _keys_lock = threading.Lock()
 
 
@@ -243,23 +244,24 @@ def _b64url(part: str) -> bytes:
 
 
 def _verification_key(kid: str) -> dict:
+    t = time.time()
     with _keys_lock:
-        if kid in _keys:
-            return _keys[kid]
-        if time.time() - _failed_keys.get(kid, 0.0) < _FAILED_KEY_RETRY_S:
-            raise WebhookInvalid("unknown key id")
+        if kid in _keys and t - _keys[kid][1] < KEY_TTL_S:
+            return _keys[kid][0]
+        _fetches[:] = [f for f in _fetches if t - f < 60]
+        if len(_fetches) >= MAX_KEY_FETCHES_PER_MIN:
+            raise WebhookInvalid("too many key lookups; try later")
+        _fetches.append(t)
     try:
         key = _post("/webhook_verification_key/get", {"key_id": kid}).get("key")
     except PlaidError as exc:
-        with _keys_lock:
-            _failed_keys[kid] = time.time()
         raise WebhookInvalid("verification key not found") from exc
     if not isinstance(key, dict):
         raise WebhookInvalid("verification key not found")
     with _keys_lock:
-        if len(_keys) > 50:
+        if len(_keys) >= 20:  # Plaid uses a handful of keys at a time
             _keys.clear()
-        _keys[kid] = key
+        _keys[kid] = (key, t)
     return key
 
 

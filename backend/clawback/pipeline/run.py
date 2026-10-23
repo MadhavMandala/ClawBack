@@ -15,7 +15,7 @@ from ..findings.detect import run_findings
 from ..merchants import by_name
 from ..models import Cadence, Subscription
 from ..store import store
-from ..trace import start_run, timed
+from ..trace import record_repeat, start_run, timed
 from .extract import extract_all
 from .flags import flag_one, flag_overlaps
 from .recurring import detect_series, resolve_store_billed
@@ -27,6 +27,11 @@ from .value import membership_value
 def run(user_id: str, today: date | None = None) -> dict:
     today = today or date.today()
     u = store.user(user_id)
+    if store.is_cold(user_id):
+        # Real mail isn't back in memory yet (store.py, connect.ensure_fresh): a run now would drop every email
+        # finding, so the saved results stay until the mail is read again.
+        record_repeat(user_id, "pipeline", "code", "skipped", "kept the saved results until the mail is read again")
+        return summary(user_id)
     start_run(user_id)  # Nylas / Plaid sync rows and the newest on-click rows stay visible
     rules = rulebook.current()
     bill_for = rules.bill_provider_for if rules else None

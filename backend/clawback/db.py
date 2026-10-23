@@ -13,7 +13,7 @@ Tables
                secret = the whole connection (grant id or access token included), encrypted.
                lookup = keyed hash of the Nylas grant id or Plaid item id, indexed, for webhooks.
   spend        day, user_id, usd, calls: model spend per UTC day, for the daily caps (budget.py)
-  alerts       id, user_id, key, kind, ref, title, message, amount, created_at, seen_at (alerts.py)
+  alerts       id, user_id, key, kind, ref, title, message, amount, created_at, seen_at, silent (alerts.py)
   meta         key, value: e.g. the last nightly run
 """
 
@@ -28,7 +28,7 @@ from typing import Iterator
 
 from . import config
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS alerts (
     amount REAL NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
     seen_at TEXT,
+    silent INTEGER NOT NULL DEFAULT 0,
     UNIQUE (user_id, key)
 );
 
@@ -119,6 +120,9 @@ def _open(path: Path) -> sqlite3.Connection:
     conn.execute("PRAGMA synchronous=NORMAL")
     conn.execute("PRAGMA busy_timeout=10000")
     conn.executescript(SCHEMA)
+    columns = {r["name"] for r in conn.execute("PRAGMA table_info(alerts)")}
+    if "silent" not in columns:  # version 1 files
+        conn.execute("ALTER TABLE alerts ADD COLUMN silent INTEGER NOT NULL DEFAULT 0")
     conn.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
     return conn
 
