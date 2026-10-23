@@ -9,8 +9,10 @@ Status markers used here:
 
 ## 1. What it does
 
-ClawBack finds every subscription a person pays for, works out whether each one is worth it **for how they use it**,
-and does the legwork when it isn't. Rocket Money lists what you pay. ClawBack adds the usage side and then acts:
+ClawBack looks for money in a person's own bank and email data. It finds every subscription and bill they pay for,
+works out whether each one is worth it **for how they use it**, spots one-time money they are owed (duplicate
+charges, bank fees, store price drops, flight refunds, class-action settlements), and does the legwork. Rocket Money
+lists what you pay. ClawBack adds the usage side and the money owed, and then prepares the action:
 
 | Situation | What ClawBack says | What it does |
 |---|---|---|
@@ -20,9 +22,15 @@ and does the legwork when it isn't. Rocket Money lists what you pay. ClawBack ad
 | Trial about to convert | "Super Duolingo trial ends tomorrow, then $12.99/month." | Cancel prep before the charge |
 | Price went up | "Netflix went from $15.49 to $17.99 on Sep 5." | Cheaper tier / alternatives |
 | No usage evidence at all | "Did you use Adobe this month?" (one tap) | Remembers the answer |
+| A bill stepped up | "Xfinity went from $55.00 to $85.00 a month (+55%). Your promotional rate ended Aug 8." | Negotiation script |
+| Charged twice | "Best Buy charged $129.99 twice. Your email has one order." | Dispute letter (FCBA / Reg E) |
+| A bank fee | "Overdraft fee: $35.00." | Courtesy-reversal request |
+| A store dropped its price | "You paid $199.99; it's $169.99 now. Ask Target for $30 back by Oct 30." | Price-adjustment request |
+| A flight was cancelled | "United cancelled UA 1532. You can ask for $412.40 back in cash." | Refund request citing the DOT rule |
+| A settlement may apply | "You may qualify for the Kroger Savings Club settlement. Claim by Dec 21." | Official claim link only |
 
-**ClawBack never cancels or sends anything itself.** It prepares the cancel link, the steps and the email (as a
-Gmail draft), and the user does the final click. That rule avoids three problems:
+**ClawBack never cancels, sends, disputes or files anything itself.** It prepares the cancel link, the letter, the
+request or the script (and later the email as a draft in the user's mailbox), and the user does the final click. That rule avoids three problems:
 - holding everyone's passwords;
 - wrong cancellations, such as stopping someone's phone backups;
 - Google's requirement that users confirm agent actions on Workspace data.
@@ -31,14 +39,14 @@ Gmail draft), and the user does the final click. That rule avoids three problems
 
 ## 2. Scope
 
-**Hackathon demo (by 2026-10-30):** subscriptions only. Bank data comes from Plaid Sandbox/Trial or CSV upload,
-and email from Gmail in Google's Testing mode. It also includes the five flags above, check-ins, "Find cheaper",
-"Prepare cancel" with a Gmail draft, the model trace, and a seeded judge account.
+**Hackathon demo (by 2026-10-30):** five areas from the same data (widened on 2026-10-22): subscriptions, bills,
+bank charge problems, refunds owed, and class-action settlements (see §7). Bank data comes from Plaid Sandbox/Trial or
+CSV upload, and email from any provider through Nylas (Sandbox: 5 accounts). It also includes the subscription flags
+above, check-ins, "Find cheaper", "Prepare cancel", the findings with their prepared actions, the model trace, and a
+seeded judge account.
 
 **Roadmap:**
-- price-drop refunds, flight refunds and duplicate charges (research done, rules known);
-- Outlook;
-- a forwarding address for other providers;
+- a forwarding address for mail that can't be connected;
 - the browser extension;
 - state auto-renewal rules in claim text;
 - a trained email classifier;
@@ -50,7 +58,7 @@ and email from Gmail in Google's Testing mode. It also includes the five flags a
 flowchart LR
   subgraph In[Data in]
     P[Bank: Plaid Link + transactions/sync<br/>or statement CSV]
-    G[Gmail: users.watch -> Pub/Sub push<br/>-> history.list]
+    G[Email, any provider: Nylas Hosted OAuth<br/>+ messages search on Sync; webhooks: MISSING]
   end
   P --> R[Recurring detection<br/>code]
   G --> T[Triage<br/>rules, then Lightning for unknowns]
@@ -58,12 +66,18 @@ flowchart LR
   X --> U[Usage signals + membership value<br/>code]
   R --> U
   U --> F[Flags<br/>code]
+  R --> B[Bills: rules/bills.json<br/>increase / promo / negotiable]
+  P --> M[Findings: duplicates, fees,<br/>price drops, flights, settlements<br/>rules/*.json]
+  G --> M
+  B --> DB
+  M --> DB
   F --> DB[(Supabase Postgres)]
   DB --> UI[Next.js dashboard]
   UI -->|Find cheaper| A[Tavily: current plans<br/>-> Nemotron 3 Ultra]
   UI -->|Prepare cancel| C[Tavily: cancel page<br/>+ email text]
-  C -->|user approves| D[Gmail draft<br/>user presses send]
+  C -->|user approves| D[Email draft via Nylas: MISSING<br/>user presses send]
   UI -->|Yes / No check-in| U
+  UI -->|Prepare / negotiate| AP[Letter, request or script<br/>user sends it]
 ```
 
 Everything that touches money or dates is plain code. Models only:
@@ -76,10 +90,20 @@ A model never computes a date, a total or a deadline.
 ## 4. Data sources
 
 ### Bank and card transactions (the full subscription list)
-- **Plaid** [MISSING]: Link in the browser, then a public_token exchange for an access_token (stored encrypted), then the
-  `/transactions/sync` cursor loop, re-run on the `SYNC_UPDATES_AVAILABLE` webhook.
-  - Sandbox is free (test user `user_transactions_dynamic`).
-  - The Trial plan allows 10 real bank connections free.
+- **Plaid** [built, untested live] (`backend/clawback/sources/plaid.py`, plain REST over httpx):
+  - `POST /api/connect/plaid/link-token` calls `/link/token/create` (products `transactions`, 180 days, US, English).
+  - Link runs in the browser and hands back a `public_token`. `POST /api/connect/plaid/exchange` swaps it for an
+    access_token via `/item/public_token/exchange` and saves it (plaintext for now; encryption is [MISSING]).
+  - Then the `/transactions/sync` cursor loop runs while `has_more`, applying added / modified / removed. A brand-new
+    Item is often not ready: the first sync retries for about 15 s, then answers `pending: true` so the user can press
+    Sync later. If Plaid reports a mutation during pagination, the loop restarts from its starting cursor.
+  - Plaid amounts are positive for money out, the same as ours. The description is `merchant_name`, except that raw
+    names our matchers rely on (`APPLE.COM/BILL`, `GOOGLE *...`, known merchants) are kept.
+  - Transactions live in memory, so after a restart the first sync pulls from the start again.
+  - Disconnect calls `/item/remove` (best effort) and drops the bank's transactions.
+  - [MISSING]: the `SYNC_UPDATES_AVAILABLE` webhook (new data arrives only on Sync), Production access, and OAuth banks
+    (Chase, Capital One and others need a redirect URI in Link plus a return page in the frontend).
+  - Sandbox is free (test login `user_good` / `pass_good`; `user_transactions_dynamic` gives livelier data).
   - Plaid's `/transactions/recurring/get` is a paid add-on, so ClawBack uses its own recurring detection (below).
 - **Statement CSV upload** [built]: works with no approvals. It handles common column names, a single amount column of
   either sign, and separate debit/credit columns. OFX is [MISSING].
@@ -88,20 +112,41 @@ A model never computes a date, a total or a deadline.
   same amount (demo version [built], general version [MISSING]).
 
 ### Email (usage evidence, trials, receipts)
-- **Gmail** [MISSING]: OAuth with `gmail.readonly` (read) + `gmail.compose` (drafts).
-  - Both are **restricted** scopes. Until a paid CASA security review passes (weeks), the app stays in Testing mode:
-    at most 100 test users, whose tokens expire 7 days after consent.
-  - Push: `users.watch` publishes to a Pub/Sub topic (grant publish to `gmail-api-push@system.gserviceaccount.com`).
-    Each push carries only `{emailAddress, historyId}`; call `history.list` from the last stored id.
-    Renew the watch daily, and poll `history.list` now and then, because pushes can be dropped.
-  - Drafts: `drafts.create` only, never `messages.send`.
-  - Google's Limited Use rules apply: no training general models on user mail, a privacy policy that says so,
-    a prompt-injection guard, and user confirmation for agent actions.
-- **Outlook** [MISSING, P2]: Microsoft Graph with `Mail.Read` + `Mail.ReadWrite` (drafts). `Mail.ReadWrite` cannot send,
-  so "draft only" is enforced by the permission. Message subscriptions last under 7 days and must be renewed.
+- **Any inbox through Nylas v3** [built, untested live] (`backend/clawback/sources/nylas.py`, plain REST over httpx).
+  One "Connect email" button covers Gmail, Outlook / Hotmail / Microsoft 365, Yahoo, iCloud and other IMAP inboxes.
+  - `GET /api/connect/email` returns the Nylas Hosted OAuth URL (`{NYLAS_API_URI}/v3/connect/auth`, `response_type=code`,
+    `access_type=online`, an optional `login_hint`, and a random single-use `state` that expires after 10 minutes).
+    No `provider` is sent, so Nylas shows its provider picker. The user signs in on the provider's own page.
+  - Nylas redirects to `GET /api/connect/email/callback`. It checks the `state` and swaps the code at
+    `POST /v3/connect/token` (client id, the API key as client secret) for a `grant_id`. The address and provider come
+    from that response, or from `GET /v3/grants/{id}` when the response leaves them out. Then it saves the grant,
+    reads mail, runs the pipeline, and redirects to `{FRONTEND_ORIGIN}/?connected=email` or `/?connect_error=<message>`.
+    Nylas holds the provider tokens; ClawBack keeps only the grant id.
+  - Reading: `GET /v3/grants/{id}/messages`, newest first, paged with `page_token` / `next_cursor`, up to
+    `EMAIL_MAX_MESSAGES` (default 150) from the last 180 days. Nylas allows only `in`, `limit` and `page_token` next to
+    `search_query_native` for Google and Microsoft, so:
+    - Google: a Gmail-syntax search with `newer_than:180d` inside the query;
+    - Microsoft: KQL keywords (Graph `$search`); the 180-day cut is made from each message's `date`;
+    - Yahoo, iCloud, IMAP, EWS, or a native search the provider refuses: `received_after` plus the triage keyword rules,
+      looking at up to 500 messages.
+  - Each message keeps the first `from[].email`, `subject` and `date` (unix seconds). `body` is HTML when the message has
+    an HTML part; it is stripped to text and cut to 5,000 characters, falling back to `snippet`. Bodies stay in memory.
+  - A 401 / 404 on the grant marks the connection as needing a reconnect ("Connect email" again re-authenticates the
+    same grant). A 429 waits for `Retry-After`, or backs off, and retries. Requests to one grant run one at a time.
+  - Disconnect deletes the grant at Nylas (best effort) and drops the emails from memory. Connecting a different inbox
+    deletes the old grant, because the Sandbox counts every grant toward its limit of 5.
+- **Email drafts** [MISSING]: cancellation emails saved as drafts through the Nylas drafts API. Never send.
+- **Email webhooks** [MISSING]: Nylas `message.created` webhooks, so new mail arrives without pressing Sync.
+- **Nylas production** [MISSING]: the free Sandbox allows 5 connected accounts and isn't for production use.
+  - Mail passes through Nylas, a third-party processor, so the privacy policy must say so.
+  - Gmail in production also needs either our own Google project with Google verification + CASA (restricted
+    scopes, renewed yearly) or Nylas's verified shared Google app (a paid add-on).
+  - Google's Limited Use rules still apply to Gmail data: no training general models on user mail, a privacy policy
+    that says so, a prompt-injection guard, and user confirmation for agent actions.
 - **Forwarding address** [MISSING, P2]: a free Cloudflare Email Worker receives forwarded receipts from any provider.
   It can't write drafts into the user's mailbox, so the claim is emailed back to the user instead.
-- Yahoo / iCloud app passwords: **deliberately not supported**. They give full mailbox access with no limits.
+- iCloud and plain IMAP inboxes usually sign in with an app password on Nylas's page. ClawBack never sees it, but it
+  gives Nylas full mailbox access, which the privacy policy should state.
 
 ## 5. Pipeline
 
@@ -116,7 +161,10 @@ A model never computes a date, a total or a deadline.
 | 6 | Membership value | code: savings from receipts minus the fee | delivery memberships | [built]; other memberships [MISSING] |
 | 7 | Flags | code | each subscription | [built] |
 | 8 | Find cheaper | **Tavily** search, then **Nemotron 3 Ultra** (`nvidia/Nemotron-3-Ultra-550b-a55b`), then a code citation check | on request | [stub] |
-| 9 | Prepare cancel | Tavily for the cancel page, a template or Ultra for the email, Gmail `drafts.create` | on request | [stub] / [MISSING] draft |
+| 9 | Prepare cancel | Tavily for the cancel page, a template or Ultra for the email, a Nylas draft | on request | [stub] / [MISSING] draft |
+| 10 | Bills: classify + flag | code + `rules/bills.json` | recurring charges | [built] |
+| 11 | Purchases and flight details from email | regex rules; **Nemotron 3.5 Lightning** with a key | receipt / order / airline emails | [built] rules, [stub] model |
+| 12 | Findings: duplicates, fees, price drops, flights, settlements | code + `rules/*.json`; price checks with Tavily + Lightning | all transactions and emails | [built]; live price checks [stub] |
 
 The funnel matters for cost:
 
@@ -154,7 +202,104 @@ Rules:
 - optional usage APIs (e.g. Spotify listening history);
 - the browser extension, which sees actual visits to subscribed sites.
 
-## 7. Model roles (Nebius Token Factory, OpenAI-compatible, `https://api.tokenfactory.nebius.com/v1/`)
+## 7. Bills and one-time money (findings)
+
+All of this runs inside the same pipeline (`pipeline/run.py` -> `findings/detect.py`), in demo and real mode, on
+Plaid / CSV transactions and Nylas email. Every rule comes from `backend/clawback/rules` (written and fact-checked
+separately, each row with its `source_url`), read through `findings/rulebook.py`. Only `verified: true` rows can
+raise a flag or a finding, and every finding and action cites its rule (name, summary, source URL) from that data.
+All date and money math is code; models only read text (purchase and flight emails, prices on a page) or write wording.
+Each detector writes one trace row with a count and a note.
+
+Findings use one shape (`Finding`: kind, merchant, amount, currency, deadline, confidence, evidence, rule, status).
+Ids are stable hashes of the kind and key facts, so "dismiss" and "done" survive re-runs. `owed_total` sums open USD
+findings; EUR / GBP amounts say so in `amount_note`. "Done" takes a self-reported `got_back` amount, added to
+`recovered_total` (MISSING [cancel-confirmation]: never checked against the bank). Every finding has a prepared
+action (`ActionPrep`: channel, steps, verified links, a message and / or a script, the deadline, what's missing).
+
+### 7.1 Bills (internet, mobile, insurance, utilities, gyms) [built]
+- **Data in:** recurring charges whose description matches a provider in `rules/bills.json`, plus promo emails.
+- **Rule:** bills.json says which providers are usually negotiable and which bills swing month to month (utilities).
+- **Detector** (`findings/bills.py`; grouping in `pipeline/recurring.py`):
+  - bills come out as `Subscription(kind="bill", bill_category=...)`, so they sit next to subscriptions and in the
+    monthly total;
+  - `bill_increase`: the median of the last 2 charges is 10%+ above the median of the earlier ones (high at 15%+),
+    savings = the difference;
+  - `promo_ending`: a "promotional rate ends" email whose date is still ahead;
+  - `negotiable`: info only, when nothing else is flagged;
+  - variable bills are detected despite swings and never get an increase flag.
+- **Action:** `POST /api/subscriptions/{id}/negotiate`: phone or chat; talking points with the price now and before,
+  how long they've been a customer (from the first charge) and the ask; a short chat message; the account and
+  retention pages from bills.json.
+- **MISSING:** [bill-market-rates] competitor offers (Tavily, untested).
+
+### 7.2 Bank charge problems [built]
+- **Duplicate charges.**
+  - Data in: transactions, and purchases read from receipt emails.
+  - Rule: `rules/disputes.json`. The Fair Credit Billing Act (credit card) and Regulation E (debit card) both give
+    60 days after the statement that first shows the error.
+  - Detector (`findings/charges.py`): same merchant (first two words) and amount within 3 days, $5+, not a recurring
+    series or a fee. High confidence when one email receipt shows a single order; skipped when the emails show as
+    many orders as charges.
+  - Deadline: the statement date isn't known, so it assumes the statement closed at the end of the charge's month,
+    then adds 60 days. It is labelled "estimated".
+  - Action: ask the merchant first, then a written dispute letter to the card issuer before the deadline.
+  - MISSING: [statement-dates] real statement dates and the card type.
+- **Bank fees.**
+  - Data in: transactions. Rule: `rules/bank_fees.json` (8 fee kinds, regex patterns, refunds excluded).
+  - Detector: `fee_kind_for(description)`. The bank's name comes from the Plaid connection.
+  - Action: a polite one-time courtesy-reversal message and phone script, using the neutral tip from the data.
+    It never promises a result. No deadline.
+
+### 7.3 Refunds owed [built]
+- **Store price drops.**
+  - Data in: purchases from receipt / order emails (`findings/purchases.py`: regex rules; Nemotron 3.5 Lightning with a
+    key, copying names and prices only), plus a current-price check (`tools/prices.py`).
+  - Rule: `rules/retailers.json`: does the store adjust, the window in days, from purchase or delivery, conditions and
+    exclusions, how to claim.
+  - Detector (`findings/refunds.py`): stores that adjust only (Walmart and Amazon never). Deadline = order date + window,
+    counted from the order date even when the store counts from delivery (unknown). A finding needs a $5+ drop on or
+    before the deadline.
+  - Price check: simulated in demo mode (`demo_data.PRICE_CHECKS`, labelled in the evidence and trace). In real mode,
+    Tavily search + extract on the store's site and Lightning reading the price, with a cited page. Without keys, no
+    check and a MISSING trace row.
+  - Action: the store's own claim route (chat, phone, in store or form, from the data), its claim link, and a request
+    with the order number and both prices.
+  - Special cases from the data:
+    - stores that refuse requests filed by services (Nordstrom) get a reminder to ask themselves, with no drafted
+      message;
+    - store-purchase-only policies (Staples) are low confidence;
+    - windows that count from delivery (Best Buy, Apple) start at the order date, the earliest possible, and the
+      evidence says so;
+    - rows last checked more than ~3 months ago carry a "check the official page" note.
+  - MISSING: [live-price-check] (untested), [purchase-extraction] (regex only without a key).
+- **Flights.**
+  - Data in: airline emails. A booking gives the fare; a cancellation or schedule change gives the event (flight
+    number, route, date, old and new times, whether a credit was offered or a change accepted).
+  - Rules: `rules/flights.json`.
+    - US DOT (14 CFR 260): a cash refund for a cancellation, or a change of 3+ hours domestic / 6+ hours international,
+      unless the passenger accepted the alternative or a voucher.
+    - EU261 / UK261: fixed compensation by great-circle distance band (`findings/airports.py`) for a cancellation
+      with under 14 days' notice, on flights leaving the EU / UK. A 3+ hour change gets the same treatment, at low
+      confidence.
+  - Action: the airline's refund or claim page (when listed in flights.json) and a request citing the rule.
+  - MISSING: [flight-status-check] (real arrival delays and causes); EU-airline arrivals into the EU aren't checked.
+
+### 7.4 Class-action settlements [built]
+- **Data in:** transaction descriptions, email senders and subjects.
+- **Rule:** `rules/settlements.json`, a curated list of open settlements with the official claim site.
+- **Detector** (`findings/settlements.py`): `settlements_matching()` over each charge and email.
+  - Confidence is medium when a dated purchase falls inside the class period and the class isn't limited to one
+    state or venue (SeatGeek Nevada events, Schnucks Missouri stores, Knott's California, ...), otherwise low
+    ("might apply").
+  - Amount = the payout estimate (or 0), with the payout text as the note. Deadline = the claim deadline.
+- **Action:** who qualifies, the proof needed, and the official `claim_url` as the only link. It notes that claims are
+  made under penalty of perjury. When the claim needs a Claim ID / PIN from a mailed notice (TED, LiveHealth,
+  Equifax, Navy Federal...), the steps say so. ClawBack never files or pre-fills a claim.
+- **MISSING:** [settlements-refresh] no live feed. Matching is by merchant name, so it can hit a settlement about a
+  different product from the same company.
+
+## 8. Model roles (Nebius Token Factory, OpenAI-compatible, `https://api.tokenfactory.nebius.com/v1/`)
 
 | Role | Model ID | $/1M in/out | Context | Why |
 |---|---|---|---|---|
@@ -174,42 +319,59 @@ defensively.
 **Zero Data Retention must be on** before any real user email is sent. Without it, Token Factory keeps inputs and
 outputs and logs them.
 
-## 8. Data model (target: Supabase Postgres with row-level security)
+## 9. Data model (target: Supabase Postgres with row-level security)
 
 | Table | Key fields | Notes |
 |---|---|---|
 | users | id, email, state (for auto-renewal law) | Supabase Auth |
-| connections | user_id, provider (gmail/plaid), encrypted_token, cursor / history_id, expires_at | tokens encrypted at rest |
+| connections | user_id, kind (email/plaid), Nylas grant_id + provider / encrypted Plaid token, cursor | tokens encrypted at rest. The prototype keeps these in `backend/.local/connections.json`, in plaintext [MISSING: token-encryption] |
 | transactions | user_id, date, description, amount, source | minimal fields only |
 | email_facts | user_id, received, kind, merchant, amounts, trial_end | **no raw email bodies stored** |
-| subscriptions | user_id, merchant, category, cadence, amount, monthly_cost, next_expected, status, price_change | rebuilt by the pipeline |
+| subscriptions | user_id, merchant, category, kind (subscription / bill), bill_category, cadence, amount, monthly_cost, next_expected, status, price_change | rebuilt by the pipeline |
+| findings | user_id, id (stable hash), kind, merchant, amount, currency, deadline, confidence, evidence, rule, status, got_back | rebuilt by the pipeline; status and got_back are the user's |
 | usage_signals | subscription_id, kind, on, weight, detail | evidence shown to the user |
 | decisions | subscription_id, kind (checkin_yes / checkin_no / keep / cancel_started / cancel_confirmed), on | the "memory" |
-| actions | subscription_id, kind (cancel_prep / alternatives / gmail_draft), payload, created | what ClawBack prepared |
+| actions | subscription_id, kind (cancel_prep / alternatives / email_draft), payload, created | what ClawBack prepared |
 | trace | user_id, stage, engine, status, ms, tokens, cost | shown on the dashboard |
 
-The prototype keeps all of this in memory for a single demo user [MISSING: database, auth].
+The prototype keeps all of this in memory for a single demo user [MISSING: database, auth]. Only `connections`
+survives a restart (the JSON file above). On startup, saved connections switch the user to real data and sync again.
 
-## 9. API (FastAPI)
+Each user has a **mode**: `demo` (seeded fake data, the default) or `real`. The first real connection while in demo
+mode drops the demo transactions, emails, subscriptions and decisions, so real and fake data never mix. Uploaded
+statements are kept. `POST /api/demo/seed` switches back to demo; saved connections stay saved but unused.
+
+## 10. API (FastAPI)
 
 | Method | Path | Does | Status |
 |---|---|---|---|
 | GET | /api/health | Connected services + model roles | [built] |
 | GET | /api/missing | Everything not built | [built] |
-| GET | /api/summary | Monthly total, potential savings, flagged count, recovered | [built] (recovered always $0) |
+| GET | /api/summary | Subscriptions and bills (counts, totals), monthly total, potential savings, flagged, owed (open findings, USD), recovered (self-reported) | [built] |
 | GET | /api/subscriptions | Subscriptions sorted by savings | [built] |
 | POST | /api/subscriptions/{id}/checkin `{used}` | Record a check-in, re-run | [built] |
 | POST | /api/subscriptions/{id}/keep | Keep; silence usage flags 90 days | [built] |
 | POST | /api/subscriptions/{id}/cancel-prep | Link, steps, email | [stub] |
 | GET | /api/subscriptions/{id}/alternatives | Hints, plus Tavily + Ultra options with citations | [stub] |
-| POST | /api/subscriptions/{id}/gmail-draft | Save the email as a Gmail draft | [MISSING] (501) |
-| POST | /api/ingest/statement | CSV upload | [built] |
-| GET | /api/connect/gmail, /api/connect/plaid | Start OAuth / Link | [MISSING] (501) |
-| POST | /api/ingest/gmail/push, /api/ingest/plaid/webhook | Push / webhook receivers | [MISSING] (501) |
-| POST | /api/sync, /api/demo/seed | Re-run / reset demo | [built] |
+| POST | /api/subscriptions/{id}/email-draft | Save the email as a draft in the user's mailbox | [MISSING] (501) |
+| POST | /api/subscriptions/{id}/negotiate | `ActionPrep`: script, chat message, provider links | [built] |
+| GET | /api/findings | `Finding[]`: open first, then deadline (soonest, none last), then amount | [built] |
+| POST | /api/findings/{id}/prepare | `ActionPrep` for that finding | [built] |
+| POST | /api/findings/{id}/dismiss | The updated finding | [built] |
+| POST | /api/findings/{id}/done `{got_back}` | The updated finding; adds got_back to recovered (self-reported) | [built] |
+| POST | /api/ingest/statement | CSV upload (demo or real mode) | [built] |
+| GET | /api/connections | Mode + each connection: configured, connected, account / provider / institution, last sync, error | [built] |
+| GET | /api/connect/email `?login_hint=` | `{auth_url}` for Nylas Hosted OAuth; 501 naming the env vars when not configured | [built] |
+| GET | /api/connect/email/callback | OAuth return: state check, grant, read mail, pipeline, 302 back to the app | [built] |
+| POST | /api/connect/plaid/link-token | `{link_token}` for Plaid Link; 501 when not configured | [built] |
+| POST | /api/connect/plaid/exchange `{public_token, institution}` | Save the bank, first sync, pipeline: `{added_transactions, institution, pending}` | [built] |
+| POST | /api/connect/email/disconnect, /api/connect/plaid/disconnect | Forget the connection, tell Nylas / Plaid, drop that data | [built] |
+| POST | /api/ingest/email/webhook, /api/ingest/plaid/webhook | Webhook receivers | [MISSING] (501) |
+| POST | /api/sync | Real mode: pull every connected source, then re-run. Demo mode: re-run | [built] |
+| POST | /api/demo/seed | Switch to demo mode and reseed | [built] |
 | GET | /api/trace | Model trace | [built] |
 
-## 10. Frontend (Next.js)
+## 11. Frontend (Next.js)
 
 One page today [built]:
 - a header with connect buttons (showing "missing") and a statement upload;
@@ -220,14 +382,22 @@ One page today [built]:
 
 [MISSING]:
 - login, plus a demo login for judges;
-- an onboarding flow (connect bank, connect Gmail, first scan);
+- an onboarding flow (connect bank, connect email, first scan);
 - a "recovered" history;
 - a settings page (state, notification preferences, disconnect and delete data).
 
-## 11. Security and privacy
+## 12. Security and privacy
 
-- Draft-only email permissions. Never `messages.send`.
-- Store extracted facts, not raw email bodies. Encrypt OAuth and Plaid tokens. Delete everything on disconnect [MISSING].
+- Email is read-only today; drafts later, and ClawBack never sends.
+- Mail passes through Nylas, a third-party processor; the privacy policy must say so [MISSING: nylas-production].
+- Store extracted facts, not raw email bodies. Today bodies live only in memory and are never written to disk or the
+  trace. Trace notes never contain tokens, secrets or the API key.
+- Encrypt the Plaid token and Nylas grant id [MISSING]: they are plaintext in `backend/.local/connections.json`
+  (git-ignored). A grant id only works together with `NYLAS_API_KEY`, which stays in `backend/.env`.
+- Disconnect deletes the Nylas grant or removes the Plaid Item, and drops that source's data [built]. Deleting
+  everything for a user is [MISSING] (needs the database).
+- The OAuth callback checks a random single-use `state` (CSRF). Errors go back to the app as a short message,
+  never a stack trace.
 - Token Factory Zero Data Retention on [MISSING]. Token Factory never trains on prompts.
 - Email text is wrapped as untrusted data, and the model is told to ignore instructions inside it. A real injection
   screen is [MISSING].
@@ -235,22 +405,36 @@ One page today [built]:
   "unverified", or citations the code checks against Tavily's results. A model can't introduce a URL.
 - No user data is used to train anything. A classifier, if trained, uses public and synthetic emails only.
 
-## 12. Testing and evaluation
+## 13. Testing and evaluation
 
 - [built] 8 tests on the demo data: every flag fires where it should, noise isn't detected, the DashPass math is right,
   check-ins change the result, the CSV parser handles signs, and unbuilt routes return 501.
+- [built] 26 tests on email (Nylas) and Plaid against fake APIs (`httpx.MockTransport`, no network, connections file
+  in a temp dir): auth URL and state checks, token exchange and the grant lookup, message mapping (HTML body, plain
+  body, snippet fallback), the Google / Microsoft / other-provider read paths, paging, 429 retry, expired grants,
+  disconnect and old-grant cleanup, Plaid mapping, sync with changes and removals, the "not ready yet" wait, clean
+  Plaid errors, 501 messages when unconfigured, the demo -> real switch and back, startup restore, and the `.env` reader.
+- [built] 26 tests on bills and findings: each detector on small inline rule data, including the negative cases
+  (Walmart not flagged, utility swings not flagged, a recurring series not counted as a duplicate, $4.99 drops, 2.5 h /
+  5 h changes, 14+ days' notice) and the deadline boundaries (last day open, next day closed). They also cover every
+  findings route, stable ids across re-runs, the rules data's special cases (self-file stores, store-only policies,
+  state-limited settlements, notice codes, the package's fee exclusions and longest match), and the demo story on the
+  real rules data.
+- [built] `tests/test_rules.py` (written with the rules data) checks every rules file loads, URLs are https, and the
+  helpers match.
+- [MISSING] A live run against a Nylas Sandbox app and Plaid Sandbox.
 - [MISSING] A labelled evaluation set: synthetic inboxes and transaction histories with known subscriptions and usage.
   Measure subscriptions found, false flags, and cost per 1,000 emails (rules + Lightning vs. everything to Ultra).
   Publish the failure cases.
 - [MISSING] A run on the team's own accounts, to report real savings found.
 
-## 13. Hackathon requirement mapping (Nebius x NVIDIA Global AI Hackathon, Best Apps and Agents)
+## 14. Hackathon requirement mapping (Nebius x NVIDIA Global AI Hackathon, Best Apps and Agents)
 
 | Requirement | How ClawBack meets it | Status |
 |---|---|---|
 | Runtime call to Nebius Token Factory | Extraction (Lightning) and alternatives (Ultra) | [stub]: needs a key and a live test |
 | At least one NVIDIA open model | Nemotron 3.5 Lightning, Nemotron 3 Ultra, Nemotron 3.5 Super-VL | [stub] |
-| Track fit: an app someone would use; Ultra for reasoning, Nano/Super for fast calls | Model routing in §7 | [built] in code |
+| Track fit: an app someone would use; Ultra for reasoning, Nano/Super for fast calls | Model routing in §8 | [built] in code |
 | Working demo URL until Dec 15 | Vercel frontend + hosted backend + seeded judge login | [MISSING] |
 | Public repo with an OSI license | MIT or Apache-2.0 | [MISSING]: private on purpose for now |
 | README with setup + how Nemotron / Token Factory are used | README.md | [built], update after live calls |
@@ -258,14 +442,16 @@ One page today [built]:
 | Feedback on Token Factory / NVIDIA models | Keep notes while building | [MISSING] |
 | Tavily bonus ($3k) | Find cheaper + cancel-page lookup | [stub] |
 
-## 14. Suggested build order for the remaining days
+## 15. Suggested build order for the remaining days
 
 1. **Keys:** get Nebius (turn on ZDR) and Tavily keys. Run one live call per model; confirm JSON and thinking
    behaviour. Exercise the extraction and "find cheaper" paths for real.
-2. **Plaid:** Sandbox Link + `/transactions/sync` into the existing recurring detection. Supabase schema + auth.
-3. **Gmail:** OAuth in Testing mode, a manual "sync now" (`history.list`), Lightning extraction, `drafts.create`.
+2. **Plaid:** Sandbox Link + `/transactions/sync` into the existing recurring detection (built; try it live with
+   Sandbox keys). Supabase schema + auth.
+3. **Email:** Nylas Hosted OAuth and a manual Sync (built; try it live with a Sandbox app), then webhooks, Lightning
+   extraction, drafts.
 4. **Cancel lookup:** Tavily lookup with citations. Build the evaluation set and measure.
 5. **Deploy:** frontend on Vercel, backend hosted (a Nebius Serverless CPU endpoint is about $0.066/h, or a free
-   host). Seed the judge account. A daily health check on the Gmail token, which expires every 7 days.
+   host). Seed the judge account. A daily check that the Nylas grant is still valid.
 6. **Real data:** run on your own accounts and record real numbers. Polish the UI.
 7. **Package:** video, write-up, LICENSE, make the repo public, submit a day early.

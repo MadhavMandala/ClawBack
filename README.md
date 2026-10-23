@@ -13,8 +13,9 @@ actually use each one. When something isn't pulling its weight, it tells you why
 It finds the cancel page, writes the cancellation email, or finds a cheaper plan that fits how you use it.
 **You make the final click.** ClawBack never cancels or sends anything on its own.
 
-> **Status: rough prototype.** It runs end to end on made-up demo data. Real bank and Gmail connections, the live
-> Nemotron calls, login and the database are **MISSING**. See [STATUS.md](STATUS.md) for exactly what works and what
+> **Status: rough prototype.** It runs end to end on made-up demo data. Connecting real email (through Nylas) and a
+> bank (through Plaid Sandbox) is built but only tested against mocks so far. Live Nemotron calls, login and the
+> database are **MISSING**. See [STATUS.md](STATUS.md) for exactly what works and what
 > doesn't, and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 ## Run it locally
@@ -40,7 +41,30 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. The backend seeds a demo user on start-up. "Reset demo" reloads it.
+Open http://localhost:3000. The backend seeds a demo user on start-up. "Reset demo data" reloads it.
+
+### Connect real email and a bank (optional)
+
+People using ClawBack just click **Connect email** or **Connect bank** and sign in on their provider's own page.
+For that to work, the person running the app registers it once with two services and puts the keys in
+`backend/.env` (copy `backend/.env.example`). The file is gitignored.
+
+**Email, any provider (Nylas).** One sign-in page covers Gmail, Outlook/Hotmail/Microsoft 365, Yahoo, iCloud
+and other IMAP inboxes.
+1. Sign up at https://dashboard-v3.nylas.com and create a Sandbox app. It's free for 5 connected accounts.
+2. Copy the app's Client ID, and create an API key.
+3. Under **Hosted authentication → Callback URIs**, add `http://localhost:8000/api/connect/email/callback`.
+4. Set `NYLAS_CLIENT_ID` and `NYLAS_API_KEY`. EU apps also set `NYLAS_API_URI=https://api.eu.nylas.com`.
+
+**Bank (Plaid).**
+1. Sign up at https://dashboard.plaid.com/signup.
+2. Under **Developers → Keys**, copy the client ID and the Sandbox secret.
+3. Set `PLAID_CLIENT_ID`, `PLAID_SECRET` and `PLAID_ENV=sandbox`.
+4. Sandbox only has test banks. In the Plaid window, pick First Platypus Bank and sign in with `user_good` /
+   `pass_good`.
+5. Real banks need Plaid Production access (MISSING, see STATUS.md).
+
+Restart the backend after editing `.env`. Connecting a real source replaces the demo data.
 
 ## How it works (short version)
 
@@ -62,21 +86,26 @@ money arithmetic. Every step is logged with its engine, time and cost, and the d
   The client is written, but no live call has been made yet (MISSING).
 - **Tavily** for current plan prices and cancel pages (written, untested: MISSING)
 - FastAPI (Python) backend, Next.js frontend
-- Planned: Plaid, the Gmail API, Supabase (all MISSING)
+- **Nylas** for email from any provider, and **Plaid** for bank transactions (built, not yet tried with live keys)
+- Planned: Supabase for login and storage (MISSING)
 
 ## Repo layout
 
 ```
 backend/clawback/
   main.py            API routes
-  pipeline/          triage -> extract -> recurring -> usage -> value -> flags; recommend + cancel actions
-  sources/           gmail.py, plaid.py (stubs), statements.py (CSV upload)
+  pipeline/          subscriptions: triage -> extract -> recurring -> usage -> value -> flags; cancel + cheaper
+  findings/          bills, duplicate charges, bank fees, price drops, flight refunds, settlements; prepared requests
+  rules/             verified rules data with official sources (refund windows, flight rules, disputes, settlements)
+  sources/           nylas.py (email, any provider), plaid.py (bank), statements.py (CSV upload)
+  connect.py         connect / sync / disconnect for email and bank
   llm.py             Nebius Token Factory client, model roles, prices
-  tools/tavily.py    web search
+  tools/             tavily.py (web search), prices.py (current-price checks)
   missing.py         the list of everything not built yet
   demo_data.py       the fake user
 frontend/app/        one-page dashboard
 docs/ARCHITECTURE.md full design
+docs/DESIGN.md       visual design rules
 STATUS.md            what works / what's MISSING
 ```
 

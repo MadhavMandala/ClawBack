@@ -1,6 +1,7 @@
 """Tavily web search / extract.
 
-Used for (1) finding a merchant's current plans and prices and (2) finding the real cancel page.
+Used for (1) a merchant's current plans and prices, (2) the real cancel page, (3) live price checks for price drops
+and (4) competitor offers for bill negotiation.
 Free tier: 1,000 credits a month. A basic search costs 1 credit; an extract costs 1 credit per 5 URLs.
 Untested until TAVILY_API_KEY is set.
 """
@@ -36,3 +37,22 @@ def search(user_id: str, stage: str, query: str, **kwargs) -> list[dict]:
     ]
     record(user_id, stage, "tavily", ms=(time.perf_counter() - start) * 1000, note=f"search: {query!r} -> {len(results)} results")
     return results
+
+
+def extract(user_id: str, stage: str, urls: list[str]) -> dict[str, str]:
+    """Page text by URL ({} and a 'missing' trace row without a key). Costs 1 credit per 5 URLs."""
+    if not available() or not urls:
+        if not available():
+            record(user_id, stage, "tavily", status="missing", note="MISSING: TAVILY_API_KEY not set")
+        return {}
+    from tavily import TavilyClient
+
+    start = time.perf_counter()
+    try:
+        resp = TavilyClient(api_key=settings.tavily_api_key).extract(urls=urls)
+    except Exception as exc:
+        record(user_id, stage, "tavily", status="error", ms=(time.perf_counter() - start) * 1000, note=str(exc)[:300])
+        return {}
+    pages = {r.get("url", ""): r.get("raw_content") or "" for r in resp.get("results", [])}
+    record(user_id, stage, "tavily", ms=(time.perf_counter() - start) * 1000, note=f"extract: {len(pages)} of {len(urls)} pages")
+    return pages

@@ -1,0 +1,642 @@
+{
+  "note": "Currently open US consumer class-action settlements (claim deadline on or after checked_on). Claim forms are signed under penalty of perjury, so ClawBack only tells the user they may qualify and links to the official settlement site; it never files a claim for the user and never pre-fills an attestation. Eligibility often depends on facts ClawBack can't see (state of residence, a notice with a Claim ID/PIN, model numbers), so a descriptor match is a hint, not a finding. Deadlines are as stated on the official administrator site (many close at 11:59 pm in a stated time zone; see notes). On 2026-10-22 ftc.gov/enforcement/refunds listed no open claim-based FTC refund programs (current programs pay automatically), so there are no type=ftc_refund rows. Rows with verified=false come last and must not be shown as confirmed.",
+  "checked_on": "2026-10-22",
+  "settlements": [
+    {
+      "id": "ted-foundation-vppa-sutton",
+      "type": "class_action",
+      "name": "Sutton v. TED Foundation Inc. (TED VPPA Settlement)",
+      "defendant": "TED Foundation Inc.",
+      "match": [
+        "TED.COM",
+        "ted.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "People in the United States who, between October 19, 2021 and July 14, 2026, were TED account holders and watched a pre-recorded video on TED.com or in TED's iOS or Android app.",
+      "class_period": {
+        "start": "2021-10-19",
+        "end": "2026-07-14"
+      },
+      "claim_deadline": "2026-10-26",
+      "payout": "Automatic: two free months of TED Membership (est. at least $10 value, must be activated). By filing a claim instead: $5.00 cash, subject to pro rata reduction (cash fund capped at $350,000), or donate it to TED.",
+      "payout_estimate_usd": 5.0,
+      "proof_required": false,
+      "claim_url": "https://www.tedvppasettlement.com/",
+      "source_url": "https://www.tedvppasettlement.com/",
+      "extra_source_urls": [],
+      "notes": "Online claims accepted until 11:59 p.m. on 2026-10-26 (time zone not stated). Online claim needs the 8-digit Claim ID and 4-digit PIN from the notice; a paper claim form can be mailed instead, or contact the administrator (1-888-312-3966). Filing is only needed to get cash instead of the automatic membership. Final approval hearing moved to 2026-11-13.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "bestway-above-ground-pools",
+      "type": "class_action",
+      "name": "In re Bestway Above-Ground Pools Litigation",
+      "defendant": "Bestway (USA) Inc.; Bestway Inflatables & Material Corp.; Bestway (Hong Kong) International Ltd.",
+      "match": [
+        "BESTWAY USA",
+        "BESTWAY POWER STEEL",
+        "BESTWAY STEEL PRO",
+        "COLEMAN POWER STEEL"
+      ],
+      "exclude": [],
+      "who_qualifies": "People in the U.S., its territories or DC who bought for personal use (not resale) a Bestway-branded above-ground pool 48 inches or taller (including Power Steel, Steel Pro and Coleman Power Steel models) with compression straps outside the support poles, sold 2008 through 2024.",
+      "class_period": {
+        "start": "2008-01-01",
+        "end": "2024-12-31"
+      },
+      "claim_deadline": "2026-10-30",
+      "payout": "With valid proof of purchase: 10% of the price paid (or of the Average Retail Price if no price is shown). Without proof: $40.00 cash.",
+      "payout_estimate_usd": 40.0,
+      "proof_required": false,
+      "claim_url": "https://poolsettlementbw.pnclassaction.com/",
+      "source_url": "https://www.poolsettlementbw.com/faqs/",
+      "extra_source_urls": [],
+      "notes": "Claims must be submitted online or postmarked by Oct 30, 2026; this is very soon. The site gives the period only as 'sold from 2008 through 2024', so the Jan 1 and Dec 31 dates are year bounds. Pools were mostly sold through big retailers, so bank descriptors will usually show the retailer, not Bestway. Does not affect pool recall rights. Admin: 1-855-789-5948.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "livehealth-online-amwell-polk",
+      "type": "class_action",
+      "name": "Polk v. American Well Corp. (LiveHealth Online Settlement)",
+      "defendant": "American Well Corp. (Amwell)",
+      "match": [
+        "LIVEHEALTH ONLINE",
+        "LIVEHEALTHONLINE",
+        "livehealthonline.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "All persons in the United States who used the appointment booking tool on the LiveHealth Online website (livehealthonline.com) or its iOS or Android app between October 2024 and August 2025.",
+      "class_period": {
+        "start": "2024-10-01",
+        "end": "2025-08-31"
+      },
+      "claim_deadline": "2026-10-30",
+      "payout": "Equal (pro rata) share of a $2,037,751.46 fund; estimated approximately $51.14 to $102.29 per class member",
+      "payout_estimate_usd": 51.14,
+      "proof_required": null,
+      "claim_url": "https://livehealthonlinesettlement.com/form/claim",
+      "source_url": "https://livehealthonlinesettlement.com/faq/",
+      "extra_source_urls": [],
+      "notes": "Class period is stated only by month (Oct 2024 - Aug 2025); day bounds are inferred. Estimate shown is the low end of the official range. Online claim needs the LoginID and PIN from the notice; a paper claim form can be mailed. Final approval hearing 2027-01-15 (Sacramento Superior Court). Telehealth app.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "schnucks-rewards-sales-tax",
+      "type": "class_action",
+      "name": "Garcia v. Schnuck Markets, Inc. (Schnucks Tax Settlement)",
+      "defendant": "Schnuck Markets, Inc.",
+      "match": [
+        "SCHNUCK",
+        "schnucks.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "Schnucks Rewards members who redeemed Rewards Points on tax-eligible items, mainly for personal, family or household use, at a Missouri Schnucks store (in person or online) between May 2, 2020 and Aug 7, 2026.",
+      "class_period": {
+        "start": "2020-05-02",
+        "end": "2026-08-07"
+      },
+      "claim_deadline": "2026-11-03",
+      "payout": "$7.00 to each class member who submits a timely and valid Claim Form.",
+      "payout_estimate_usd": 7.0,
+      "proof_required": null,
+      "claim_url": "https://www.schnuckstaxsettlement.com/Claim-Form",
+      "source_url": "https://www.schnuckstaxsettlement.com/FAQ",
+      "extra_source_urls": [],
+      "notes": "MISSOURI STORES ONLY. Online claims close 11:59 p.m. Central on Nov 3, 2026; mailed claims must be postmarked by then. Postcard recipients need the Access Code and PIN. The site lists no receipt requirement. Admin: Rust Consulting.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "levoit-vesync-hepa",
+      "type": "class_action",
+      "name": "Sen v. Vesync (US) Corp. (Levoit Air Purifier Settlement)",
+      "defendant": "Vesync (US) Corp. (Levoit)",
+      "match": [
+        "LEVOIT",
+        "VESYNC",
+        "levoit.com",
+        "vesync.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "Anyone who bought a Levoit-branded Core or EverestAir air purifier and/or replacement filter labeled 'True HEPA,' 'HEPA,' and/or 'H13' in the United States between Aug 29, 2019 and Aug 4, 2023.",
+      "class_period": {
+        "start": "2019-08-29",
+        "end": "2023-08-04"
+      },
+      "claim_deadline": "2026-11-03",
+      "payout": "$10.00 digital payment per valid claim; may be reduced depending on the number of valid claims (total awards capped at $15,000,000).",
+      "payout_estimate_usd": 10.0,
+      "proof_required": true,
+      "claim_url": "https://www.lapsettlement.com/submit-a-claim.html",
+      "source_url": "https://www.lapsettlement.com/",
+      "extra_source_urls": [],
+      "notes": "The claim page requires 'evidence of purchase showing the original date of purchase'. A Claim ID/PIN form is offered, plus a public form for people without one. Admin: Apex Class Action, 1-800-837-2979. NY state court (Kings County) case.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "cvs-digital-privacy",
+      "type": "class_action",
+      "name": "Brewer, et al. v. CVS Pharmacy, Inc. and Criteo Corp. (CVS Digital Privacy Settlement)",
+      "defendant": "CVS Pharmacy, Inc.; Criteo Corp.",
+      "match": [
+        "CVS/PHARMACY",
+        "CVS PHARMACY",
+        "CVS.COM",
+        "cvs.com",
+        "cvshealth.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "All living individuals who accessed the CVS Digital Properties (cvs.com, cvshealth.com, or the CVS app) in the United States before July 27, 2026.",
+      "class_period": {
+        "start": null,
+        "end": "2026-07-26"
+      },
+      "claim_deadline": "2026-11-16",
+      "payout": "Up to $5.00 without documentation, or up to $10.00 with proof of membership in the Settlement Class. Payments may be reduced proportionately depending on the number of valid claims.",
+      "payout_estimate_usd": 5.0,
+      "proof_required": false,
+      "claim_url": "https://www.cvsdigitalprivacysettlement.com/form/claim/",
+      "source_url": "https://www.cvsdigitalprivacysettlement.com/faq/",
+      "extra_source_urls": [],
+      "notes": "Online claims close at 11:59 p.m. EST on Nov 16, 2026; mailed claims must be postmarked by that date. Proof is optional and doubles the cap. Final hearing Dec 1, 2026. Admin: Simpluris, (888) 654-1271. This is a website/app privacy class, not a purchase class: CVS bank charges only suggest that the person used CVS.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "raging-waters-processing-fee",
+      "type": "class_action",
+      "name": "Andrea Velazquez v. Festival Fun Parks, LLC (Raging Waters Settlement)",
+      "defendant": "Festival Fun Parks, LLC (Raging Waters)",
+      "match": [
+        "RAGING WATERS",
+        "RAGINGWATERS",
+        "ragingwaters.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "All persons residing in the United States who bought admission tickets from www.ragingwaters.com between June 1, 2020 and June 22, 2026 and paid a 'Processing Fee'.",
+      "class_period": {
+        "start": "2020-06-01",
+        "end": "2026-06-22"
+      },
+      "claim_deadline": "2026-11-24",
+      "payout": "Pro rata cash from an $850,000 fund, based on each claimant's share of total processing fees paid, after fees and costs.",
+      "payout_estimate_usd": null,
+      "proof_required": null,
+      "claim_url": "https://www.ragingwaterssettlement.com/submit-claim",
+      "source_url": "https://www.ragingwaterssettlement.com/faqs",
+      "extra_source_urls": [],
+      "notes": "One claim form covers all of a person's orders. Claims due online or postmarked by Nov 24, 2026. Only tickets bought on ragingwaters.com count. Admin: Angeion.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "dr-squatch-natural",
+      "type": "class_action",
+      "name": "Guzman et al. v. Dr. Squatch, LLC",
+      "defendant": "Dr. Squatch, LLC",
+      "match": [
+        "DR SQUATCH",
+        "DRSQUATCH",
+        "DR. SQUATCH",
+        "drsquatch.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "Anyone who bought, in the United States, a Dr. Squatch product labeled 'natural' (e.g. Men's Natural bar soap, deodorant, body wash, shampoo, toothpaste; full list in Exhibit C of the Settlement Agreement) between Nov 1, 2018 and Aug 29, 2026. Dr. Squatch employees and their families are excluded.",
+      "class_period": {
+        "start": "2018-11-01",
+        "end": "2026-08-29"
+      },
+      "claim_deadline": "2026-11-27",
+      "payout": "$0.50 per product: up to 5 units without proof of purchase, up to 20 units with proof, cumulative maximum 25 units ($12.50). Adjusted pro rata against the $9,000,000 fund.",
+      "payout_estimate_usd": null,
+      "proof_required": false,
+      "claim_url": "https://personalcareproductssettlement.pnclassaction.com/",
+      "source_url": "https://www.personalcareproductssettlement.com/faqs/",
+      "extra_source_urls": [],
+      "notes": "One claim per household. Per-unit amounts come from the Settlement Agreement PDF on the official site; the FAQ itself gives no per-unit figure. Proof means a receipt from a third-party retailer, so retail purchases count. Final hearing Mar 2, 2027. Admin phone 1-855-706-1956.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "equifax-inquiry-dispute",
+      "type": "class_action",
+      "name": "Hines v. Equifax Information Services, LLC (Equifax Inquiry Dispute Settlement)",
+      "defendant": "Equifax Information Services LLC",
+      "match": [
+        "EQUIFAX",
+        "equifax.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "U.S. residents whom Equifax's records show either (a) mailed a letter disputing hard inquiries between Oct 4, 2016 and Mar 27, 2026, coded 'not mine'/'unauthorized', and got Equifax's 'inquiries are a factual record of file access' reply (Certified Group), or (b) disputed a hard inquiry between Aug 31, 2021 and Mar 27, 2026 (General Dispute Group). A New York Subclass covers NY addresses Nov 27, 2017 to Sept 10, 2024.",
+      "class_period": {
+        "start": "2016-10-04",
+        "end": "2026-03-27"
+      },
+      "claim_deadline": "2026-11-29",
+      "payout": "Expected approximately $300 (Certified Group), $100 (General Dispute Group) or $400 (New York Subclass) from a $30 million fund; actual amounts depend on claims rates.",
+      "payout_estimate_usd": 100.0,
+      "proof_required": null,
+      "claim_url": "https://www.equifaxdisputeclassaction.com/claimform.aspx",
+      "source_url": "https://www.equifaxdisputeclassaction.com/",
+      "extra_source_urls": [],
+      "notes": "Membership is set by Equifax's records. Claims are filed with the Claim Number and PIN from the notice, so the best ClawBack signal is a notice email from the administrator, not a bank charge. The payout estimate shown is for the lowest group. Do not confuse this with the separate Equifax $100M 2022 coding-error settlement, whose site was blocked and is not included.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "navy-federal-unauthorized-loans",
+      "type": "class_action",
+      "name": "Stacy Edey et al. v. Navy Federal Credit Union",
+      "defendant": "Navy Federal Credit Union",
+      "match": [
+        "NAVY FEDERAL",
+        "NAVY FCU",
+        "navyfederal.org"
+      ],
+      "exclude": [],
+      "who_qualifies": "NFCU members who, between Jan 1, 2023 and Jan 31, 2025, had a personal loan applied for from a device NFCU did not recognize, with the funds deposited to their account. They must also have disputed the loan as fraudulent, had the dispute denied in whole or in part, and NFCU must not have recovered the loan funds in full.",
+      "class_period": {
+        "start": "2023-01-01",
+        "end": "2025-01-31"
+      },
+      "claim_deadline": "2026-11-29",
+      "payout": "Automatic: loan canceled, credit-reporting deletion requested, and loan payments refunded. Submitting the Claim Form adds $250.00. A separate Claims Fund covers additional damages.",
+      "payout_estimate_usd": 250.0,
+      "proof_required": null,
+      "claim_url": "https://www.nfculoansettlement.com/page/preclaim",
+      "source_url": "https://www.nfculoansettlement.com/page/faq",
+      "extra_source_urls": [],
+      "notes": "The class is narrow: fraud-loan dispute victims identified by NFCU, who should have received a notice with a paper claim form. Claims must be postmarked or submitted by Nov 29, 2026. The $250 requires the form. Hearing Dec 9, 2026.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "pulsz-yellow-social-interactive-robinson",
+      "type": "class_action",
+      "name": "Robinson v. Yellow Social Interactive, Ltd. (Pulsz / Pulszbingo Settlement)",
+      "defendant": "Yellow Social Interactive, Ltd. (YSI)",
+      "match": [
+        "PULSZ",
+        "pulsz.com",
+        "pulszbingo.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "STATE-LIMITED. People who spent money playing Pulsz or Pulszbingo while in: Alabama (Mar 8, 2022 - Aug 31, 2026), Tennessee (Nov 12, 2022 - Aug 31, 2026), Kentucky (Jun 29, 2023 - Aug 31, 2026), or Ohio, New Jersey or Massachusetts (Feb 19, 2024 - Aug 31, 2026).",
+      "class_period": {
+        "start": "2022-03-08",
+        "end": "2026-08-31"
+      },
+      "claim_deadline": "2026-11-30",
+      "payout": "Automatic: 27% of qualifying spend (less fees/awards) as Gold Coins at 10,000 Gold Coins per $1. Optional election form: 23% of qualifying spend (less fees/awards) as a money payment instead; cash elections are capped in total at 25% of the Estimated Total Benefit, with any shortfall paid in virtual currency.",
+      "payout_estimate_usd": null,
+      "proof_required": null,
+      "claim_url": "https://www.ysisettlement.com/",
+      "source_url": "https://www.ysisettlement.com/faqs/",
+      "extra_source_urls": [],
+      "notes": "Doing nothing gets in-game Gold Coins only; the 2026-11-30 deadline is for the election form to get cash. Class period start/end vary by state (earliest start shown). Fairness hearing 2026-12-31. Alabama state court case No. 33-CV-2025-900072.00; administrator Eisner Advisory Group.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "amazon-return-policy",
+      "type": "class_action",
+      "name": "In re: Amazon Return Policy Litigation",
+      "defendant": "Amazon.com, Inc.",
+      "match": [
+        "AMAZON",
+        "AMZN",
+        "amazon.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "Anyone who started a return or asked for a refund on a physical product bought on Amazon.com and received in the U.S. between Sept 5, 2017 and Feb 12, 2026, and either (1) incorrectly got no refund, or a late or wrong refund, or (2) got a refund but was later wrongly charged for the returned item. Subclass A is paid automatically from Amazon's records. Subclass B (all other class transactions) must file a claim. Purchases from Amazon affiliates are excluded unless bought on Amazon.com and returned through Amazon's fulfillment channels.",
+      "class_period": {
+        "start": "2017-09-05",
+        "end": "2026-02-12"
+      },
+      "claim_deadline": "2026-12-01",
+      "payout": "Pro rata. $309.5M common fund: 92.7% of the net fund goes to Subclass A (automatic) and 7.3% to Subclass B claimants, in proportion to unpaid transaction amounts plus potential prejudgment interest.",
+      "payout_estimate_usd": null,
+      "proof_required": null,
+      "claim_url": "https://www.returnsettlement.com/submit-claim",
+      "source_url": "https://www.returnsettlement.com/faqs",
+      "extra_source_urls": [],
+      "notes": "Only Subclass B must file; Subclass A only picks a payment method. Claims must be filed online or postmarked by Dec 1, 2026. The administrator checks that membership is 'more likely than not' against Amazon's data and may ask for documents. Final approval hearing Mar 16, 2027. Admin: Angeion, 1-888-553-4246.",
+      "checked_on": "2026-10-22",
+      "verified": true,
+      "evidence_words": [
+        "RETURN",
+        "REFUND"
+      ]
+    },
+    {
+      "id": "aramark-capital-one-arena-venue-fee",
+      "type": "class_action",
+      "name": "Alexander Garner v. Aramark Management Services LP (Venue Fee Settlement)",
+      "defendant": "Aramark Management Services LP",
+      "match": [
+        "CAPITAL ONE ARENA",
+        "ARAMARK CAPITAL ONE"
+      ],
+      "exclude": [],
+      "who_qualifies": "All individuals in the United States who made a food, beverage or other purchase from Aramark at Capital One Arena (Washington, DC) and paid the 3% 'venue fee' between Oct 1, 2024 and Dec 31, 2025.",
+      "class_period": {
+        "start": "2024-10-01",
+        "end": "2025-12-31"
+      },
+      "claim_deadline": "2026-12-04",
+      "payout": "No fixed amount; pro rata share of the net $4,500,000 fund, based on the total number of valid claims. Paid by Venmo, PayPal, direct deposit, Zelle or check.",
+      "payout_estimate_usd": null,
+      "proof_required": null,
+      "claim_url": "https://venuefeesettlement.pnclassaction.com/",
+      "source_url": "https://www.venuefeesettlement.com/faqs/",
+      "extra_source_urls": [],
+      "notes": "This is a single venue, so match only Capital One Arena concession charges, not Aramark charges in general. DC Superior Court case 2025-CAB-007444. Fairness hearing Jan 15, 2027. Admin: Eisner Advisory Group.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "thinkware-dashcam-ratzak",
+      "type": "class_action",
+      "name": "Jessica Ratzak v. Thinkware Systems USA, Inc. (Thinkware Dashcam Settlement)",
+      "defendant": "Thinkware Systems USA, Inc.",
+      "match": [
+        "THINKWARE",
+        "thinkware.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "People in the United States who bought a Thinkware X700, F200PRO, DC-M2-FG-IR, DC-M2-FG or F70PRO dash cam between January 25, 2019 and August 31, 2024 (claim that 'Super Night Vision' only worked in parking mode).",
+      "class_period": {
+        "start": "2019-01-25",
+        "end": "2024-08-31"
+      },
+      "claim_deadline": "2026-12-14",
+      "payout": "Pro rata share of an $850,000 fund (after fees and costs), weighted by the class products claimed",
+      "payout_estimate_usd": null,
+      "proof_required": null,
+      "claim_url": "https://www.twcamerasettlement.com/",
+      "source_url": "https://www.twcamerasettlement.com/faqs/",
+      "extra_source_urls": [],
+      "notes": "Claim form is at twcamerasettlement.pnclassaction.com (linked from the official site). Site does not say whether proof of purchase is required. Opt-out/objection deadline 2026-11-30; final fairness hearing 2027-01-12 (Placer County, CA Superior Court). Dash cams bought via Amazon or other retailers will not show a Thinkware descriptor.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "telmate-viapath-data-breach-cooper",
+      "type": "class_action",
+      "name": "Cooper v. Telmate LLC d/b/a Viapath Technologies (Telmate Data Breach Settlement)",
+      "defendant": "Telmate, LLC d/b/a ViaPath Technologies",
+      "match": [
+        "TELMATE",
+        "telmate.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "All individuals in the United States whose personal information was affected by the Telmate security incident of about August 11-13, 2020 (people who used Telmate's services; affected people were typically notified).",
+      "class_period": {
+        "start": "2020-08-11",
+        "end": "2020-08-13"
+      },
+      "claim_deadline": "2026-12-21",
+      "payout": "Pro rata cash payment, plus reimbursement of documented out-of-pocket losses up to $5,000 per person, from a $4,225,000 fund",
+      "payout_estimate_usd": null,
+      "proof_required": null,
+      "claim_url": "https://www.telmatedatabreachsettlement.com/",
+      "source_url": "https://www.telmatedatabreachsettlement.com/",
+      "extra_source_urls": [],
+      "notes": "Submit online by 2026-12-21 or mail postmarked by then. Documentation is needed only for the out-of-pocket loss reimbursement. Live site is behind a Cloudflare challenge (403); details read from the Wayback snapshot of the official home page (2026-10-07). Final approval hearing 2027-02-12 (E.D. Va. 1:24-cv-01622). Kroll, 833-453-3721. Inmate phone/messaging provider: smaller brand than the others.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "kroger-savings-club-rx",
+      "type": "class_action",
+      "name": "Kirkbride et al. v. The Kroger Co. (Kroger Savings Club Settlement)",
+      "defendant": "The Kroger Co.",
+      "match": [
+        "KROGER",
+        "kroger.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "Individuals in the United States and its territories who paid, in whole or in part, for one or more prescription drugs from Kroger using their insurance between Dec 9, 2018 and Aug 23, 2026. Excludes people who already sued, arbitrated or settled with Kroger over Savings Club usual-and-customary pricing.",
+      "class_period": {
+        "start": "2018-12-09",
+        "end": "2026-08-23"
+      },
+      "claim_deadline": "2026-12-21",
+      "payout": "Pro rata share of a $17,000,000 fund (net of fees and costs), based on how much the claimant paid for insured Kroger prescriptions during the class period.",
+      "payout_estimate_usd": null,
+      "proof_required": null,
+      "claim_url": "https://www.krogersavingsclubsettlement.com/submit-claim",
+      "source_url": "https://www.krogersavingsclubsettlement.com/faqs",
+      "extra_source_urls": [],
+      "notes": "Documentation is required for claims of $8,000 or more, and from 'Unknown Claimants' who are not in Kroger's records. People who got a notice and claim ID are 'Known Claimants'. The site's date data shows the deadline as 11:59 PM PT Dec 21. The Jan 11, 2027 date on the site is the fairness hearing, not the claim deadline. The site does not say whether Kroger banner pharmacies (Ralphs, Fred Meyer, etc.) count.",
+      "checked_on": "2026-10-22",
+      "verified": true,
+      "evidence_words": [
+        "PHARMACY",
+        "RX",
+        "PRESCRIPTION"
+      ]
+    },
+    {
+      "id": "apple-siri-apple-intelligence-landsheft",
+      "type": "class_action",
+      "name": "Landsheft, et al. v. Apple Inc. (Smartphone AI Settlement)",
+      "defendant": "Apple Inc.",
+      "match": [
+        "APPLE STORE",
+        "APPLE ONLINE STORE",
+        "APPLE.COM/US",
+        "apple.com"
+      ],
+      "exclude": [
+        "APPLE.COM/BILL",
+        "ITUNES.COM"
+      ],
+      "who_qualifies": "US residents who bought an iPhone 16, 16e, 16 Plus, 16 Pro, 16 Pro Max, iPhone 15 Pro or 15 Pro Max in the United States, not for resale, between June 10, 2024 and March 29, 2025. Must be the original purchaser and confirm on the claim form that at purchase you expected certain Siri Apple Intelligence features that you did not receive. One claim per eligible device.",
+      "class_period": {
+        "start": "2024-06-10",
+        "end": "2025-03-29"
+      },
+      "claim_deadline": "2026-12-21",
+      "payout": "$25 per device, adjusted up or down pro rata; maximum $95 per device (from a $250M fund)",
+      "payout_estimate_usd": 25.0,
+      "proof_required": true,
+      "claim_url": "https://www.smartphoneaisettlement.com/",
+      "source_url": "https://www.smartphoneaisettlement.com/frequently-asked-questions/",
+      "extra_source_urls": [],
+      "notes": "Submit online or postmarked by 2026-12-21. Claim form asks for information sufficient to confirm purchase and/or ownership of each device; the site does not say a receipt is mandatory. Final approval hearing 2027-02-24. Live site is behind a Cloudflare challenge (403), so details were read from Wayback snapshots of the official FAQ (2026-10-03) and home page (2026-09-28). Claim portal is aplsconnect.com/smartphoneaisettlement (Verita). Toll-free 1-888-988-8945.",
+      "checked_on": "2026-10-22",
+      "verified": true,
+      "evidence_words": [
+        "IPHONE"
+      ]
+    },
+    {
+      "id": "knotts-great-america-processing-fee",
+      "type": "class_action",
+      "name": "Isayan v. Cedar Fair L.P. (Knott's / California's Great America Processing Fee Settlement)",
+      "defendant": "Cedar Fair, L.P.; Cedar Fair Management, Inc.; Six Flags Entertainment Corporation",
+      "match": [
+        "KNOTTS",
+        "KNOTT'S",
+        "CA GREAT AMERICA",
+        "CAGREATAMERICA",
+        "knotts.com",
+        "cagreatamerica.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "California citizens who, between June 28, 2020 and July 1, 2024, bought non-season tickets to Knott's Berry Farm and/or Knott's Soak City at www.knotts.com, or to California's Great America at www.cagreatamerica.com, and were charged a processing fee.",
+      "class_period": {
+        "start": "2020-06-28",
+        "end": "2024-07-01"
+      },
+      "claim_deadline": "2026-12-22",
+      "payout": "$8.00 per participating class member. Doing nothing gets an $8 sixflags.com credit; a claim form gets $8 cash (electronic or check) instead.",
+      "payout_estimate_usd": 8.0,
+      "proof_required": null,
+      "claim_url": "https://knottsgreatamericasettlement.com/submit-claim",
+      "source_url": "https://knottsgreatamericasettlement.com/faqs",
+      "extra_source_urls": [],
+      "notes": "CALIFORNIA CITIZENS ONLY. Filing is only needed for cash instead of the automatic credit. People notified by a 'Second Email Attempt' get 60 days from that email. Final hearing Mar 30, 2027. Admin: Angeion.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "goodrx-criteo-privacy",
+      "type": "class_action",
+      "name": "Jane Doe, et al. v. GoodRx Holdings, Inc., et al. (GoodRx Data Disclosure Settlement)",
+      "defendant": "GoodRx Holdings, Inc. and Criteo Corp.",
+      "match": [
+        "GOODRX",
+        "goodrx.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "All natural persons in the United States who used any website, app or service made available by or through GoodRx (including the GoodRx website and app, GoodRx Gold, HeyDoctor and GoodRx Care) at any time before April 20, 2024.",
+      "class_period": {
+        "start": null,
+        "end": "2024-04-19"
+      },
+      "claim_deadline": "2026-12-29",
+      "payout": "Equal share of the net $32,000,000 settlement fund; amount depends on the number of approved claims",
+      "payout_estimate_usd": null,
+      "proof_required": false,
+      "claim_url": "https://www.goodrxprivacysettlement.com/",
+      "source_url": "https://goodrxprivacysettlement.com/assets/docs/GoodRx%20Criteo%20-%20Long%20Form%20Notice%20V2.pdf",
+      "extra_source_urls": [],
+      "notes": "Online by 11:59 p.m. Eastern on 2026-12-29 or mail postmarked by then. One claim per person; claim form only asks for contact details, payment choice and a signed attestation. Official site showed a 503 'maintenance' page on 2026-10-22; details read from the official long-form notice and claim form PDFs (Wayback copies from 2026-10-15). Final approval hearing 2027-02-11 (N.D. Cal. 4:23-cv-00501-AMO). Administrator A.B. Data, 1-877-888-9232.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "high-5-games-social-casino-washington",
+      "type": "class_action",
+      "name": "Larsen v. PTT, LLC (d/b/a High 5 Games, LLC) - High 5 Games Settlement",
+      "defendant": "PTT, LLC (d/b/a High 5 Games, LLC) and High 5 Entertainment, LLC",
+      "match": [
+        "HIGH 5 GAMES",
+        "HIGH5GAMES",
+        "high5games.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "WASHINGTON ONLY. Individuals who played or bought virtual coins in the High 5 Casino or High 5 Vegas social casino apps in Washington (or associated with Washington purchases by billing address, IP address or platform data) after April 9, 2014 and before October 1, 2022. Only people who bought virtual coins and file a claim get paid.",
+      "class_period": {
+        "start": "2014-04-10",
+        "end": "2022-09-30"
+      },
+      "claim_deadline": "2027-01-04",
+      "payout": "Share of the settlement fund based on your total in-app virtual coin purchases during the class period, the number of valid claims, and defendants' contingent payments over a multi-year payment period; may be paid in more than one round",
+      "payout_estimate_usd": null,
+      "proof_required": null,
+      "claim_url": "https://secure.high5lawsuit.com/",
+      "source_url": "https://www.high5lawsuit.com/",
+      "extra_source_urls": [],
+      "notes": "Official site says claims are due 2027-01-04 (filed online or postmarked); several aggregators (SettleSignal, ClassAction.org) still list 2026-11-13. Use the official date. Final approval hearing 2027-02-08. Coin purchases were usually billed through Apple/Google/Facebook, so card descriptors may not say High 5. Administrator JND, 1-888-663-1726.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "seatgeek-nevada-ticket-fees",
+      "type": "class_action",
+      "name": "Mars Carbonell v. SeatGeek, Inc. (SeatGeek Ticket Fee Settlement)",
+      "defendant": "SeatGeek, Inc.",
+      "match": [
+        "SEATGEEK",
+        "seatgeek.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "Anyone who bought electronic tickets to events in Nevada from www.seatgeek.com or the SeatGeek app between Nov 7, 2020 and May 12, 2025 and was charged fees.",
+      "class_period": {
+        "start": "2020-11-07",
+        "end": "2025-05-12"
+      },
+      "claim_deadline": "2027-01-05",
+      "payout": "Pro rata share of a $7,750,000 Settlement Fund, based on the total amount of fees SeatGeek retained from the claimant's purchases.",
+      "payout_estimate_usd": null,
+      "proof_required": null,
+      "claim_url": "https://www.seatgeekticketfeessettlement.com/form/claim/",
+      "source_url": "https://www.seatgeekticketfeessettlement.com/faq/",
+      "extra_source_urls": [],
+      "notes": "NEVADA EVENTS ONLY: the buyer can live anywhere, but the event must be in Nevada (e.g. Las Vegas). Online claims close 11:59 p.m. EST Jan 5, 2027; mailed claims must be postmarked by then. Opt-out deadline Dec 6, 2026. Admin: Simpluris.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "nonbank-atm-surcharge-visa-mastercard",
+      "type": "class_action",
+      "name": "Burke v. Visa Inc. (Non-Bank ATM Surcharge Settlement)",
+      "defendant": "Visa Inc.; Mastercard",
+      "match": [
+        "ATM SURCHARGE",
+        "ATM OPERATOR FEE",
+        "CARDTRONICS",
+        "FCTI"
+      ],
+      "exclude": [],
+      "who_qualifies": "People charged a surcharge (access fee) for a domestic cash withdrawal from their deposit account, using an ATM or PIN-debit card, at an independent ATM in the U.S. between Oct 24, 2007 and Aug 14, 2026, and not fully reimbursed by their bank. An independent ATM is one not owned by Visa, Mastercard, or any bank or financial institution. Statewide subclasses cover CA, IL, MA and MI.",
+      "class_period": {
+        "start": "2007-10-24",
+        "end": "2026-08-14"
+      },
+      "claim_deadline": "2027-02-10",
+      "payout": "Pro rata share of the Net Settlement Fund from a $167.5 million Settlement Fund, based on the number of qualifying surcharged transactions submitted.",
+      "payout_estimate_usd": null,
+      "proof_required": false,
+      "claim_url": "https://www.nonbankatmsurchargesettlement.com/file",
+      "source_url": "https://www.nonbankatmsurchargesettlement.com/faqs",
+      "extra_source_urls": [],
+      "notes": "Claims must be RECEIVED by Feb 10, 2027, online or by mail; a postmark is not enough. classaction.org lists 2/27/27, which is wrong; the official site says Feb 10, 2027. The claim form asks for an estimated number of unreimbursed surcharges and no documents up front, though the administrator may ask for proof later. Payments are digital. Exclusion and objection deadline Dec 11, 2026; hearing Feb 17, 2027. Admin: A.B. Data, 1-866-893-1052.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "id": "mdlive-evernorth-privacy-kingsbury",
+      "type": "class_action",
+      "name": "Kingsbury, et al. v. Evernorth Health Inc., et al. (MDLIVE Data Privacy Settlement)",
+      "defendant": "Evernorth Health, Inc. and MDLIVE, Inc.",
+      "match": [
+        "MDLIVE",
+        "mdlive.com"
+      ],
+      "exclude": [],
+      "who_qualifies": "MDLIVE users who accessed the patient.mdlive.com portal and did any activity after signing in from May 30, 2023 through August 11, 2025, and who had an active Facebook and/or Google account during that period (claimants must attest to both).",
+      "class_period": {
+        "start": "2023-05-30",
+        "end": "2025-08-11"
+      },
+      "claim_deadline": "2026-12-01",
+      "payout": "Cash payment of up to $15.00 (total settlement costs capped at $3,500,000)",
+      "payout_estimate_usd": 15.0,
+      "proof_required": false,
+      "claim_url": "https://www.ehisettlement.com/",
+      "source_url": "https://www.classaction.org/media/evernorth-long-notice.pdf",
+      "extra_source_urls": [],
+      "notes": "UNVERIFIED on the official site: ehisettlement.com returned Cloudflare 403 and has no Wayback copy. Details come from the court long-form notice, read from a copy hosted on classaction.org. The notice names www.EHISettlement.com and (833) 453-3739. Exclusion/objection 2026-11-16; hearing 2027-01-06 (Hillsborough County, FL, 26-CA-006880). $15 is a cap, not an estimate. Some aggregators say the online form needs the Claimant ID from the notice.",
+      "checked_on": "2026-10-22",
+      "verified": false
+    }
+  ]
+}

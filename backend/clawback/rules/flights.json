@@ -1,0 +1,449 @@
+{
+  "note": "Flight refund and compensation rules. US DOT rules give refunds (money back), not compensation; EU261/UK261 give fixed compensation on top of refunds or re-routing. Compensation is never automatic and depends on facts ClawBack can't see (cause of the disruption, notice given, re-routing offered), so present it as 'you may be owed', link the airline's own form, and let the user file.",
+  "checked_on": "2026-10-22",
+  "us_dot": {
+    "law": "14 CFR part 260 (Refunds for Airline Fare and Ancillary Service Fees), in force since 2024",
+    "applies_to": "scheduled flights to, from or within the United States by US and foreign airlines; the refund is owed by the merchant of record (the airline, or the travel agent if it sold the ticket)",
+    "refund_owed_when": [
+      "the airline cancels the flight and the passenger does not accept a rebooking, voucher, credit or other compensation",
+      "the airline significantly delays or changes the flight and the passenger rejects the changed flight, rebooking and any voucher or credit",
+      "the passenger does not respond to the airline's offer and the changed or alternative flight leaves without them"
+    ],
+    "significant_change": {
+      "domestic_hours": 3,
+      "international_hours": 6,
+      "criteria": [
+        "departure 3+ hours (domestic) or 6+ hours (international) earlier than originally scheduled",
+        "arrival 3+ hours (domestic) or 6+ hours (international) later than originally scheduled",
+        "departure from a different origin airport or arrival at a different destination airport",
+        "more connection points than the original itinerary",
+        "downgrade to a lower class of service",
+        "for a passenger with a disability: different connecting airports, or a substitute aircraft missing a needed accessibility feature"
+      ]
+    },
+    "refund_covers": "the full airfare, including taxes and ancillary fees, for nonrefundable tickets too",
+    "refund_deadline": {
+      "credit_card_business_days": 7,
+      "other_payment_calendar_days": 20,
+      "clock_starts": "the earliest date the refund was requested or became automatic"
+    },
+    "form_of_payment": "the original form of payment (card, cash, check, airline miles) unless the passenger agrees to a cash equivalent; no processing fee may be kept",
+    "vouchers": "A voucher or credit can only replace the refund if the passenger affirmatively accepts it; such vouchers must stay valid for at least 5 years.",
+    "ancillary_fee_refund": "Fees for paid extras the airline did not provide through no fault of the passenger (seat selection, Wi-Fi, upgrades, lounge access, etc.) must be refunded promptly and automatically.",
+    "bag_fee_refund": {
+      "domestic_hours": 12,
+      "international_hours": 15,
+      "international_long_haul_hours": 30,
+      "long_haul_rule": "30 hours applies when the itinerary has a non-stop segment between the US and a foreign point longer than 12 hours; otherwise 15 hours for international itineraries (also for domestic segments of international itineraries)",
+      "measured_from": "when the passenger could deplane at the final destination, until the bag is delivered or picked up",
+      "requires": "a Mishandled Baggage Report filed with the operating carrier (the last carrier for multi-carrier trips)",
+      "also_refunded_if": "the bag is lost",
+      "exemptions": [
+        "the passenger didn't pick up and recheck the bag at the first US entry point as customs requires",
+        "the passenger didn't pick up a bag that arrived on time (e.g. a hidden-city itinerary)",
+        "the passenger voluntarily agreed to travel without the bag"
+      ]
+    },
+    "delay_compensation": {
+      "required": false,
+      "note": "There is no federal requirement for US airlines to pay cash compensation for delays or cancellations. DOT withdrew its December 2024 'Airline Passenger Rights' ANPRM (which explored mandatory compensation) on 2025-11-17. Some airlines offer meal vouchers or miles under their own customer-service commitments; those are voluntary.",
+      "withdrawn_on": "2025-11-17",
+      "source_url": "https://www.federalregister.gov/documents/2025/11/17/2025-20042/airline-passenger-rights-withdrawal"
+    },
+    "summary": "If a US airline cancels or significantly changes your flight (3+ hours domestic, 6+ hours international, different airport, extra connection, or downgrade) and you don't accept the alternative or a voucher, you are owed a full cash refund of fare, taxes and fees to your original form of payment: within 7 business days for card payments, 20 days otherwise. Checked-bag fees are refunded if the bag is 12+ hours late (domestic) or 15/30+ hours (international) and you filed a baggage report.",
+    "source_urls": [
+      "https://www.ecfr.gov/current/title-14/part-260",
+      "https://www.federalregister.gov/documents/2025/11/17/2025-20042/airline-passenger-rights-withdrawal"
+    ],
+    "unverified_urls": [
+      {
+        "url": "https://www.transportation.gov/individuals/aviation-consumer-protection/refunds",
+        "note": "DOT's consumer refunds page; returned HTTP 403 to automated fetches on 2026-10-22, so its text was not checked. The rules above come from the regulation itself."
+      }
+    ],
+    "verified": true
+  },
+  "eu261": {
+    "law": "Regulation (EC) No 261/2004 (EU air passenger rights), as applied by the CJEU to long delays",
+    "currency": "EUR",
+    "applies_to": [
+      "flights within the EU, by any airline",
+      "flights departing an EU airport to a non-EU country, by any airline",
+      "flights arriving in the EU from outside, operated by an EU airline"
+    ],
+    "delay_threshold_hours": 3,
+    "cancellation_notice_days": 14,
+    "bands": [
+      {
+        "label": "1,500 km or less",
+        "min_km": 0,
+        "max_km": 1500,
+        "intra_eu_only": false,
+        "amount": 250,
+        "reduced_amount": 125,
+        "reduced_if_rerouted_within_hours": 2
+      },
+      {
+        "label": "intra-EU over 1,500 km, or other flights 1,500 to 3,500 km",
+        "min_km": 1500,
+        "max_km": 3500,
+        "intra_eu_only": false,
+        "amount": 400,
+        "reduced_amount": 200,
+        "reduced_if_rerouted_within_hours": 3
+      },
+      {
+        "label": "over 3,500 km (not intra-EU)",
+        "min_km": 3500,
+        "max_km": null,
+        "intra_eu_only": false,
+        "amount": 600,
+        "reduced_amount": 300,
+        "reduced_if_rerouted_within_hours": 4
+      }
+    ],
+    "long_haul_delay_3_to_4h_amount": 300,
+    "compensation_due_when": [
+      "arrival at the final destination 3+ hours late (over 3,500 km and not intra-EU: EUR 300 for 3-4 hours, EUR 600 for 4+ hours)",
+      "cancellation notified less than 14 days before departure (subject to re-routing conditions for 7-14 days' and under 7 days' notice)",
+      "denied boarding against the passenger's will after on-time check-in"
+    ],
+    "exemption": "No compensation if the airline proves the disruption was caused by extraordinary circumstances that could not have been avoided (e.g. air traffic management decisions, political instability, severe weather, security risks). Most technical problems found in maintenance and strikes by the airline's own staff are not extraordinary circumstances.",
+    "refund_option": "For a cancellation the airline must offer a choice of a refund of the ticket, re-routing at the earliest opportunity, or re-routing at a later date; choosing one gives up the other two.",
+    "refund_within_days": null,
+    "how_to_claim": "Claim from the airline first using its own form. If it does not reply within 2 months or the reply is unsatisfactory, complain to the national enforcement body of the country where the incident happened.",
+    "summary": "On EU-covered flights, a 3+ hour arrival delay or a cancellation with under 14 days' notice can earn EUR 250 (up to 1,500 km), EUR 400 (intra-EU over 1,500 km or 1,500-3,500 km) or EUR 600 (over 3,500 km; EUR 300 if 3-4 hours late), unless extraordinary circumstances caused it. It is paid on request, not automatically.",
+    "source_urls": [
+      "https://europa.eu/youreurope/citizens/travel/passenger-rights/air/index_en.htm",
+      "https://transport.ec.europa.eu/news-events/news/commission-welcomes-landmark-agreement-revised-air-passenger-rights-2026-06-15_en"
+    ],
+    "unverified_urls": [
+      {
+        "url": "https://eur-lex.europa.eu/eli/reg/2004/261/oj/eng",
+        "note": "EUR-Lex served a JavaScript challenge to automated fetches on 2026-10-22; text not read. Amounts above come from the European Commission's Your Europe page (last checked by the Commission 21/09/2026)."
+      }
+    ],
+    "pending_reform": "On 2026-06-15 the European Parliament and Council reached a political agreement on revised air passenger rights (it keeps the 3-hour delay threshold and the EUR 250/400/600 tiers per the Commission). It still needs formal endorsement and publication in the Official Journal, and would apply 12 months after that, so the current rules above still apply. Re-check the details once it is adopted. Source: https://transport.ec.europa.eu/news-events/news/commission-welcomes-landmark-agreement-revised-air-passenger-rights-2026-06-15_en",
+    "verified": true
+  },
+  "uk261": {
+    "law": "Regulation (EC) No 261/2004 as retained in UK law ('UK261')",
+    "currency": "GBP",
+    "applies_to": [
+      "flights departing a UK airport, on any airline",
+      "flights arriving at a UK airport on a UK or EU airline",
+      "flights arriving at an EU airport on a UK airline"
+    ],
+    "delay_threshold_hours": 3,
+    "cancellation_notice_days": 14,
+    "bands": [
+      {
+        "label": "1,500 km or less",
+        "min_km": 0,
+        "max_km": 1500,
+        "intra_eu_only": false,
+        "amount": 220,
+        "reduced_amount": 110,
+        "reduced_if_rerouted_within_hours": 2
+      },
+      {
+        "label": "1,500 to 3,500 km",
+        "min_km": 1500,
+        "max_km": 3500,
+        "intra_eu_only": false,
+        "amount": 350,
+        "reduced_amount": 175,
+        "reduced_if_rerouted_within_hours": 3
+      },
+      {
+        "label": "over 3,500 km",
+        "min_km": 3500,
+        "max_km": null,
+        "intra_eu_only": false,
+        "amount": 520,
+        "reduced_amount": 260,
+        "reduced_if_rerouted_within_hours": 4
+      }
+    ],
+    "long_haul_delay_3_to_4h_amount": 260,
+    "compensation_due_when": [
+      "arrival 3+ hours late (over 3,500 km: GBP 260 for 3-4 hours, GBP 520 for 4+ hours)",
+      "cancellation notified less than 14 days before departure (re-routing conditions apply)"
+    ],
+    "exemption": "No compensation for disruption caused by extraordinary circumstances (the CAA gives extreme weather and airport or air traffic control strikes as examples).",
+    "refund_option": "For a cancellation the airline must let the passenger choose a refund of the unused parts of the ticket or an alternative flight.",
+    "refund_within_days": 7,
+    "how_to_claim": "Compensation is not paid automatically: claim from the airline first. If its final response is unsatisfactory, or it takes more than 8 weeks, escalate to the airline's ADR scheme or, if it has none, the CAA's Passenger Advice and Complaints Team.",
+    "summary": "On UK-covered flights, a 3+ hour arrival delay or a cancellation with under 14 days' notice can earn GBP 220 (up to 1,500 km), GBP 350 (1,500-3,500 km) or GBP 520 (over 3,500 km; GBP 260 if 3-4 hours late), unless extraordinary circumstances caused it.",
+    "source_urls": [
+      "https://www.legislation.gov.uk/eur/2004/261/article/7",
+      "https://www.legislation.gov.uk/eur/2004/261/article/8",
+      "https://www.caa.co.uk/passengers/resolving-travel-problems/delays-and-cancellations/delays/",
+      "https://www.caa.co.uk/passengers/resolving-travel-problems/delays-and-cancellations/cancellations/"
+    ],
+    "unverified_urls": [],
+    "pending_reform": null,
+    "verified": true
+  },
+  "airlines": [
+    {
+      "name": "Delta Air Lines",
+      "iata": "DL",
+      "region": "US",
+      "match": [
+        "DELTA AIR",
+        "DELTA AIRLINES",
+        "delta.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://www.delta.com/refund-form",
+      "compensation_url": "https://www.delta.com/us/en/change-cancel/exit-eu-compensation",
+      "source_url": "https://www.delta.com/us/en/change-cancel/cancel-flight",
+      "extra_source_urls": [],
+      "notes": "Cancel-flight page links 'Request a Refund' to /refund-form (page title 'Travel Disruption Refund Request'); Delta auto-rebooks, and auto-refunds to original payment if it cannot rebook and the customer takes no action in 24h; status at https://www.delta.com/refund-status. EU page ('Exit European Union (EU) Compensation Request', Reg. 261/2004) is for EU-origin trips; its CREATE MY REQUEST button opens the need-help complaints form.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "American Airlines",
+      "iata": "AA",
+      "region": "US",
+      "match": [
+        "AMERICAN AIR",
+        "AMERICAN AIRLINES",
+        "aa.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://www.aa.com/web/i18n/customer-service/contact-american/receipts-and-refunds.html",
+      "compensation_url": "https://www.aa.com/web/i18n/customer-service/support/passenger-rights-european-union.html?locale=en_ES",
+      "source_url": "https://www.aa.com/web/i18n/customer-service/contact-american/receipts-and-refunds.html",
+      "extra_source_urls": [],
+      "notes": "aa.com returns 403 to WebFetch; both pages were read with curl (browser headers) instead. Receipts-and-refunds page has 'Request a refund' -> https://www.aa.com/refunds/ (JS app titled 'Refund Request') and status lookup; travel-agency tickets go to the agency. EU page is informational (EC 261/2004) and routes claims to Customer Relations (https://www.aa.com/contact/forms); without the locale=en_ES parameter the EU URL served the homepage.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "Southwest Airlines",
+      "iata": "WN",
+      "region": "US",
+      "match": [
+        "SOUTHWES 526",
+        "SOUTHWEST AIRLINES",
+        "SOUTHWEST AIR",
+        "southwest.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://support.southwest.com/helpcenter/request-ticket-refund",
+      "compensation_url": null,
+      "source_url": "https://support.southwest.com/helpcenter/article/refund-policy",
+      "extra_source_urls": [],
+      "notes": "Request Ticket Refund form lists 'Southwest canceled, significantly changed or delayed the flight' as a reason; needs confirmation number, flight number/date, origin/destination, contact details. Policy: refund even on non-refundable fares for cancellations or changes of 3h+ domestic / 6h+ international, processed within 7 business days. Expense reimbursement is a separate form. Bare 'SOUTHWES' also matches 'SOUTHWEST GAS', so require the 526 ticket prefix or the full name. No EU/UK routes.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "JetBlue Airways",
+      "iata": "B6",
+      "region": "US",
+      "match": [
+        "JETBLUE",
+        "JETBLUE AIRWAYS",
+        "jetblue.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://www.jetblue.com/help/refunds",
+      "compensation_url": "https://jetbluevoc.co1.qualtrics.com/jfe/form/SV_6gQoaNYRuosY08l",
+      "source_url": "https://www.jetblue.com/customer-assurance/customer-service-plan",
+      "extra_source_urls": [],
+      "notes": "Refunds page: if JetBlue impacted the trip, cancel the flight in Manage Trips (https://www.jetblue.com/manage-trips) for a refund to original payment; details at /help/delays-and-cancellations. The EU261/UK261 claim form is the Qualtrics form linked as 'submit this claim form' in the 'Travel from Europe to the United States' section of the official Customer Service Plan. The same form is used for Canada APPR claims, and its content is JS-only and could not be read.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "Alaska Airlines",
+      "iata": "AS",
+      "region": "US",
+      "match": [
+        "ALASKA AIR",
+        "ALASKA AIRLINES",
+        "alaskaair.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://www.alaskaair.com/content/advisories/travel-advisories",
+      "compensation_url": "https://www.alaskaair.com/content/legal/air-passenger-rights-eu-uk-261",
+      "source_url": "https://www.alaskaair.com/content/legal/air-passenger-rights-eu-uk-261",
+      "extra_source_urls": [],
+      "notes": "WebFetch confirmed both page titles, but the pages are about 3 MB of JS, so the content was read from the page data with curl. Advisories 'My flight was changed or canceled' section: 'Cancel your trip online' (https://www.alaskaair.com/trips) for a refund to original payment; requires an active reservation on the impacted flight. EU/UK 261 page (flights departing EU/UK/Iceland, incl. Hawaiian) links 'submit a claim for EU261/UK261 compensation' to https://intake.sedgwick.com/u/AlaskaAirlines/AlaskaAir; claim needs ticket number + booking reference.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "Frontier Airlines",
+      "iata": "F9",
+      "region": "US",
+      "match": [
+        "FRONTIER AIRLINES",
+        "FRONTIER AIR",
+        "FLYFRONTIER",
+        "flyfrontier.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://www.flyfrontier.com/refund-options/",
+      "compensation_url": null,
+      "source_url": "https://www.flyfrontier.com/refund-options/",
+      "extra_source_urls": [],
+      "notes": "14 CFR Part 260 refund if you did not fly a cancelled or significantly delayed/changed flight (>3h domestic, >6h international); self-service via https://travel.flyfrontier.com/login, fallback form https://frontiercswprod.powerappsportals.com/contact-us/request-refund/ (linked from the official page). Refunds can be automatic after departure, processed within 7 business days; no monetary compensation. Never match bare 'FRONTIER' (Frontier Communications ISP). No EU/UK routes.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "British Airways",
+      "iata": "BA",
+      "region": "UK",
+      "match": [
+        "BRITISH A",
+        "BRITISH AIRWAYS",
+        "BRITISH AIRW",
+        "britishairways.com",
+        "ba.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://www.britishairways.com/content/information/delayed-or-cancelled-flights",
+      "compensation_url": "https://www.britishairways.com/travel/feedbackclaims/public",
+      "source_url": "https://www.britishairways.com/content/information/delayed-or-cancelled-flights",
+      "extra_source_urls": [],
+      "notes": "Help page sends cancelled-flight refunds to Manage My Booking (https://www.britishairways.com/travel/managebooking/public) and links 'online compensation claim form' to /travel/feedbackclaims/public (UK261/EU261, EUR and GBP amounts). US DOT refund terms: /content/en/us/information/legal/our-customer-commitment-and-contingency-plan#DelayedCancelled. Direct fetch returns a 'high demand' holding page, so the page was read through the r.jina.ai reader proxy; the claim form is a JS app that could not be rendered. Match 'ba.com' as a domain suffix only (it is a substring of cuba.com etc.).",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "Lufthansa",
+      "iata": "LH",
+      "region": "EU",
+      "match": [
+        "LUFTHANSA",
+        "DEUTSCHE LUFTHANSA",
+        "lufthansa.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://www.lufthansa.com/us/en/refund",
+      "compensation_url": "https://www.lufthansa.com/us/en/support/fast-compensation",
+      "source_url": "https://www.lufthansa.com/us/en/flight-disruptions",
+      "extra_source_urls": [],
+      "notes": "Refund page: refund due when the flight is cancelled or significantly changed; self-service via My bookings or chat, with a fallback form at https://www.lufthansa.com/us/en/book-and-manage/cancellation-and-refund/refund/refund-form. Compensation form is titled 'Application for compensation and reimbursement of costs in the event of flight disruptions' and is linked from the flight-disruptions page; its text does not name Reg. 261. The passenger-rights page routes EU261 claims via Lufthansa Feedback (/us/en/feedback). Direct fetch is 403, so the pages were read through the r.jina.ai reader proxy.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "Air France",
+      "iata": "AF",
+      "region": "EU",
+      "match": [
+        "AIR FRANCE",
+        "AIRFRANCE",
+        "airfrance.com",
+        "airfrance.us",
+        "airfrance.fr"
+      ],
+      "exclude": [],
+      "refund_url": "https://wwws.airfrance.us/refund",
+      "compensation_url": "https://wwws.airfrance.us/claim",
+      "source_url": "https://wwws.airfrance.us/information/legal/assistance-et-indemnisation",
+      "extra_source_urls": [],
+      "notes": "The official EC 261/2004 passenger-rights page links the claim form (/claim) and refund (/refund). The claims page (/information/legal/reclamation) links 'Submit a claim' to /claim and the refunds page (/information/legal/remboursement) links to /refund. Both targets are JS apps, so these URLs rest on those official links. Direct fetch times out, so the pages were read through the r.jina.ai reader proxy.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "KLM Royal Dutch Airlines",
+      "iata": "KL",
+      "region": "EU",
+      "match": [
+        "KLM ROYAL",
+        "KLM ROYAL DUTCH",
+        "KLM",
+        "klm.com",
+        "klm.nl"
+      ],
+      "exclude": [],
+      "refund_url": "https://www.klm.com/refund",
+      "compensation_url": "https://www.klm.com/claim",
+      "source_url": "https://www.klm.com/information/refund-compensation/compensation",
+      "extra_source_urls": [],
+      "notes": "The compensation page links 'Request compensation' and 'make your claim' to klm.com/claim (EU rules: 3h+ late arrival or cancellation, unless extraordinary circumstances). The cash-refund page (/information/refund-compensation/cash-refund) links the online refund system klm.com/refund and says KLM follows US DOT refund rules on US flights. Both targets are JS apps. Direct fetch times out, so the pages were read through the r.jina.ai reader proxy. Match bare 'KLM' on word boundaries only.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "Ryanair",
+      "iata": "FR",
+      "region": "EU",
+      "match": [
+        "RYANAIR",
+        "ryanair.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://refundclaims.ryanair.com/?lg=EN",
+      "compensation_url": "https://onlineform.ryanair.com/gb/en/eu-261",
+      "source_url": "https://help.ryanair.com/hc/en-gb/sections/12488602662545-Passenger-Rights",
+      "extra_source_urls": [],
+      "notes": "WebFetch opened the refund form ('Ryanair Refund Application Form'; reasons 'Flight cancelled' / 'Flight delayed over 5 hours'; booking ref + flight no./date). The cancellation email and My Bookings also carry a refund link. The EU261 form is a JS app (title only); its URL is the help centre's 'Make a claim > EU-261 - Cancelled / Delayed flights' link, which was read with curl because the help centre returns 403 to WebFetch. A separate UK261 form was not confirmed. The old eu261claims.ryanair.com hosts refuse connections.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "easyJet",
+      "iata": "U2",
+      "region": "UK",
+      "match": [
+        "EASYJET",
+        "easyjet.com"
+      ],
+      "exclude": [],
+      "refund_url": "https://www.easyjet.com/en/help/boarding-and-flying/delays-and-cancellations",
+      "compensation_url": "https://www.easyjet.com/en/claim/EU261",
+      "source_url": "https://www.easyjet.com/en/help/boarding-and-flying/delays-and-cancellations",
+      "extra_source_urls": [],
+      "notes": "Read with curl only, because easyjet.com returns 403 to WebFetch. The help page sends cancelled-flight refunds to Manage Bookings; refunds go to the booking payment account within 7 days, and taking one ends the right to claim expenses. Its 'claim for compensation here' link goes to /en/claim/EU261, which redirects to https://www.easyjet.com/claim/en/eu261 ('Compensation Claims Portal', EC261/UK261; booking ref + EZY/EJU/EZS flight no.). The expenses form is https://www.easyjet.com/en/claim/welfare.",
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "name": "United Airlines",
+      "iata": "UA",
+      "region": "US",
+      "match": [
+        "UNITED 016",
+        "UNITED AIRLINES",
+        "UNITED.COM",
+        "united.com"
+      ],
+      "exclude": [],
+      "refund_url": null,
+      "compensation_url": null,
+      "source_url": "https://www.united.com/ual/en/us/customer/refund",
+      "extra_source_urls": [],
+      "notes": "NOT VERIFIED: www.united.com timed out for WebFetch on every URL and is a bot-guarded JS app for curl, so no content could be read. Best unverified candidate: https://www.united.com/en/us/refunds (United's legacy refund-form URL /ual/en/us/customer/refund, indexed by search as 'Refund Form', returns a server 301 to it). No United EU261 claim page found.",
+      "checked_on": "2026-10-22",
+      "verified": false
+    },
+    {
+      "name": "Spirit Airlines",
+      "iata": "NK",
+      "region": "US",
+      "match": [
+        "SPIRIT AIRL",
+        "SPIRIT AIRLINES",
+        "spirit.com"
+      ],
+      "exclude": [],
+      "refund_url": null,
+      "compensation_url": null,
+      "source_url": "https://www.firstalert4.com/2026/05/05/spirit-airlines-shutdown-navigating-refunds-alternative-flights/",
+      "extra_source_urls": [],
+      "notes": "News reports (not an official page) say Spirit ceased all operations on 2026-05-02. www.spirit.com no longer resolves; the wind-down site https://www.spiritrestructuring.com/ returned HTTP 522 and the Epiq case page (https://dm.epiq11.com/case/spiritairlines/info) is JS-only. Card purchases made directly with Spirit were reported as refunded automatically; otherwise the route is a card chargeback or a bankruptcy claim. Matching only helps with past charges and emails.",
+      "checked_on": "2026-10-22",
+      "verified": false
+    }
+  ]
+}

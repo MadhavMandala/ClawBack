@@ -1,28 +1,201 @@
-"""Plaid (bank and card transactions). NOTHING HERE IS BUILT YET. Every function raises Missing.
+"""Plaid: bank and card transactions, over plain REST.
 
-Plan:
-  - Plaid Link in the frontend -> public_token -> /item/public_token/exchange -> access_token (store encrypted).
-  - /transactions/sync cursor loop while has_more; re-run on the SYNC_UPDATES_AVAILABLE webhook.
-  - Use our own recurring detection (pipeline/recurring.py). Plaid's /transactions/recurring/get is a paid add-on.
-  - Start in Sandbox (test user "user_transactions_dynamic"), then the free Trial plan (10 real bank accounts).
+Built:
+  - create_link_token(): /link/token/create for Plaid Link in the browser (transactions, 180 days, US, English).
+  - exchange(): /item/public_token/exchange -> access_token + item_id, saved by connect.py in connections.json.
+  - fetch_changes(): /transactions/sync cursor loop while has_more, restarted if Plaid reports a mutation during
+    pagination. Right after Link a new Item is often not ready; it retries for about 15 s, then reports `pending`
+    so the user can press Sync later.
+  - to_transaction(): Plaid amounts are positive for money out, the same as ours. Description is merchant_name,
+    except that raw names our matchers use (APPLE.COM/BILL, GOOGLE *..., known merchants) are kept.
+  - remove_item(): /item/remove on disconnect (best effort).
+  Plaid's /transactions/recurring/get is a paid add-on, so recurring detection stays ours (pipeline/recurring.py).
+
+MISSING [plaid-webhook]: SYNC_UPDATES_AVAILABLE webhook. New transactions arrive only when the user presses Sync.
+MISSING [plaid-production]: real banks need Production access; OAuth banks also need a redirect URI in Link.
 """
 
 from __future__ import annotations
 
-from ..missing import missing
+import time
+from dataclasses import dataclass, field
+
+import httpx
+
+from .. import config
+from ..connections import PlaidConnection, now
+from ..merchants import APPLE_BILL_PATTERN, GOOGLE_PLAY_PATTERN, match_bank
+from ..missing import Missing, missing
+from ..models import Transaction
+from ..trace import timed
+from . import net
+from .net import SourceError
+
+ENGINE = "plaid"
+API_VERSION = "2020-09-14"
+DAYS_REQUESTED = 180
+RETRY_WAITS = (1.0, 2.0, 4.0, 8.0)  # seconds between tries while a new Item isn't ready (~15 s in all)
+MAX_PAGES = 200
+# Errors that only the user can fix by going through Link again.
+RECONNECT_CODES = {"ITEM_LOGIN_REQUIRED", "ITEM_NOT_FOUND", "INVALID_ACCESS_TOKEN", "ACCESS_NOT_GRANTED",
+                   "PENDING_EXPIRATION", "USER_PERMISSION_REVOKED"}
+
+
+class PlaidError(SourceError):
+    pass
+
+
+def require_config() -> None:
+    s = config.settings
+    if s.plaid_client_id and s.plaid_secret and not s.plaid_configured():
+        raise Missing(f"MISSING [plaid-keys]: PLAID_ENV must be 'sandbox' or 'production', not {s.plaid_env!r}.")
+    if not s.plaid_configured():
+        raise Missing(
+            "MISSING [plaid-keys]: Plaid isn't configured on this server. Set PLAID_CLIENT_ID and PLAID_SECRET "
+            "in backend/.env (Plaid Dashboard > Developers > Keys; use the Sandbox secret with PLAID_ENV=sandbox, "
+            "the default), then restart the backend."
+        )
+
+
+def _post(path: str, body: dict) -> dict:
+    require_config()
+    s = config.settings
+    try:
+        with net.client() as c:
+            r = c.post(
+                s.plaid_base_url + path,
+                json={"client_id": s.plaid_client_id, "secret": s.plaid_secret, **body},
+                headers={"Plaid-Version": API_VERSION},
+            )
+    except httpx.HTTPError as exc:
+        raise PlaidError("Couldn't reach Plaid. Check the network and try again.") from exc
+    data = net.json_or_empty(r)
+    if r.is_success:
+        return data
+    status = 400 if 400 <= r.status_code < 500 and r.status_code != 429 else 502
+    raise PlaidError(str(data.get("error_message") or f"Plaid answered HTTP {r.status_code}"),
+                     status=status, code=data.get("error_code"))
 
 
 def create_link_token(user_id: str) -> str:
-    missing("plaid-link")
+    require_config()
+    with timed(user_id, "plaid: link token", ENGINE) as info:
+        data = _post("/link/token/create", {
+            "client_name": "ClawBack",
+            "user": {"client_user_id": user_id},
+            "products": ["transactions"],
+            "transactions": {"days_requested": DAYS_REQUESTED},
+            "country_codes": ["US"],
+            "language": "en",
+        })
+        if not data.get("link_token"):
+            raise PlaidError("Plaid didn't return a link token.")
+        info["note"] = f"Link token created ({config.settings.plaid_env})"
+    return data["link_token"]
 
 
-def exchange_public_token(user_id: str, public_token: str) -> None:
-    missing("plaid-link")
+def exchange(user_id: str, public_token: str, institution: str | None) -> PlaidConnection:
+    require_config()
+    with timed(user_id, "plaid: exchange public token", ENGINE) as info:
+        data = _post("/item/public_token/exchange", {"public_token": public_token})
+        if not data.get("access_token") or not data.get("item_id"):
+            raise PlaidError("Plaid didn't return an access token.")
+        info["note"] = f"bank connected ({institution or 'institution not given'})"
+    return PlaidConnection(access_token=data["access_token"], item_id=data["item_id"], institution=institution,
+                           connected_at=now())
 
 
-def sync_transactions(user_id: str) -> list:
-    missing("plaid-sync")
+@dataclass
+class Changes:
+    cursor: str | None
+    added: list[Transaction] = field(default_factory=list)
+    modified: list[Transaction] = field(default_factory=list)
+    removed: list[str] = field(default_factory=list)
+    status: str | None = None  # Plaid's transactions_update_status
+
+    def not_ready(self, start_cursor: str | None) -> bool:
+        if self.added or self.modified or self.removed:
+            return False
+        return self.status == "NOT_READY" or (self.status is None and not start_cursor and not self.cursor)
+
+    @property
+    def pending(self) -> bool:
+        """True while Plaid is still loading this Item's history; pressing Sync later brings in more."""
+        return self.status in ("NOT_READY", "INITIAL_UPDATE_COMPLETE") or (self.status is None and not self.cursor)
+
+
+def fetch_changes(user_id: str, access_token: str, cursor: str | None, wait: bool = True) -> Changes:
+    with timed(user_id, "plaid: transactions/sync", ENGINE) as info:
+        for pause in (0.0, *(RETRY_WAITS if wait else ())):
+            if pause:
+                time.sleep(pause)
+            changes = _sync_pages(access_token, cursor)
+            if not changes.not_ready(cursor):
+                break
+        info["note"] = (f"+{len(changes.added)} new, {len(changes.modified)} changed, {len(changes.removed)} removed"
+                        + (" (Plaid still preparing data)" if changes.pending else ""))
+    return changes
+
+
+def _sync_pages(access_token: str, cursor: str | None) -> Changes:
+    for _ in range(3):
+        changes = Changes(cursor=cursor)
+        try:
+            for _page in range(MAX_PAGES):
+                body: dict = {"access_token": access_token, "count": 500}
+                if changes.cursor:
+                    body["cursor"] = changes.cursor
+                data = _post("/transactions/sync", body)
+                changes.added += [t for t in map(to_transaction, data.get("added") or []) if t]
+                changes.modified += [t for t in map(to_transaction, data.get("modified") or []) if t]
+                changes.removed += [r["transaction_id"] for r in data.get("removed") or []
+                                    if isinstance(r, dict) and r.get("transaction_id")]
+                changes.status = data.get("transactions_update_status") or changes.status
+                changes.cursor = data.get("next_cursor") or changes.cursor
+                if not data.get("has_more"):
+                    break
+            return changes
+        except PlaidError as exc:
+            if exc.code != "TRANSACTIONS_SYNC_MUTATION_DURING_PAGINATION":
+                raise
+            # Plaid's advice: restart the whole loop from the cursor we started with.
+    raise PlaidError("Plaid's data kept changing during the sync. Press Sync again.")
+
+
+def to_transaction(t: dict) -> Transaction | None:
+    if not isinstance(t, dict) or not t.get("transaction_id") or t.get("amount") is None or not t.get("date"):
+        return None
+    try:
+        return Transaction(
+            id=str(t["transaction_id"]),
+            date=t["date"],
+            description=_description(t),
+            amount=round(float(t["amount"]), 2),  # positive = money out, as in our model
+            source="plaid",
+        )
+    except (TypeError, ValueError):
+        return None
+
+
+def _description(t: dict) -> str:
+    name = str(t.get("name") or "").strip()
+    merchant = str(t.get("merchant_name") or "").strip()
+    # merchant_name groups charges better ("Uber" vs "Uber 063015 SF**POOL**"), but Plaid shortens
+    # "APPLE.COM/BILL" to "Apple", which would hide the app-store billing our matcher looks for.
+    if not merchant or match_bank(name) or APPLE_BILL_PATTERN.search(name) or GOOGLE_PLAY_PATTERN.search(name):
+        return name or merchant or "unknown"
+    return merchant
+
+
+def remove_item(user_id: str, access_token: str) -> None:
+    """Best effort: end the Item at Plaid. The saved token is forgotten either way."""
+    try:
+        with timed(user_id, "plaid: remove item", ENGINE) as info:
+            _post("/item/remove", {"access_token": access_token})
+            info["note"] = "bank connection removed at Plaid"
+    except Exception:
+        pass
 
 
 def handle_webhook(payload: dict) -> None:
-    missing("plaid-sync")
+    missing("plaid-webhook")

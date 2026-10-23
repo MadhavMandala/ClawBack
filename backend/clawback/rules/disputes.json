@@ -1,0 +1,185 @@
+{
+  "note": "Federal US dispute rules for card and bank-account errors. These are the legal floors; card networks and banks often allow more. ClawBack drafts the notice, the user sends it. Deadlines count from the date the statement was sent, not the purchase date.",
+  "checked_on": "2026-10-22",
+  "rules": [
+    {
+      "kind": "credit_card_billing_error",
+      "label": "Credit card billing error (Fair Credit Billing Act)",
+      "law": "Fair Credit Billing Act, Truth in Lending Act; Regulation Z, 12 CFR 1026.13",
+      "applies_to": "credit_card",
+      "covers": [
+        "a charge the cardholder did not make or authorize",
+        "a charge not identified properly on the statement",
+        "goods or services not accepted, or not delivered as agreed",
+        "a payment or credit (e.g. a refund) not credited properly",
+        "a math or accounting error by the card issuer",
+        "a request for clarification or documentation of a charge",
+        "a statement not sent to the current address (if the issuer got the new address in writing at least 20 days before the cycle closed)"
+      ],
+      "notice_deadline_days": 60,
+      "notice_clock_starts": "the date the card issuer sent the first statement that shows the error",
+      "notice_method": "written notice to the billing-error address on the statement (often different from the payment address); a phone call alone does not trigger the legal protections",
+      "oral_notice_ok": false,
+      "acknowledge_within_days": 30,
+      "resolve_within_billing_cycles": 2,
+      "resolve_within_days_max": 90,
+      "investigate_business_days": null,
+      "investigate_days_max": null,
+      "provisional_credit": null,
+      "consumer_rights_pending": [
+        "the cardholder does not have to pay the disputed amount or related finance charges while it is being resolved, and the issuer may not try to collect it",
+        "the issuer may not report the disputed amount as delinquent while it is being resolved",
+        "the issuer may not close or restrict the account just because the cardholder disputed in good faith",
+        "if the cardholder uses autopay from a bank account, the issuer may not deduct the disputed amount if the notice arrives at least 3 business days before the payment date"
+      ],
+      "notice_must_include": [
+        "cardholder name and account number",
+        "the dollar amount, date and type of the error",
+        "why the cardholder believes it is an error"
+      ],
+      "summary": "Send a written dispute to the card issuer's billing-error address within 60 days after the first statement showing the charge was sent. The issuer must confirm receipt within 30 days and resolve it within two billing cycles, and never later than 90 days. You can hold back the disputed amount while it investigates.",
+      "source_urls": [
+        "https://www.ecfr.gov/current/title-12/section-1026.13",
+        "https://www.consumerfinance.gov/rules-policy/regulations/1026/13/",
+        "https://www.consumerfinance.gov/ask-cfpb/how-do-i-dispute-a-charge-on-my-credit-card-bill-en-61/",
+        "https://consumer.ftc.gov/sample-letter-disputing-credit-debit-card-charges"
+      ],
+      "verified": true
+    },
+    {
+      "kind": "credit_card_unauthorized_use",
+      "label": "Credit card unauthorized use (lost or stolen card)",
+      "law": "Truth in Lending Act; Regulation Z, 12 CFR 1026.12(b)",
+      "applies_to": "credit_card",
+      "covers": [
+        "use of the card by someone without actual, implied or apparent authority, where the cardholder got no benefit"
+      ],
+      "notice_deadline_days": null,
+      "notice_clock_starts": null,
+      "notice_method": "in person, by phone or in writing; notice counts once given in the ordinary way",
+      "oral_notice_ok": true,
+      "acknowledge_within_days": null,
+      "resolve_within_billing_cycles": null,
+      "resolve_within_days_max": null,
+      "investigate_business_days": null,
+      "investigate_days_max": null,
+      "provisional_credit": null,
+      "liability_cap": "the lesser of $50 or the amount charged before the issuer was notified",
+      "consumer_rights_pending": [],
+      "notice_must_include": [],
+      "summary": "For unauthorized credit card use, the cardholder's liability is capped at $50 at most (less if state law or the card agreement says so). Report it to the issuer as soon as possible; a billing-error notice within 60 days also applies.",
+      "source_urls": [
+        "https://www.ecfr.gov/current/title-12/section-1026.12"
+      ],
+      "verified": true
+    },
+    {
+      "kind": "credit_card_claims_and_defenses",
+      "label": "Credit card dispute about a defective or undelivered purchase (claims and defenses)",
+      "law": "Truth in Lending Act; Regulation Z, 12 CFR 1026.12(c)",
+      "applies_to": "credit_card",
+      "covers": [
+        "a dispute about property or services bought with the card that the merchant failed to resolve"
+      ],
+      "notice_deadline_days": null,
+      "notice_clock_starts": null,
+      "notice_method": "first make a good-faith attempt to resolve it with the merchant, then raise it with the card issuer",
+      "oral_notice_ok": null,
+      "acknowledge_within_days": null,
+      "resolve_within_billing_cycles": null,
+      "resolve_within_days_max": null,
+      "investigate_business_days": null,
+      "investigate_days_max": null,
+      "provisional_credit": null,
+      "conditions": [
+        "the cardholder made a good-faith attempt to resolve it with the merchant",
+        "the purchase was over $50 and made in the cardholder's home state or within 100 miles of the billing address (these two limits do not apply when the merchant is the card issuer or controlled by it, among other exceptions)"
+      ],
+      "consumer_rights_pending": [
+        "the cardholder may withhold payment up to the amount still owed for that purchase, and the issuer may not report it as delinquent until the dispute is settled"
+      ],
+      "notice_must_include": [],
+      "summary": "If a card purchase is defective and the merchant won't fix it, the cardholder can assert the same claims against the card issuer and withhold payment of the unpaid amount, if the purchase was over $50 and local (same state or within 100 miles), after trying the merchant first.",
+      "source_urls": [
+        "https://www.ecfr.gov/current/title-12/section-1026.12"
+      ],
+      "verified": true
+    },
+    {
+      "kind": "debit_card_error",
+      "label": "Debit card / bank account electronic transfer error (Regulation E)",
+      "law": "Electronic Fund Transfer Act; Regulation E, 12 CFR 1005.11 (liability: 12 CFR 1005.6)",
+      "applies_to": "debit_card",
+      "covers": [
+        "an unauthorized electronic transfer (debit card purchase, ATM withdrawal, ACH debit)",
+        "an incorrect transfer to or from the account (e.g. a duplicate charge or wrong amount)",
+        "a transfer missing from the statement",
+        "a computational or bookkeeping error by the bank",
+        "receiving the wrong amount of cash from an ATM",
+        "a request for documentation or clarification about a transfer"
+      ],
+      "notice_deadline_days": 60,
+      "notice_clock_starts": "the date the bank sent the periodic statement on which the error first appeared",
+      "notice_method": "oral or written; the bank may require written confirmation within 10 business days of an oral notice (it must say so and give the address when you call)",
+      "oral_notice_ok": true,
+      "acknowledge_within_days": null,
+      "resolve_within_billing_cycles": null,
+      "resolve_within_days_max": null,
+      "investigate_business_days": 10,
+      "investigate_days_max": 45,
+      "investigate_days_max_extended": 90,
+      "provisional_credit": "If the bank needs more than 10 business days, it must provisionally credit the disputed amount within 10 business days (it may hold back up to $50 for some unauthorized transfers) and may then take up to 45 days. It need not give provisional credit if it asked for written confirmation of an oral notice and didn't get it within 10 business days.",
+      "extensions": [
+        "20 business days instead of 10, and 90 days instead of 45, for transfers within 30 days after the account's first deposit",
+        "90 days instead of 45 for point-of-sale debit card transactions and transfers not initiated within a state (e.g. foreign transactions)"
+      ],
+      "liability_cap": "If a lost or stolen card is reported within 2 business days of learning of it, liability is at most $50; after that, up to $500. Unauthorized transfers shown on a statement must be reported within 60 days of the statement to avoid liability for later transfers.",
+      "consumer_rights_pending": [
+        "once the investigation ends the bank must report results within 3 business days and correct an error within 1 business day",
+        "if the bank finds no error it must explain in writing and give copies of the documents it relied on on request"
+      ],
+      "notice_must_include": [
+        "name and account number",
+        "why you believe there is an error, and to the extent possible its type, date and amount"
+      ],
+      "summary": "Tell the bank (phone is fine, but follow up in writing) within 60 days after the statement showing the error was sent. The bank must investigate within 10 business days, or within 45 days if it provisionally credits the money back within those 10 business days. Point-of-sale debit and foreign transfers can take up to 90 days.",
+      "source_urls": [
+        "https://www.ecfr.gov/current/title-12/section-1005.11",
+        "https://www.consumerfinance.gov/rules-policy/regulations/1005/11/",
+        "https://www.ecfr.gov/current/title-12/section-1005.6",
+        "https://www.helpwithmybank.gov/help-topics/bank-accounts/electronic-transactions/electronic-banking-errors/bank-error-eft.html"
+      ],
+      "verified": true
+    },
+    {
+      "kind": "remittance_transfer_error",
+      "label": "International money transfer (remittance) error",
+      "law": "Electronic Fund Transfer Act; Regulation E subpart B, 12 CFR 1005.33",
+      "applies_to": "remittance",
+      "covers": [
+        "the sender paid the wrong amount",
+        "the recipient got less than the amount disclosed",
+        "the money did not arrive by the disclosed date",
+        "a computational or bookkeeping error by the transfer provider"
+      ],
+      "notice_deadline_days": 180,
+      "notice_clock_starts": "the disclosed date the funds were to be available to the recipient",
+      "notice_method": "oral or written notice to the remittance transfer provider",
+      "oral_notice_ok": true,
+      "acknowledge_within_days": null,
+      "resolve_within_billing_cycles": null,
+      "resolve_within_days_max": null,
+      "investigate_business_days": null,
+      "investigate_days_max": null,
+      "provisional_credit": null,
+      "consumer_rights_pending": [],
+      "notice_must_include": [],
+      "summary": "For a consumer's electronic transfer of more than $15 to a recipient in a foreign country, sent by a remittance transfer provider (a bank or money-transfer company that sends more than 500 a year), report an error to the provider within 180 days after the date the money was supposed to be available. This applies to international wires sent through such providers too; it does not cover transfers to recipients in the US.",
+      "source_urls": [
+        "https://www.ecfr.gov/current/title-12/section-1005.33",
+        "https://www.ecfr.gov/current/title-12/section-1005.30"
+      ],
+      "verified": true
+    }
+  ]
+}
