@@ -8,8 +8,11 @@ Duplicate charges
   3 days, $5 or more, and not part of a recurring series or a bank fee. High confidence when one email receipt
   shows a single order for that amount around that date; medium when there is no receipt. If the emails show as
   many orders as charges, it isn't flagged.
-  Deadline: the statement date isn't known, so the statement is assumed to close at the end of the charge's month,
-  plus the rule's 60 days. MISSING [statement-dates]: Plaid Statements would give the real date.
+  Deadline: the rule's 60 days after the statement that first shows the charge. For a credit card whose last
+  statement date came from Plaid (/liabilities/get), that statement is worked out from the card's statement day:
+  the last statement itself, an earlier one (same day of the month), or the next one when the charge came after
+  it. Otherwise (no Plaid date, a debit card, CSV or demo data) the statement is assumed to close at the end of
+  the charge's month and the deadline says "estimated". A debit card account uses the Regulation E rule.
 Bank fees
   Data in: bank transactions. Rule: rules/bank_fees.json (fee kinds, description patterns, a neutral reversal tip).
   Detector: descriptions matched with fee_kind_for(). No deadline; the action asks for a one-time courtesy reversal.
@@ -17,11 +20,12 @@ Bank fees
 
 from __future__ import annotations
 
+import calendar
 from collections import defaultdict
 from datetime import date, timedelta
 from typing import Callable
 
-from ..models import Finding, RuleRef, Transaction
+from ..models import BankAccount, Finding, RuleRef, Transaction
 from .purchases import Purchase
 from .util import day, end_of_month, fee_name, finding_id, merchant_name, merchant_words, money, times
 
@@ -41,6 +45,59 @@ def dispute_deadline(charged_on: date, rule: dict | None) -> date | None:
     return end_of_month(charged_on) + timedelta(days=days) if isinstance(days, int) else None
 
 
+def add_months(d: date, n: int) -> date:
+    """The same day of the month n months away, clamped to the month's last day (Jan 31 + 1 -> Feb 28)."""
+    years, month0 = divmod(d.month - 1 + n, 12)
+    year, month = d.year + years, month0 + 1
+    return date(year, month, min(d.day, calendar.monthrange(year, month)[1]))
+
+
+def first_statement(charged_on: date, last_issued: date) -> tuple[date, str]:
+    """The statement that first shows a charge, from the card's last statement date (monthly cycle):
+    ("exact", the last statement itself), ("cycle", an earlier one on the same day of the month), or ("next", the
+    coming one when the charge came after the last statement). The earliest possible statement is chosen, so the
+    deadline is never later than the real one."""
+    if charged_on > last_issued:
+        return add_months(last_issued, 1), "next"
+    back = 0
+    while back < 24 and add_months(last_issued, -(back + 1)) >= charged_on:
+        back += 1
+    return add_months(last_issued, -back), "exact" if back == 0 else "cycle"
+
+
+def statement_deadline(t: Transaction, accounts: dict[str, BankAccount], credit: dict | None,
+                       debit: dict | None) -> tuple[date | None, dict | None, dict]:
+    """(deadline, the rule used, how it was worked out) for a charge, using the card's real statement date when
+    Plaid gave one, else the end-of-month estimate."""
+    acct = accounts.get(t.account_id or "")
+    if acct and acct.kind == "credit" and acct.last_statement_issue_date and credit:
+        stmt, how = first_statement(t.date, acct.last_statement_issue_date)
+        days = credit.get("days")
+        deadline = stmt + timedelta(days=days) if isinstance(days, int) else None
+        return deadline, credit, {"source": f"plaid_{how}", "statement": stmt, "last": acct.last_statement_issue_date,
+                                  "card": "credit", "mask": acct.mask}
+    rule = (debit or credit) if acct and acct.kind == "depository" else (credit or debit)
+    return dispute_deadline(t.date, rule), rule, {"source": "estimate", "statement": end_of_month(t.date),
+                                                  "card": "debit" if acct and acct.kind == "depository" else None}
+
+
+def _statement_note(how: dict, deadline: date, days: int) -> str:
+    stmt = how["statement"]
+    card = f"card ending {how['mask']}" if how.get("mask") else "card"
+    if how["source"] == "plaid_exact":
+        return (f"Your {card}'s statement of {day(stmt)} first shows this charge (statement date from your bank, "
+                f"through Plaid), so the {days}-day dispute window ends {day(deadline)}.")
+    if how["source"] == "plaid_cycle":
+        return (f"Your {card}'s statements are issued around day {stmt.day} of the month (from your bank, through "
+                f"Plaid), so the statement of {day(stmt)} first showed this charge and the {days}-day dispute window "
+                f"ends {day(deadline)}.")
+    if how["source"] == "plaid_next":
+        return (f"This charge came after your {card}'s last statement ({day(how['last'])}), so it will first show on "
+                f"the next one, around {day(stmt)}. The {days}-day dispute window ends about {day(deadline)}.")
+    return (f"Statement date unknown: assumed it closed {day(stmt)}, so the {days}-day dispute window is an "
+            "estimate.")
+
+
 def _matching_orders(purchases: list[Purchase], words: list[str], amount: float, around: date) -> list[Purchase]:
     name = " ".join(words)
     return [p for p in purchases
@@ -50,8 +107,10 @@ def _matching_orders(purchases: list[Purchase], words: list[str], amount: float,
 
 
 def duplicate_charges(transactions: list[Transaction], skip_ids: set[str], purchases: list[Purchase],
-                      disputes: dict[str, dict], today: date) -> list[Finding]:
-    """`skip_ids`: transactions that belong to a recurring series or are bank fees."""
+                      disputes: dict[str, dict], today: date,
+                      accounts: dict[str, BankAccount] | None = None) -> list[Finding]:
+    """`skip_ids`: transactions that belong to a recurring series or are bank fees. `accounts`: the user's Plaid
+    accounts by id, with credit cards' last statement dates (UserData.bank_accounts)."""
     groups: dict[tuple[str, float], list[Transaction]] = defaultdict(list)
     for t in transactions:
         if t.amount >= MIN_AMOUNT and t.id not in skip_ids:
@@ -69,21 +128,20 @@ def duplicate_charges(transactions: list[Transaction], skip_ids: set[str], purch
                 cluster.append(t)
                 continue
             if len(cluster) >= 2:
-                f = _duplicate(cluster, name.split(), amount, purchases, credit, debit, today)
+                f = _duplicate(cluster, name.split(), amount, purchases, credit, debit, today, accounts or {})
                 if f:
                     out.append(f)
             cluster = [t] if t is not None else []
     return out
 
 
-def _duplicate(cluster, words, amount, purchases, credit, debit, today) -> Finding | None:
+def _duplicate(cluster, words, amount, purchases, credit, debit, today, accounts) -> Finding | None:
     first = cluster[0]
     orders = _matching_orders(purchases, words, amount, first.date)
     if len(orders) >= len(cluster):
         return None  # the emails show as many orders as charges: probably real
     extra = len(cluster) - 1
-    rule = credit or debit
-    deadline = dispute_deadline(first.date, rule)
+    deadline, rule, how = statement_deadline(first, accounts, credit, debit)
     if deadline is not None and deadline < today:
         return None  # the dispute window has closed
     store = orders[0].store if orders else merchant_name(first.description)
@@ -96,8 +154,11 @@ def _duplicate(cluster, words, amount, purchases, credit, debit, today) -> Findi
     else:
         evidence.append("No email receipt found for this order, so check that you didn't buy it twice.")
     if deadline:
-        evidence.append(f"Statement date unknown: assumed it closed {day(end_of_month(first.date))}, so the "
-                        f"{rule['days']}-day dispute window is an estimate.")
+        evidence.append(_statement_note(how, deadline, rule["days"]))
+    if how["card"] == "debit":
+        evidence.append("This is a debit card account, so the debit card error rule (Regulation E) applies.")
+    label = {"plaid_exact": "Dispute window closes", "estimate": "Dispute window closes (estimated)"}.get(
+        how["source"], "Dispute window closes (from your statement day)")
     return Finding(
         id=finding_id("duplicate_charge", " ".join(words), f"{amount:.2f}", first.date.isoformat(), len(cluster)),
         category="charges", kind="duplicate_charge", merchant=store,
@@ -105,11 +166,13 @@ def _duplicate(cluster, words, amount, purchases, credit, debit, today) -> Findi
         message=(f"{store} charged {money(amount)} {times(len(cluster))} around {day(first.date)}. If you ordered once, "
                  f"you can get {money(amount * extra)} back."),
         amount=round(amount * extra, 2),
-        deadline=deadline, deadline_label="Dispute window closes (estimated)" if deadline else None,
+        deadline=deadline, deadline_label=label if deadline else None,
         confidence="high" if orders else "medium", evidence=evidence, rule=_rule(rule), found_on=today,
         details={"amount_each": amount, "charges": [t.date.isoformat() for t in cluster], "description": first.description,
                  "order_number": orders[0].order_number if orders else None,
-                 "debit_rule": debit, "credit_rule": credit},
+                 "debit_rule": debit, "credit_rule": credit,
+                 "statement_source": how["source"], "statement_date": how["statement"].isoformat(),
+                 "card": how["card"]},
     )
 
 

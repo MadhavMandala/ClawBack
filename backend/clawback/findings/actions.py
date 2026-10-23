@@ -44,7 +44,8 @@ def _duplicate(f: Finding, today: date) -> ActionPrep:
         rule = d.get(key)
         if rule and rule.get("source_url"):
             links += _link(rule["name"], rule["source_url"])
-    when = f" before {day(f.deadline)} (estimated)" if f.deadline else ""
+    estimated = d.get("statement_source", "estimate") == "estimate"  # else from the card's Plaid statement date
+    when = f" before {day(f.deadline)}" + (" (estimated)" if estimated else "") if f.deadline else ""
     return ActionPrep(
         title=f"Get the duplicate {f.merchant} charge refunded",
         summary=(f"Ask {f.merchant} to refund the extra {money(f.amount)}. If they don't, dispute it in writing with "
@@ -54,7 +55,9 @@ def _duplicate(f: Finding, today: date) -> ActionPrep:
             f"Contact {f.merchant} first: you were charged {money(each)} {times(n)} ({dates}) for one order{order}.",
             "If they don't refund it, send the letter below to the billing-error address on your card statement "
             "(often different from the payment address). For a debit card, tell your bank, and follow a call up in writing.",
-            "The deadline counts from the statement that first showed the charge. Check your statement date: ours is an estimate.",
+            "The deadline counts from the statement that first showed the charge. "
+            + ("Check your statement date: ours is an estimate." if estimated
+               else "Ours comes from your card's statement date; check it on the statement."),
             "Keep the email receipt and the statement.",
         ],
         links=links,
@@ -72,7 +75,8 @@ def _duplicate(f: Finding, today: date) -> ActionPrep:
                 "Can you refund the duplicate charge to my card?",
                 "Please email me a confirmation of the refund."],
         deadline=f.deadline,
-        missing=["MISSING [statement-dates]: the deadline assumes your statement closed at the end of the month."],
+        missing=(["Your statement date isn't known, so the deadline assumes your statement closed at the end of the "
+                  "month."] if estimated else []),
     )
 
 

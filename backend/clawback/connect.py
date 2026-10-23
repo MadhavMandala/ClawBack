@@ -10,6 +10,7 @@ On startup, saved connections put the user straight into real mode and are synce
 
 from __future__ import annotations
 
+from datetime import date
 from urllib.parse import urlencode
 
 from . import config, connections
@@ -128,7 +129,7 @@ def connect_plaid(user_id: str, public_token: str, institution: str | None) -> d
     was_demo = _enter_real_mode(user_id)
     u = store.user(user_id)
     u.transactions = [t for t in u.transactions if t.source != "plaid"]
-    u.plaid_cursor = None
+    u.plaid_cursor, u.bank_accounts = None, {}
     try:
         added, pending = _pull_plaid(user_id, wait=True)
         if was_demo:
@@ -143,6 +144,10 @@ def _pull_plaid(user_id: str, wait: bool) -> tuple[int, bool]:
     if conn is None:
         raise PlaidError("No bank is connected.", status=400)
     u = store.user(user_id)
+    # Card statement dates first (best effort, never raises): they set the real dispute deadlines.
+    accounts = plaid.fetch_accounts(user_id, conn.access_token, date.today())
+    if accounts is not None:
+        u.bank_accounts = accounts
     try:
         changes = plaid.fetch_changes(user_id, conn.access_token, u.plaid_cursor, wait=wait)
     except SourceError as exc:
@@ -251,7 +256,7 @@ def disconnect(user_id: str, source: str) -> dict:
             plaid.remove_item(user_id, c.plaid.access_token)
         connections.set_plaid(user_id, None)
         u.transactions = [t for t in u.transactions if t.source != "plaid"]
-        u.plaid_cursor = None
+        u.plaid_cursor, u.bank_accounts = None, {}
     else:
         raise ValueError(f"unknown source {source!r}")
     if u.mode == "real":
