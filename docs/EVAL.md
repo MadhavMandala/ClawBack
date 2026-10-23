@@ -540,3 +540,149 @@ Each row is one thing the product got wrong against the labels: what was expecte
 - Current prices for price drops are simulated, so the live price lookup (Tavily) is not measured.
 - Live model results vary a little from run to run (temperature 0.2); see the repeats table.
 - Rule data (settlements, retailers, bills) is the product's verified list on the measured commit. When that list changes, settlement findings can change too.
+
+## Held-out set: written separately, not used to tune the product
+
+A second synthetic set, in `backend/evals/holdout/`, checks that the numbers above are not just the product fitting the main set. It has three different people: a retired couple in Clearwater, a freelance designer in Portland and a college student in Los Angeles, with their own merchants, bills and hard cases. A separate workstream wrote it without seeing the main set's data, labels or failures, before anyone tuned the product on it. It read the product's code and rule data only to use the same data shapes and real rule entries (settlements, store policies, airlines).
+
+**This set is synthetic too.** The people, addresses, banks, order numbers and amounts are invented; merchant names and sender domains are real companies; no email is copied from a real message. See `backend/evals/holdout/README.md`.
+
+**To keep it held out, this section shows totals only.** The item-by-item failures stay in the result files and are left out of this page on purpose. If the product is ever tuned on them, this set stops being held out and a new one should be written.
+
+```
+python -m evals.run --set holdout --models both --repeat 3   # data: python -m evals.build_holdout
+```
+
+| Mode | Result file | Measured on commit | Run at (UTC) | Data fingerprint |
+|---|---|---|---|---|
+| models-off | `2026-10-23-holdout-models-off.json` | d016532 | 2026-10-23T19:02:02+00:00 | 149bdf15702cd27b |
+| models-on | `2026-10-23-holdout-models-on.json` | d016532 | 2026-10-23T19:04:17+00:00 | 149bdf15702cd27b |
+
+### The held-out data
+
+| Id | Person | Transactions | Emails |
+|---|---|---|---|
+| h1 | Ray and Bev Whitfield | 204 | 33 |
+| h2 | Noor Haddad | 256 | 35 |
+| h3 | Kayla Brooks | 195 | 34 |
+
+In total: 655 bank transactions over about six months (to a fixed "today" of 2026-10-21), 102 emails, 28 labelled subscriptions and 12 bills, 14 labelled flags, 10 labelled one-time findings and 55 traps.
+
+Emails by labelled kind: other 53, irrelevant 16, price_change 7, store_receipt 7, trial 6, engagement 5, delivery_order 5, inactivity 3.
+
+### Held-out headline
+
+| Metric | Rules only | Models on |
+|---|---|---|
+| Subscriptions and bills found, named right | 65% | 68% |
+| Subscriptions and bills found, any name | 80% | 80% |
+| Precision (listed items that are real) | 82% | 82% |
+| False subscriptions listed | 7 | 7 |
+| Flags caught (recall) | 36% | 57% |
+| Flag precision | 83% | 67% |
+| Flag false alarms | 1 | 4 |
+| One-time findings caught | 70% | 100% |
+| Finding precision | 54% | 56% |
+| False findings | 6 | 8 |
+| Finding amounts exact | 5/5 | 8/8 |
+| Email kind accuracy (all emails) | 82% | 77% |
+| Email kind accuracy (emails with a signal) | 45% | 76% |
+| False email signals | 0 | 15 |
+| Prompt injection resisted | yes | no |
+| Traps passed | 24/55 | 28/55 |
+| Model cost for the whole set | $0.0000 | $0.0032 |
+| Model cost per 1,000 emails | $0.000 | $0.031 |
+| Pipeline time, all three people (s) | 0.44 | 47.31 |
+
+Models on was run 3 times on the held-out set; the table shows the first run. Across runs:
+
+| Run | subscriptions_named_recall | flags_recall | flag_false_alarms | findings_recall | false_findings | email_signal_accuracy | false_signals | injection_resisted | cost_per_1000_emails_usd |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 68% | 57% | 4 | 100% | 8 | 76% | 15 | no | $0.031 |
+| 2 | 68% | 57% | 4 | 100% | 9 | 76% | 16 | no | $0.032 |
+| 3 | 68% | 57% | 4 | 100% | 9 | 76% | 15 | no | $0.032 |
+
+### Held-out totals by area
+
+| Mode | Labelled | Found | Found, app unknown | Found, wrong name | Missed | Listed | False | Named recall | Charge recall | Precision |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Rules only | 40 | 26 | 4 | 2 | 8 | 39 | 7 | 65% | 80% | 82% |
+| Models on | 40 | 27 | 0 | 5 | 8 | 39 | 7 | 68% | 80% | 82% |
+
+| Flag | Rules only | Models on |
+|---|---|---|
+| unused | 0/3 caught, 0 false | 0/3 caught, 0 false |
+| price_increase | 2/3 caught, 1 false | 2/3 caught, 1 false |
+| overlap | 0/2 caught, 0 false | 1/2 caught, 3 false |
+| trial_ending | 0/2 caught, 0 false | 2/2 caught, 0 false |
+| membership_losing_money | 0/1 caught, 0 false | 0/1 caught, 0 false |
+| bill_increase | 2/2 caught, 0 false | 2/2 caught, 0 false |
+| promo_ending | 1/1 caught, 0 false | 1/1 caught, 0 false |
+| **all** | 5/14 caught, 1 false | 8/14 caught, 4 false |
+
+| Finding kind | Rules only | Models on |
+|---|---|---|
+| bank_fee | 2/2 found, 1 false | 2/2 found, 1 false |
+| duplicate_charge | 2/2 found, 0 false | 2/2 found, 0 false |
+| flight_compensation | 1/1 found, 0 false | 1/1 found, 0 false |
+| flight_refund | 0/1 found, 0 false | 1/1 found, 1 false |
+| price_drop | 0/2 found, 0 false | 2/2 found, 1 false |
+| settlement | 2/2 found, 5 false | 2/2 found, 5 false |
+
+| Mode | Emails | Passed triage | Kind accuracy | Signal emails right | Signal emails dropped by triage | False signals | Merchant right (signal emails) |
+|---|---|---|---|---|---|---|---|
+| Rules only | 102 | 49 | 82% | 15/33 | 6 | 0/69 | 27% |
+| Models on | 102 | 49 | 77% | 25/33 | 6 | 15/69 | 72% |
+
+| Labelled kind | Rules only | Models on |
+|---|---|---|
+| delivery_order | 0/5 | 0/5 |
+| inactivity | 2/3 | 3/3 |
+| engagement | 2/5 | 2/5 |
+| price_change | 2/7 | 7/7 |
+| trial | 2/6 | 6/6 |
+| store_receipt | 7/7 | 7/7 |
+
+Prompt injection (one plain-text email and one HTML email with hidden text; resisted means the email is read as carrying no signal and removing it changes no flag): Rules only: 2 of 2 resisted; Models on: 1 of 2 resisted.
+
+### Held-out traps by kind
+
+Traps are counted by kind only; their names and results are in the result files.
+
+| Trap kind | Rules only | Models on |
+|---|---|---|
+| annual | 0/2 passed | 0/2 passed |
+| app_store | 1/4 passed | 0/4 passed |
+| bill_increase | 2/3 passed | 3/3 passed |
+| cadence | 0/1 passed | 0/1 passed |
+| duplicate | 3/3 passed | 3/3 passed |
+| fee | 2/3 passed | 2/3 passed |
+| flight | 2/3 passed | 2/3 passed |
+| injection | 1/2 passed | 0/2 passed |
+| look_alike | 4/6 passed | 4/6 passed |
+| membership | 0/2 passed | 0/2 passed |
+| noise | 1/1 passed | 1/1 passed |
+| overlap | 0/1 passed | 0/1 passed |
+| phishing | 2/2 passed | 1/2 passed |
+| price_change | 3/5 passed | 4/5 passed |
+| price_drop | 1/4 passed | 2/4 passed |
+| settlement | 2/4 passed | 2/4 passed |
+| trial | 0/4 passed | 4/4 passed |
+| unused | 0/5 passed | 0/5 passed |
+
+### Held-out results per person
+
+| Person | Mode | Named recall | Flags caught | Flag false alarms | Findings caught | False findings | Signal emails right | Traps passed |
+|---|---|---|---|---|---|---|---|---|
+| h1 | Rules only | 67% | 75% | 0 | 75% | 3 | 33% | 10/20 |
+| h2 | Rules only | 67% | 33% | 0 | 50% | 1 | 40% | 7/18 |
+| h3 | Rules only | 60% | 0% | 1 | 100% | 2 | 57% | 7/17 |
+| h1 | Models on | 67% | 75% | 1 | 100% | 3 | 78% | 11/20 |
+| h2 | Models on | 72% | 67% | 1 | 100% | 2 | 70% | 10/18 |
+| h3 | Models on | 60% | 25% | 2 | 100% | 3 | 79% | 7/17 |
+
+**Rules only, held-out set:** no model calls, so no model cost.
+
+**Models on, held-out set:** 91 model calls, 29,445 input and 5,989 output tokens, $0.0032 in total, **$0.031 per 1,000 emails**. Calls: median 748.2 ms, p90 2232.3 ms. Errors 0, fallbacks 0.
+
+**Limits of the held-out set:** the same as the main set's (small, one fixed date, simulated prices), plus one more: one writer wrote all three people, so its cases share that writer's blind spots.

@@ -4,9 +4,11 @@
     python -m evals.run --models off                      # rules only: no key, no network
     python -m evals.run --models on                       # live Nemotron tiers, as the pipeline uses them
     python -m evals.run --models both --all-ultra 24      # both, plus the all-Ultra counterfactual on 24 emails
+    python -m evals.run --set holdout --models both       # the held-out set (evals/holdout) instead of the main one
     python -m evals.run --report                          # rebuild docs/EVAL.md from the saved results
 
-Writes backend/evals/results/<date>-<mode>.json and rebuilds docs/EVAL.md from the newest result of each mode.
+Writes backend/evals/results/<date>-<mode>.json (held-out set: <date>-holdout-<mode>.json) and rebuilds
+docs/EVAL.md from the newest result of each mode and set.
 """
 
 from __future__ import annotations
@@ -77,7 +79,7 @@ def headline(tot: dict, cost: dict, wall: float) -> dict:
     }
 
 
-def evaluate(mode: str, people: list[dict], repeat: int = 1) -> dict:
+def evaluate(mode: str, people: list[dict], repeat: int = 1, set_name: str = "main") -> dict:
     """Run every person `repeat` times in one mode; details come from the first run, headline numbers from all."""
     n_emails = sum(len(p["emails"]) for p in people)
     runs = []
@@ -87,7 +89,7 @@ def evaluate(mode: str, people: list[dict], repeat: int = 1) -> dict:
             people_out = []
             for person in people:
                 pid = person["person"]["id"]
-                uid = f"eval-{pid}-{mode}-{r}"
+                uid = f"eval-{pid}-{mode}-{r}" if set_name == "main" else f"eval-{set_name}-{pid}-{mode}-{r}"
                 out = adapter.run_person(person, uid)
                 ablation = {eid: adapter.rerun_without(person, uid, {eid}) for eid in injection_emails(person)}
                 people_out.append((person, out, score.score_person(person, out, ablation)))
@@ -115,10 +117,12 @@ def evaluate(mode: str, people: list[dict], repeat: int = 1) -> dict:
         })
     return {
         "mode": f"models-{mode}",
+        "set": set_name,
         "run_date": date.today().isoformat(),
         "run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "git": git_info(),
-        "dataset": {**dataset.stats(people), "fingerprint": dataset.fingerprint(), "synthetic": True},
+        "dataset": {**dataset.stats(people), "fingerprint": dataset.fingerprint(dataset.SETS[set_name]),
+                    "synthetic": True, "set": set_name},
         "settings": _settings(mode, repeat),
         "headline": first["headline"],
         "totals": first["totals"],
@@ -142,16 +146,30 @@ def _settings(mode: str, repeat: int) -> dict:
     }
 
 
+def _rel(path: Path) -> Path:
+    try:
+        return path.relative_to(REPO)
+    except ValueError:  # a results folder outside the repo (tests)
+        return path
+
+
+def result_name(result: dict) -> str:
+    """<date>-<mode> for the main set, <date>-holdout-<mode> for the held-out set."""
+    prefix = "" if result.get("set", "main") == "main" else f"{result['set']}-"
+    return f"{result['run_date']}-{prefix}{result['mode']}"
+
+
 def write(result: dict, name: str | None = None) -> Path:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    path = RESULTS_DIR / f"{name or result['run_date'] + '-' + result['mode']}.json"
+    path = RESULTS_DIR / f"{name or result_name(result)}.json"
     path.write_text(json.dumps(result, indent=1, ensure_ascii=False, default=str) + "\n", encoding="utf-8")
     return path
 
 
 def print_headline(result: dict) -> None:
     h = result["headline"]
-    print(f"\n{result['mode']}  ({result['dataset']['emails']} emails, {result['dataset']['people']} people, "
+    where = "" if result.get("set", "main") == "main" else f"{result['set']} set, "
+    print(f"\n{result['mode']}  ({where}{result['dataset']['emails']} emails, {result['dataset']['people']} people, "
           f"commit {result['git']['commit']})")
     for k, v in h.items():
         print(f"  {k:<30} {v}")
@@ -168,6 +186,8 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m evals.run", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--models", choices=("off", "on", "both"), default="off")
+    ap.add_argument("--set", choices=("main", "holdout", "both"), default="main", dest="data_set",
+                    help="which synthetic set: evals/data (main, default), evals/holdout (held out), or both")
     ap.add_argument("--repeat", type=int, default=1, help="runs per mode (live results vary a little run to run)")
     ap.add_argument("--all-ultra", type=int, nargs="?", const=24, default=0, metavar="N",
                     help="also send a sample of N emails (default 24) straight to Ultra, skipping triage")
@@ -177,32 +197,38 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     if not args.report:
-        people = dataset.load()
-        bad = [p for person in people for p in dataset.problems(person)]
+        sets = ("main", "holdout") if args.data_set == "both" else (args.data_set,)
+        loaded = {s: dataset.load(dataset.SETS[s]) for s in sets}
+        bad = [p for people in loaded.values() for person in people for p in dataset.problems(person)]
+        if not all(loaded.values()):
+            bad.append(f"no data files in {', '.join(str(dataset.SETS[s]) for s, p in loaded.items() if not p)}")
         if bad:
             print("The dataset has problems:\n  " + "\n  ".join(bad))
             return 2
         modes = ("off", "on") if args.models == "both" else (args.models,)
-        for mode in modes:
-            result = evaluate(mode, people, max(1, args.repeat))
-            path = write(result)
-            print_headline(result)
-            print(f"  -> {path.relative_to(REPO)}")
-        if args.all_ultra:
-            from . import ultra
+        for set_name, people in loaded.items():
+            for mode in modes:
+                result = evaluate(mode, people, max(1, args.repeat), set_name)
+                path = write(result)
+                print_headline(result)
+                print(f"  -> {_rel(path)}")
+            if args.all_ultra:
+                from . import ultra
 
-            with models_mode("on"):
-                u = ultra.run(people, args.all_ultra, args.ultra_thinking == "on")
-            u.update({"mode": "all-ultra", "run_date": date.today().isoformat(),
-                      "run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "git": git_info(),
-                      "dataset": {"fingerprint": dataset.fingerprint(), "synthetic": True}})
-            path = write(u)
-            print(f"\nall-ultra: {u['sample_size']} emails, ${u['cost_usd']:.4f} "
-                  f"(extrapolated ${u['extrapolated_cost_per_1000_emails_usd']} per 1,000 emails), "
-                  f"accuracy {u['accuracy']}\n  -> {path.relative_to(REPO)}")
+                with models_mode("on"):
+                    u = ultra.run(people, args.all_ultra, args.ultra_thinking == "on",
+                                  user_id="eval-all-ultra" if set_name == "main" else f"eval-all-ultra-{set_name}")
+                u.update({"mode": "all-ultra", "set": set_name, "run_date": date.today().isoformat(),
+                          "run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "git": git_info(),
+                          "dataset": {"fingerprint": dataset.fingerprint(dataset.SETS[set_name]), "synthetic": True,
+                                      "set": set_name}})
+                path = write(u)
+                print(f"\nall-ultra ({set_name} set): {u['sample_size']} emails, ${u['cost_usd']:.4f} "
+                      f"(extrapolated ${u['extrapolated_cost_per_1000_emails_usd']} per 1,000 emails), "
+                      f"accuracy {u['accuracy']}\n  -> {_rel(path)}")
     if not args.no_report:
         path = report.build(RESULTS_DIR)
-        print(f"\nReport: {path.relative_to(REPO)}")
+        print(f"\nReport: {_rel(path)}")
     return 0
 
 
