@@ -14,6 +14,7 @@ class Transaction(BaseModel):
     description: str  # raw bank description, e.g. "NETFLIX.COM 866-579-7172 CA"
     amount: float  # positive = money out
     source: str = "demo"  # demo | plaid | statement
+    category: str | None = None  # Plaid's personal finance category (detailed, e.g. LOAN_PAYMENTS_CAR_PAYMENT)
 
 
 class Email(BaseModel):
@@ -28,6 +29,7 @@ class Email(BaseModel):
 class Cadence(str, Enum):
     weekly = "weekly"
     monthly = "monthly"
+    quarterly = "quarterly"
     annual = "annual"
 
 

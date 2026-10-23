@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date, timedelta
 
-from ..merchants import OVERLAP_CATEGORIES
+from ..merchants import OVERLAP_CATEGORIES, same_merchant
 from ..models import Flag, Subscription
 
 KEEP_QUIET = timedelta(days=90)  # after "keep", don't nag about usage for 90 days
@@ -90,11 +90,43 @@ def flag_one(sub: Subscription, kept_on: date | None, today: date) -> list[Flag]
     return flags
 
 
+def _billing(s: Subscription) -> str:
+    return {"apple": "through Apple", "google_play": "through Google Play"}.get(s.billed_by or "", "directly")
+
+
 def flag_overlaps(subs: list[Subscription]) -> None:
+    """Two paid plans doing one job (overlap), and one service paid for twice (paid_twice).
+
+    Services are told apart with merchants.same_merchant, so "Spotify" billed through Apple and "Spotify" billed
+    directly are one service paid twice, never an overlap with itself."""
+    active = [s for s in subs if s.status in ("active", "kept") and not s.merchant.endswith("(unmatched)")]
+    services: list[list[Subscription]] = []
+    for s in active:
+        home = next((g for g in services if same_merchant(g[0].merchant, s.merchant)), None)
+        if home is None:
+            services.append([s])
+        else:
+            home.append(s)
+
+    for group in services:
+        if len(group) < 2:
+            continue
+        total = sum(s.monthly_cost for s in group)
+        keep = min(group, key=lambda s: s.monthly_cost)
+        how = ", ".join(_billing(s) for s in group)
+        for s in group:
+            s.flags.append(Flag(
+                kind="paid_twice", severity="medium",
+                message=(f"You seem to pay for {group[0].merchant} {len(group)} times ({how}), ${total:.2f}/month "
+                         f"together. If they're all yours, keeping one saves ${total - keep.monthly_cost:.2f}/month."),
+                monthly_savings=0.0 if s is keep else s.monthly_cost,
+            ))
+
     by_cat: dict[str, list[Subscription]] = defaultdict(list)
-    for s in subs:
-        if s.status in ("active", "kept") and s.category in OVERLAP_CATEGORIES:
-            by_cat[s.category].append(s)
+    for group in services:
+        first = group[0]
+        if first.category in OVERLAP_CATEGORIES:
+            by_cat[first.category].append(first)
     for cat, group in by_cat.items():
         if len(group) < 2:
             continue

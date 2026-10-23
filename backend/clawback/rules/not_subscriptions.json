@@ -1,0 +1,57 @@
+{
+  "note": "Recurring payments that are not subscriptions or bills ClawBack can help with: transfers between accounts, loan and card payments, rent and housing, and healthcare copays. pipeline/recurring.py sets these charges aside before it looks for subscriptions, unless a verified bill provider (bills.json) or a merchant in merchants.json matches first. Two kinds of rule: Plaid's own transaction categories (read from Plaid's published personal finance category taxonomy on 2026-10-23), and description patterns (case-insensitive regular expressions, like bank_fees.json) for statements and banks without Plaid categories. The patterns are guesses at bank wording, not published formats.",
+  "checked_on": "2026-10-23",
+  "plaid_categories": {
+    "source_url": "https://plaid.com/documents/transactions-personal-finance-category-taxonomy.csv",
+    "exclude_primary": ["INCOME", "TRANSFER_IN", "TRANSFER_OUT", "LOAN_PAYMENTS", "MEDICAL", "BANK_FEES"],
+    "exclude_detailed": ["RENT_AND_UTILITIES_RENT"]
+  },
+  "groups": [
+    {
+      "kind": "transfer",
+      "label": "Transfers and payments between accounts",
+      "patterns": [
+        "\\bTRANSFER\\b", "\\bXFER\\b", "\\bTRANSFER TO\\b", "\\bTO (?:SAVINGS|SAV|CHECKING|CHK)\\b",
+        "\\b(?:SAVINGS|SAV) (?:TRANSFER|XFER)\\b", "\\bZELLE\\b", "\\bVENMO\\b", "\\bCASH APP\\b", "\\bAPPLE CASH\\b",
+        "\\bPAYPAL (?:INST )?(?:TRANSFER|XFER)\\b", "\\bPAYMENT,? THANK YOU\\b", "\\bAUTOPAY PAYMENT\\b",
+        "\\bCREDIT CA?RD (?:AUTO ?PAY|PAYMENT|PMT)\\b", "\\bCRD AUTOPAY\\b", "\\bE-?PAYMENT\\b", "\\bONLINE (?:PMT|PAYMENT) TO\\b",
+        "\\bCARD PAYMENT\\b", "\\bBROKERAGE\\b", "\\bINVESTMENT (?:TRANSFER|CONTRIB)", "\\b(?:401 ?K|IRA) CONTRIB",
+        "\\bATM WITHDRAWAL\\b", "\\bCASH WITHDRAWAL\\b", "\\bDEPOSIT\\b", "\\bPAYROLL\\b", "\\bDIRECT DEP"
+      ]
+    },
+    {
+      "kind": "loan",
+      "label": "Loan, mortgage and buy-now-pay-later payments",
+      "patterns": [
+        "\\bLOAN\\b", "\\bLN PMT\\b", "\\bAUTO LOAN\\b", "\\bCAR PAYMENT\\b", "\\bMORTGAGE\\b", "\\bMTG\\b", "\\bHOME LOAN\\b",
+        "\\bSTUDENT LN\\b", "\\bNAVIENT\\b", "\\bNELNET\\b", "\\bSALLIE MAE\\b", "\\bMOHELA\\b", "\\bAIDVANTAGE\\b",
+        "\\bDEPT ?(?:OF )?EDUCATION\\b", "\\b(?:TOYOTA|HONDA|FORD|NISSAN|HYUNDAI|KIA|SUBARU|BMW|MERCEDES|VW|MAZDA|LEXUS|TESLA) ?(?:MOTOR )?(?:FINANCIAL|FINANCE|FIN|CREDIT|ACCEPT)",
+        "\\bAMERICAN HONDA FIN", "\\bGM FINANCIAL\\b", "\\bALLY (?:AUTO|PAYMT|PMT)", "\\bCARMAX AUTO\\b",
+        "\\bSANTANDER CONSUMER\\b", "\\bWESTLAKE FIN", "\\bCREDIT ACCEPTANCE\\b", "\\bLENDINGCLUB\\b", "\\bUPSTART\\b",
+        "\\bPROSPER\\b", "\\bROCKET MORTGAGE\\b", "\\bMR\\.? COOPER\\b", "\\bPENNYMAC\\b", "\\bLOANDEPOT\\b",
+        "\\bNEWREZ\\b", "\\bAFFIRM\\b", "\\bKLARNA\\b", "\\bAFTERPAY\\b", "\\bSEZZLE\\b", "\\bZIP\\.CO\\b"
+      ]
+    },
+    {
+      "kind": "housing",
+      "label": "Rent and housing",
+      "patterns": [
+        "\\bRENT\\b(?! THE RUNWAY)", "\\bRENT (?:PAYMENT|PMT)\\b", "\\bAPARTMENTS?\\b", "\\bAPTS\\b",
+        "\\bPROP(?:ERTY)? (?:MGMT|MANAGEMENT|MGT)\\b", "\\bLEASING OFFICE\\b", "\\bHOA\\b", "\\bHOMEOWNERS? ASS(?:OC|N)",
+        "\\bCONDO ASS(?:OC|N)", "\\bAPPFOLIO\\b", "\\bRENTCAFE\\b", "\\bYARDI\\b", "\\bCLICKPAY\\b", "\\bPAYLEASE\\b",
+        "\\bBUILDIUM\\b", "\\bZILLOW RENT", "\\bAVAIL RENT", "\\bINVITATION HOMES\\b", "\\bGREYSTAR\\b"
+      ]
+    },
+    {
+      "kind": "healthcare",
+      "label": "Healthcare copays and medical bills",
+      "patterns": [
+        "\\bCO-?PAY\\b", "\\bMEDICAL\\b", "\\bHOSPITAL\\b", "\\bCLINIC\\b", "\\bURGENT CARE\\b", "\\bPHYSICIAN",
+        "\\bPEDIATRIC", "\\bDENTAL\\b", "\\bDENTIST", "\\bORTHODONT", "\\bOPTOMETR", "\\bDERMATOLOG", "\\bTHERAPY\\b",
+        "\\bTHERAPIST", "\\bCOUNSELING\\b", "\\bPSYCHOLOG", "\\bPSYCHIATR", "\\bCHIROPRACT", "\\bPHARMACY\\b",
+        "\\bLABCORP\\b", "\\bQUEST DIAGNOSTICS\\b", "\\bHEALTH ?(?:SYSTEM|CARE|CENTER)\\b", "\\bPATIENT ?PAY",
+        "\\bINSTAMED\\b", "\\bMEDICAL GROUP\\b"
+      ]
+    }
+  ]
+}

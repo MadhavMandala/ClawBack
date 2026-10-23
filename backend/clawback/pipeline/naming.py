@@ -17,6 +17,10 @@ left is grouped by its raw bank descriptor ("SQ *SOME GYM 1234"). For those:
      - the category must be one of the merchant list's categories, else "other";
      - confidence under 0.7 keeps the cleaned descriptor, and the note says the name wasn't recognised.
 Each subscription's matched_from says which of these named it.
+
+Apps named from an Apple or Google Play receipt keep the receipt's name, but one the merchant list doesn't know has
+no category, so overlap checks can't see it. categorize_apps asks Lightning for the category alone from the app's
+name (the same call, schema and checks, cached under "app:<name>"); under 0.7 confidence it stays "unknown".
 """
 
 from __future__ import annotations
@@ -162,3 +166,30 @@ def name_unknown(user_id: str, subs: list[Subscription], series: dict[str, list[
         record(user_id, "naming", "rules", status="missing",
                note=f"{len(raw)} unknown recurring charges named from their descriptors. "
                     "MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning")
+
+
+def categorize_apps(user_id: str, subs: list[Subscription]) -> None:
+    """A category for store-billed apps named from receipts that the merchant list doesn't know."""
+    apps = [s for s in subs if s.billed_by in ("apple", "google_play") and s.category == "unknown"
+            and not s.merchant.endswith("(unmatched)")]
+    if not apps or not llm.available():
+        return
+    u = store.user(user_id)
+    done = 0
+    for s in apps[:MAX_PER_RUN]:
+        key = f"app:{s.merchant.upper()}"
+        answer = u.merchant_names.get(key)
+        if answer is None:
+            try:
+                answer = _ask(user_id, s.merchant)
+            except Exception as exc:
+                record(user_id, "naming", "tiers:fast", status="error", tier="fast", note=str(exc)[:200])
+                answer = None
+            if answer is not None:
+                u.merchant_names[key] = answer
+        name, category, conf, _ = checked(answer, s.merchant)
+        if name and category not in ("unknown", "other"):
+            s.category = category
+            done += 1
+    record(user_id, "naming", "code", note=f"{len(apps)} store-billed apps not in the merchant list: {done} given a "
+                                            "category by Lightning")

@@ -6,6 +6,9 @@ Bank and email show what you pay, not what you use. Evidence, strongest first:
   3. Inactivity emails ("we miss you") and engagement emails ("your top songs").
   4. Nothing at all -> ask the user.
 
+An email counts for a subscription when its merchant is the same service (merchants.same_merchant: the same
+merchant-list row, or names whose words contain each other, so "Crunchyroll" joins "Crunchyroll Mega Fan").
+
 Scoring (code only). Weights are summed over the last 35 days (45 for inactivity emails):
   receipt +1, check-in yes +2, check-in no -2.5, inactivity email -1.5, engagement email +0.5.
   Negative with a "no" check-in = none; negative otherwise = low; positive = normal; nothing = unknown, and ask.
@@ -30,6 +33,7 @@ from __future__ import annotations
 from collections import Counter
 from datetime import date, timedelta
 
+from ..merchants import same_merchant
 from ..models import Subscription, UsageSignal, UsageSummary
 from .extract import Fact
 from .flags import KEEP_QUIET
@@ -103,7 +107,7 @@ def signal_trust(subs: list[Subscription], facts: list[Fact], checkins: dict) ->
         if not answers:
             continue
         for f in facts:
-            if f.merchant != s.merchant or f.kind not in EMAIL_SIGNALS:
+            if f.kind not in EMAIL_SIGNALS or not same_merchant(f.merchant, s.merchant):
                 continue
             kind, says_used, *_ = EMAIL_SIGNALS[f.kind]
             reply = next((used for on, used in answers if timedelta(0) <= on - f.received <= RECENT), None)
@@ -118,7 +122,7 @@ def signals_for(sub: Subscription, facts: list[Fact], checkins, today: date,
     trust = trust or {}
     out: list[UsageSignal] = []
     for f in facts:
-        if f.merchant != sub.merchant:
+        if not same_merchant(f.merchant, sub.merchant):
             continue
         age = today - f.received
         if f.kind == "delivery_order" and age <= RECENT:

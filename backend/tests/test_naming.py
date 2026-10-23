@@ -5,7 +5,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from clawback.models import Transaction
+from clawback.models import Subscription, Transaction
 from clawback.pipeline.naming import checked, clean_name, grounded, name_unknown
 from clawback.pipeline.recurring import detect_series
 from clawback.store import store
@@ -118,3 +118,17 @@ def test_known_merchants_are_never_sent_to_the_model(fake_llm):
                for k in range(3)]
     run_naming("n8", netflix)
     assert fake_llm.calls == []
+
+
+def test_store_billed_app_outside_the_list_gets_a_category(fake_llm):
+    from clawback.pipeline.naming import categorize_apps
+
+    app = Subscription(id="sleep-sounds", merchant="Sleep Sounds Pro", category="unknown", billed_by="apple")
+    unmatched = Subscription(id="apple-bill-4-27", merchant="Apple (unmatched)", category="unknown", billed_by="apple")
+    fake_llm.script[LIGHTNING] = [answer("Sleep Sounds Pro", category="wellness", confidence=0.8)]
+    store.reset("cat")
+    categorize_apps("cat", [app, unmatched])
+    assert app.merchant == "Sleep Sounds Pro" and app.category == "wellness"  # the receipt's name stays
+    assert unmatched.category == "unknown" and len(fake_llm.calls) == 1
+    categorize_apps("cat", [app.model_copy(update={"category": "unknown"})])
+    assert len(fake_llm.calls) == 1  # cached
