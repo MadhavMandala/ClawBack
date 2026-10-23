@@ -47,7 +47,7 @@ from pydantic import BaseModel, TypeAdapter
 from pydantic_core import to_jsonable_python
 
 from . import crypto, db
-from .models import (Cancellation, Email, Fact, Finding, RecoveryEvent, RefundWatch, StoreReceipt, Subscription,
+from .models import (BankAccount, Cancellation, Email, Fact, Finding, RecoveryEvent, RefundWatch, StoreReceipt, Subscription,
                      TraceStep, Transaction)
 
 log = logging.getLogger("clawback.store")
@@ -97,6 +97,10 @@ class UserData:
     # (purchase, flight, triage, screen, receipt). Plain JSON values only (str, number, bool, list, dict), never
     # email text. A failed model call isn't saved, so the email is tried again on the next run.
     model_reads: dict[str, dict] = field(default_factory=dict)
+    # Plaid accounts by account_id: type, and the last statement date for credit cards (dispute deadlines).
+    bank_accounts: dict[str, BankAccount] = field(default_factory=dict)
+    # The user's US state (two-letter code, e.g. "CA"), for state auto-renewal rules. None = not told us.
+    state: str | None = None
 
 
 # --- Serialization ---------------------------------------------------------------------------------

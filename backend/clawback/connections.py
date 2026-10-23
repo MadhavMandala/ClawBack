@@ -36,6 +36,10 @@ class EmailConnection(BaseModel):
     last_sync: datetime | None = None
     error: str | None = None
     needs_reconnect: bool = False
+    # Reading works but saving drafts was refused (the grant lacks a compose / write scope). Connecting email
+    # again with the drafts permission clears it; sync keeps working meanwhile.
+    needs_reconsent: bool = False
+    reconsent_reason: str | None = None
 
 
 class PlaidConnection(BaseModel):

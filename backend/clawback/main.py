@@ -20,13 +20,14 @@ from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
-from . import alerts, connect, connections, demo, llm, sessions
+from . import alerts, connect, connections, demo, drafts, llm, sessions
 from .config import settings
 from .features import features_payload
 from .findings import actions
 from .findings.detect import sort_key
 from .models import ActionPrep, Finding
 from .missing import REGISTRY, Missing, missing
+from .pipeline import rights
 from .pipeline.cancel import cancel_prep
 from .pipeline.confirm import mark_done
 from .pipeline.recommend import alternatives
@@ -35,7 +36,7 @@ from .pipeline.run import best_saving, run, summary
 from .sessions import UserId, user_scope
 from .sources import nylas, plaid
 from .sources.net import SourceError
-from .sources.statements import parse_csv
+from .sources.statements import parse_upload
 from .store import store
 from .trace import view
 
@@ -284,14 +285,18 @@ def recovered_history(user_id: UserId):
 
 @app.post("/api/ingest/statement")
 async def upload_statement(user_id: UserId, file: UploadFile = File(...)):
-    content = (await file.read()).decode("utf-8-sig", errors="replace")
+    """A CSV, OFX or QFX statement file (picked by extension or content)."""
     try:
-        txs = parse_csv(content)
+        kind, txs = parse_upload(await file.read(), file.filename)
     except ValueError as exc:
         raise HTTPException(400, str(exc))
-    store.user(user_id).transactions.extend(txs)
+    u = store.user(user_id)
+    if kind == "ofx":  # OFX ids come from FITID, so the same file uploaded twice adds nothing new
+        held = {t.id for t in u.transactions}
+        txs = [t for t in txs if t.id not in held]
+    u.transactions.extend(txs)
     result = await run_in_threadpool(run, user_id)
-    return {"added_transactions": len(txs), **result}
+    return {"added_transactions": len(txs), "format": kind, **result}
 
 
 # --- Connections ----------------------------------------------------------------------------------
@@ -422,7 +427,51 @@ async def plaid_webhook(request: Request, background: BackgroundTasks):
     return {"ok": True, "handled": "ignored"}
 
 
+# --- Settings -------------------------------------------------------------------------------------
+
+class StateSetting(BaseModel):
+    state: str | None = None  # two-letter US state code, e.g. "CA"; null clears it
+
+
+@app.get("/api/settings")
+def get_settings(user_id: UserId):
+    """The user's state (for state auto-renewal rules), its rule if we have one, and every state to pick from."""
+    return rights.settings_view(store.user(user_id).state)
+
+
+@app.post("/api/settings/state")
+def set_state(user_id: UserId, body: StateSetting):
+    try:
+        code = rights.normalize_state(body.state)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    store.user(user_id).state = code
+    return rights.settings_view(code)
+
+
+# --- Drafts in the user's own mailbox (never sent) ------------------------------------------------
+
+class DraftText(BaseModel):
+    """The email as the app showed it (the user may have edited it). Leave it out to prepare it again."""
+    subject: str | None = None
+    body: str | None = None
+    to: str | None = None  # one email address, or nothing
+
+
 @app.post("/api/subscriptions/{sub_id}/email-draft")
-def save_email_draft(user_id: UserId, sub_id: str):
-    _sub(user_id, sub_id)
-    missing("email-drafts")
+def save_email_draft(user_id: UserId, sub_id: str, text: DraftText | None = None):
+    """Save the cancellation email as a draft in the connected mailbox. 409 when no email is connected,
+    403 when the connection can only read. Never sends."""
+    t = text or DraftText()
+    return drafts.save_cancel_email(user_id, _sub(user_id, sub_id), date.today(), t.subject, t.body, t.to)
+
+
+@app.post("/api/findings/{finding_id}/email-draft")
+def save_finding_draft(user_id: UserId, finding_id: str, text: DraftText | None = None):
+    """Save a finding's prepared letter or request as a draft in the connected mailbox. Never sends."""
+    t = text or DraftText()
+    prep = prepare_finding(user_id, finding_id) if not (t.subject and t.body) else None
+    if prep is None:
+        _finding(user_id, finding_id)
+        return drafts.save(user_id, t.subject, t.body, t.to)
+    return drafts.save_finding_letter(user_id, prep, t.subject, t.body, t.to)

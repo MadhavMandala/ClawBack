@@ -15,6 +15,7 @@ class Transaction(BaseModel):
     amount: float  # positive = money out
     source: str = "demo"  # demo | plaid | statement
     category: str | None = None  # Plaid's personal finance category (detailed, e.g. LOAN_PAYMENTS_CAR_PAYMENT)
+    account_id: str | None = None  # the Plaid account it was charged to, when known
 
 
 class Attachment(BaseModel):
@@ -25,6 +26,19 @@ class Attachment(BaseModel):
     content_type: str = ""
     size: int = 0  # bytes, as the provider reports it
     inline: bool = False  # inline images are usually logos, not receipts
+
+
+class BankAccount(BaseModel):
+    """One account on the user's Plaid Item: its type, and for credit cards the last statement date (Plaid
+    /liabilities/get), which sets the real dispute deadline."""
+
+    account_id: str
+    kind: str = "other"  # credit | depository | loan | investment | other (Plaid's account type)
+    subtype: str | None = None  # e.g. "credit card", "checking"
+    name: str | None = None
+    mask: str | None = None  # last 4 digits
+    last_statement_issue_date: date | None = None  # credit cards only
+    checked_on: date | None = None  # when Plaid gave us this
 
 
 class Email(BaseModel):

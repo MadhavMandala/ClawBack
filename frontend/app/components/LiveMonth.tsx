@@ -5,7 +5,7 @@ import { call, type Summary } from "../api";
 import { money } from "../format";
 
 // The demo month in one sentence, read live from the backend. If the server is down, the numbers seeded on start-up stand in.
-const SEEDED = { monthly_total: 503.23, potential_monthly_savings: 81.97, owed_total: 640.06, owed_count: 9 };
+const SEEDED = { monthly_total: 503.23, potential_monthly_savings: 81.97, owed_total: 615.06, owed_count: 7 };
 
 export default function LiveMonth() {
   const [s, setS] = useState<typeof SEEDED>(SEEDED);

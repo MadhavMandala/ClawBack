@@ -334,7 +334,9 @@ def test_settlements(book):
         ("settlement", "medium", 20.0, date(2026, 12, 31), "About $20 each")]
     outside = settlement_findings([], [mail(1, date(2026, 9, 1), "news@acme.com", "Acme news")],
                                   book.settlements_matching, TODAY)
-    assert [f.confidence for f in outside] == ["low"]  # only an email outside the class period: "might apply"
+    assert outside == []  # only an email, no purchase inside the class period: a hint, so nothing is shown
+    late = settlement_findings([tx(4, date(2026, 8, 1), "ACME WIDGETS 123", 30.0)], [], book.settlements_matching, TODAY)
+    assert late == []  # a purchase after the class period ended
     assert settlement_findings([tx(2, TODAY, "OLDCO 1", 9.0)], [], book.settlements_matching, TODAY) == []  # closed
     assert settlement_findings([tx(3, TODAY, "COFFEE", 4.0)], [], book.settlements_matching, TODAY) == []
 
@@ -500,8 +502,17 @@ def test_limited_settlement_stays_low_and_notice_codes_are_mentioned():
                notes="Online claim needs the Claim ID and PIN from the notice.")
     book = Rulebook.from_data(settlements={"settlements": [raw]})
     [f] = settlement_findings([tx(1, date(2026, 3, 1), "SEATSELLER TIX", 80.0)], [], book.settlements_matching, TODAY)
-    assert f.confidence == "low" and any("one state or venue" in e for e in f.evidence)
+    assert f.confidence == "low" and any("one venue or event" in e for e in f.evidence)
     assert any("Claim ID / PIN" in step for step in prepare(f, TODAY).steps)
+
+    # A class limited to listed states needs the user's state to be one of them; unknown shows nothing.
+    raw.update(id="mo", states=["MO"], who_qualifies="MISSOURI STORES ONLY. Members.")
+    book = Rulebook.from_data(settlements={"settlements": [raw]})
+    charge = [tx(2, date(2026, 3, 1), "SEATSELLER TIX", 80.0)]
+    assert settlement_findings(charge, [], book.settlements_matching, TODAY) == []
+    assert settlement_findings(charge, [], book.settlements_matching, TODAY, "KS") == []
+    [f] = settlement_findings(charge, [], book.settlements_matching, TODAY, "mo")
+    assert f.confidence == "medium" and any("your state setting is MO" in e for e in f.evidence)
 
 
 def test_settlement_needs_its_evidence_words_to_count_as_likely():
@@ -509,8 +520,8 @@ def test_settlement_needs_its_evidence_words_to_count_as_likely():
     raw = dict(RULES["settlements"]["settlements"][0])
     raw.update(id="rx", match=["GROCERCO"], evidence_words=["PHARMACY", "RX"])
     book = Rulebook.from_data(settlements={"settlements": [raw]})
-    [groceries] = settlement_findings([tx(1, date(2026, 3, 1), "GROCERCO #12", 54.0)], [], book.settlements_matching, TODAY)
-    assert groceries.confidence == "low" and any("might not apply" in e for e in groceries.evidence)
+    groceries = settlement_findings([tx(1, date(2026, 3, 1), "GROCERCO #12", 54.0)], [], book.settlements_matching, TODAY)
+    assert groceries == []  # the class covers prescriptions, and nothing shows one
     [pharmacy] = settlement_findings([tx(2, date(2026, 3, 1), "GROCERCO PHARMACY #12", 15.0)], [], book.settlements_matching, TODAY)
     assert pharmacy.confidence == "medium"
 
