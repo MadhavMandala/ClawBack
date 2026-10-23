@@ -116,7 +116,13 @@ def run(user_id: str, today: date | None = None) -> dict:
 
     u.subscriptions = {s.id: s for s in subs}
     active_series = {s.id: series[s.id] for s in subs if s.id in series}
+    before = u.findings
     u.findings = {f.id: f for f in run_findings(user_id, u, rules, subs, active_series, today)}
+    # A finding the user marked done stays on their list after a detector stops raising it (its refund arrived, so
+    # the duplicate is no longer "extra"; or its deadline passed), so they can see it was confirmed.
+    for fid, f in before.items():
+        if fid not in u.findings and u.finding_status.get(fid) == "done":
+            u.findings[fid] = f
     confirmed = confirm.check_refunds(u, today)
     if u.refund_watch:
         waiting = sum(1 for w in u.refund_watch.values() if w.status == "waiting")

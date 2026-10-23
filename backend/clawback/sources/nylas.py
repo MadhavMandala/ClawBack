@@ -27,8 +27,11 @@ Built (checked against developer.nylas.com on 2026-10-22), plain REST over httpx
     fetch_message() then reads that one message (GET /v3/grants/{id}/messages/{message_id}); the body in the
     notification itself is never used or stored.
   - grant_status(): GET /v3/grants/{id}, for the nightly grant check.
-
-MISSING [email-drafts]: cancellation emails saved as drafts through Nylas's drafts API.
+  - create_draft(): POST /v3/grants/{id}/drafts (checked 2026-10-23) with subject, body, is_plaintext=true and
+    `to` only when we have a real address. It saves a draft in the user's own mailbox and never sends. Drafts need
+    a write scope: Google gmail.compose (Gmail's own API also accepts gmail.modify), Microsoft Mail.ReadWrite,
+    Yahoo mail-w. A refusal for missing permission raises DraftNotAllowed, which marks the connection as needing
+    re-consent; reading mail keeps working.
 MISSING [nylas-production]: the free Sandbox allows 5 connected accounts, and mail passes through Nylas.
 """
 
@@ -36,6 +39,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import re
 import secrets
 import threading
 import time
@@ -361,18 +365,21 @@ def download_attachment(user_id: str, conn: EmailConnection, message_id: str, at
 
 # --- HTTP -------------------------------------------------------------------------------------------
 
-def _call(c: httpx.Client, method: str, path: str, auth: bool = True, **kw) -> httpx.Response:
-    """One request, retried on 429 (honouring Retry-After) and on 502 / 503 / 504."""
+def _call(c: httpx.Client, method: str, path: str, auth: bool = True, retry_server_errors: bool = True,
+          **kw) -> httpx.Response:
+    """One request, retried on 429 (honouring Retry-After) and on 502 / 503 / 504. retry_server_errors=False keeps
+    the 429 retry only, for calls that create something (a retried draft could be saved twice)."""
     s = config.settings
     headers = {"Accept": "application/json"}
     if auth:
         headers["Authorization"] = f"Bearer {s.nylas_api_key}"
+    retry_on = (429, 502, 503, 504) if retry_server_errors else (429,)
     for attempt in range(5):
         try:
             r = c.request(method, s.nylas_api_uri + path, headers=headers, **kw)
         except httpx.HTTPError as exc:
             raise EmailError("Couldn't reach Nylas. Check the network and try again.") from exc
-        if r.status_code in (429, 502, 503, 504) and attempt < 4:
+        if r.status_code in retry_on and attempt < 4:
             _sleep(_backoff(r, attempt))
             continue
         return r
@@ -464,7 +471,57 @@ def fetch_message(user_id: str, conn: EmailConnection, message_id: str) -> Email
     return email
 
 
+# --- Drafts -----------------------------------------------------------------------------------------
+
+NEEDS_DRAFT_PERMISSION = "Your email connection can only read. Reconnect to allow drafts."
+PROVIDER_NAMES = {"google": "Gmail", "microsoft": "Outlook", "yahoo": "Yahoo Mail", "icloud": "iCloud Mail",
+                  "ews": "Exchange", "imap": "your mailbox"}
+ADDRESS = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+")
+_PERMISSION_WORDS = re.compile(r"scope|permission|insufficient|not allowed|forbidden|access denied|read-?only", re.I)
+
+
+class DraftNotAllowed(EmailError):
+    """The provider refused to save a draft because the grant can only read mail."""
+
+
+def provider_name(provider: str | None) -> str:
+    return PROVIDER_NAMES.get(provider or "", "your mailbox")
+
+
+def is_address(text: str | None) -> bool:
+    return bool(text and ADDRESS.fullmatch(text.strip()))
+
+
+def create_draft(user_id: str, conn: EmailConnection, subject: str, body: str, to: str | None = None) -> str:
+    """Save a plain-text draft in the user's own mailbox and return its id. It is never sent: the user opens it in
+    their mail app and presses send. `to` is used only when it is a single email address."""
+    require_config()
+    if conn.needs_reconnect:
+        raise EmailExpired(conn.error or EXPIRED, status=401)
+    payload: dict = {"subject": subject.strip()[:300], "body": body, "is_plaintext": True}
+    if is_address(to):
+        payload["to"] = [{"email": to.strip()}]
+    with net.client() as c, timed(user_id, "email: save draft", ENGINE) as info:
+        r = _call(c, "POST", f"/v3/grants/{quote(conn.grant_id, safe='')}/drafts", retry_server_errors=False,
+                  json=payload)
+        data = net.json_or_empty(r)
+        draft_id = (data.get("data") or {}).get("id") if isinstance(data.get("data"), dict) else None
+        if r.is_success and draft_id:
+            info["note"] = f"draft saved in {provider_name(conn.provider)} (not sent)"
+            return str(draft_id)
+        reason = _reason(r, data)
+        provider_error = data.get("error", {}).get("provider_error") if isinstance(data.get("error"), dict) else None
+        if r.status_code == 403 or (r.status_code in (400, 401) and _PERMISSION_WORDS.search(f"{reason} {provider_error or ''}")):
+            raise DraftNotAllowed(NEEDS_DRAFT_PERMISSION, status=403, code="insufficient_scope")
+        if r.status_code in (401, 404):
+            raise EmailExpired(f"{EXPIRED} (Nylas: {reason})" if reason else EXPIRED, status=401, code="grant_invalid")
+        if r.status_code == 429:
+            raise EmailError("The email provider is limiting requests right now. Try again in a minute.")
+        if r.is_success or r.status_code >= 500:
+            raise EmailError("Your email provider didn't confirm the draft. Check your Drafts folder before you "
+                             "try again.")
+        raise EmailError(f"Couldn't save the draft: {reason or f'HTTP {r.status_code}'}")
+
+
 # --- Still MISSING ----------------------------------------------------------------------------------
 
-def create_draft(user_id: str, to: str, subject: str, body: str) -> str:
-    missing("email-drafts")

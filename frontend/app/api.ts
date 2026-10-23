@@ -86,13 +86,24 @@ export type MissingItem = { id: string; area: string; priority: string; what: st
 export type Health = { ok: boolean; integrations: Record<string, boolean>; models: Record<string, string> };
 
 export type CancelPrep = {
+  subscription_id: string;
   merchant: string;
   you_save_per_month: number;
   next_charge: string | null;
   links: { label: string; url: string; verified: boolean }[];
   steps: string[];
-  email: { subject: string; body: string; status: string };
+  // `to` is set only when a support address was found on the merchant's own page.
+  email: { subject: string; body: string; status: string; to?: string | null };
+  // The user's rights line(s): their state's auto-renewal law when it applies, else federal ROSCA.
+  rights?: { scope: "state" | "federal"; state: string | null; text: string; law: string; title: string; source_url: string; checked_on: string }[];
   missing: string[];
+};
+
+export type Settings = {
+  state: string | null;
+  state_name: string | null;
+  state_rule: { law: string; title: string; user_right: string; source_url: string; checked_on: string } | null;
+  states: { code: string; name: string; has_rule: boolean }[];
 };
 
 export type Alternatives = {

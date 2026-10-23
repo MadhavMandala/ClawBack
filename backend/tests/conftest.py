@@ -55,6 +55,7 @@ def isolated(monkeypatch, tmp_path):
     monkeypatch.setattr(s, "autoseed_demo", True)
     monkeypatch.setattr(s, "nylas_webhook_secret", None)
     monkeypatch.setattr(s, "public_api_url", None)
+    monkeypatch.setattr(s, "cancel_cache_path", tmp_path / "cancel_pages.json")
     monkeypatch.setattr(net, "transport", httpx.MockTransport(_no_network))
     monkeypatch.setattr(nylas, "_sleep", lambda seconds: None)
     nylas._states.clear()

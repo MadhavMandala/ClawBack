@@ -86,6 +86,10 @@ class Settings:
     connections_path: Path = field(
         default_factory=lambda: Path(_env("CLAWBACK_CONNECTIONS_FILE") or BACKEND_DIR / ".local" / "connections.json")
     )
+    # Cancel pages found per merchant (public URLs and steps only, shared by every user). See pipeline/cancel_lookup.py.
+    cancel_cache_path: Path = field(
+        default_factory=lambda: Path(_env("CLAWBACK_CANCEL_CACHE") or BACKEND_DIR / ".local" / "cancel_pages.json")
+    )
 
     # Sessions (clawback/sessions.py). "visitor": each browser gets its own demo session, sent as the
     # X-ClawBack-Session header (the hosted default). "single": everyone is the one local user "demo" (old behaviour).
@@ -131,8 +135,8 @@ class Settings:
         return {
             "nebius_token_factory": bool(self.nebius_api_key),
             "tavily": bool(self.tavily_api_key),
-            "email": self.email_configured(),  # Nylas, read-only; drafts are still MISSING
-            "plaid": self.plaid_configured(),  # Link + /transactions/sync
+            "email": self.email_configured(),  # Nylas: read mail and save drafts (never send)
+            "plaid": self.plaid_configured(),  # Link + /transactions/sync + liabilities
             "email_webhooks": bool(self.email_configured() and self.nylas_webhook_secret),
             "plaid_webhooks": bool(self.plaid_configured() and self.public_api_url),
             "database": True,  # SQLite, clawback/db.py
