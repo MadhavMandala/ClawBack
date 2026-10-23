@@ -1,0 +1,26 @@
+# ClawBack nightly job: sync each connection, check email grants, re-check prices.
+# Started by clawback-nightly.timer. Run it by hand with: sudo systemctl start clawback-nightly
+
+[Unit]
+Description=ClawBack nightly job
+After=network-online.target clawback.service
+Wants=network-online.target
+RequiresMountsFor=/var/lib/clawback
+
+[Service]
+Type=oneshot
+User=clawback
+Group=clawback
+WorkingDirectory=/opt/clawback/app/backend
+Environment=CLAWBACK_DOTENV=0
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+EnvironmentFile=/etc/clawback/clawback.env
+ExecStart=/opt/clawback/venv/bin/python -m clawback.nightly
+TimeoutStartSec=30min
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/clawback

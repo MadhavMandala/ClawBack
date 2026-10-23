@@ -191,6 +191,7 @@ export default function Home() {
         <div className="wrap">
           <p>Built for the Nebius x NVIDIA Global AI Hackathon, 2026. NVIDIA Nemotron on Nebius Token Factory, Tavily for search, Nylas for email and Plaid for banks.</p>
           <p>ClawBack is a prototype and not financial or legal advice.</p>
+          <p><Link href="/privacy">Privacy policy</Link></p>
         </div>
       </footer>
     </div>
