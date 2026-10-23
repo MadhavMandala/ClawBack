@@ -93,6 +93,9 @@
         "schnucks.com"
       ],
       "exclude": [],
+      "states": [
+        "MO"
+      ],
       "who_qualifies": "Schnucks Rewards members who redeemed Rewards Points on tax-eligible items, mainly for personal, family or household use, at a Missouri Schnucks store (in person or online) between May 2, 2020 and Aug 7, 2026.",
       "class_period": {
         "start": "2020-05-02",
@@ -285,6 +288,14 @@
         "pulszbingo.com"
       ],
       "exclude": [],
+      "states": [
+        "AL",
+        "TN",
+        "KY",
+        "OH",
+        "NJ",
+        "MA"
+      ],
       "who_qualifies": "STATE-LIMITED. People who spent money playing Pulsz or Pulszbingo while in: Alabama (Mar 8, 2022 - Aug 31, 2026), Tennessee (Nov 12, 2022 - Aug 31, 2026), Kentucky (Jun 29, 2023 - Aug 31, 2026), or Ohio, New Jersey or Massachusetts (Feb 19, 2024 - Aug 31, 2026).",
       "class_period": {
         "start": "2022-03-08",
@@ -489,6 +500,9 @@
         "cagreatamerica.com"
       ],
       "exclude": [],
+      "states": [
+        "CA"
+      ],
       "who_qualifies": "California citizens who, between June 28, 2020 and July 1, 2024, bought non-season tickets to Knott's Berry Farm and/or Knott's Soak City at www.knotts.com, or to California's Great America at www.cagreatamerica.com, and were charged a processing fee.",
       "class_period": {
         "start": "2020-06-28",
@@ -542,6 +556,9 @@
         "high5games.com"
       ],
       "exclude": [],
+      "states": [
+        "WA"
+      ],
       "who_qualifies": "WASHINGTON ONLY. Individuals who played or bought virtual coins in the High 5 Casino or High 5 Vegas social casino apps in Washington (or associated with Washington purchases by billing address, IP address or platform data) after April 9, 2014 and before October 1, 2022. Only people who bought virtual coins and file a claim get paid.",
       "class_period": {
         "start": "2014-04-10",
@@ -568,6 +585,12 @@
         "seatgeek.com"
       ],
       "exclude": [],
+      "evidence_words": [
+        "LAS VEGAS",
+        "NEVADA",
+        "RENO",
+        "HENDERSON"
+      ],
       "who_qualifies": "Anyone who bought electronic tickets to events in Nevada from www.seatgeek.com or the SeatGeek app between Nov 7, 2020 and May 12, 2025 and was charged fees.",
       "class_period": {
         "start": "2020-11-07",

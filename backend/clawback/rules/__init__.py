@@ -429,6 +429,10 @@ class Settlement(_Model):
     # Words that must appear in the user's matched charges or emails before a match counts as likely,
     # e.g. PHARMACY for a prescriptions-only class. Empty means any match will do.
     evidence_words: tuple[str, ...] = ()
+    # Two-letter codes when the class is limited to people living (or buying) in these states, taken from
+    # who_qualifies / notes. ClawBack then needs the user's state to be one of them. Empty = nationwide, or
+    # limited by venue or event, which the match strings or evidence_words prove instead.
+    states: tuple[str, ...] = ()
     who_qualifies: str
     class_period: ClassPeriod
     claim_deadline: date

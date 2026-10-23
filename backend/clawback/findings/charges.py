@@ -7,7 +7,9 @@ Duplicate charges
   Detector: the same merchant (first two words of the description) and the same amount, charged again within
   3 days, $5 or more, and not part of a recurring series or a bank fee. High confidence when one email receipt
   shows a single order for that amount around that date; medium when there is no receipt. If the emails show as
-  many orders as charges, it isn't flagged.
+  many orders as charges, it isn't flagged. A credit from the same merchant (refund words such as REFUND or
+  RETURN ignored) for the same amount, within 120 days after the first charge, counts as that extra charge already
+  refunded: when every extra charge has one, nothing is flagged.
   Deadline: the rule's 60 days after the statement that first shows the charge. For a credit card whose last
   statement date came from Plaid (/liabilities/get), that statement is worked out from the card's statement day:
   the last statement itself, an earlier one (same day of the month), or the next one when the charge came after
@@ -119,6 +121,7 @@ def duplicate_charges(transactions: list[Transaction], skip_ids: set[str], purch
                 groups[(" ".join(words), round(t.amount, 2))].append(t)
 
     credit, debit = disputes.get("credit"), disputes.get("debit")
+    refunds = _credits(transactions)
     out: list[Finding] = []
     for (name, amount), txs in groups.items():
         txs.sort(key=lambda t: (t.date, t.id))
@@ -128,19 +131,52 @@ def duplicate_charges(transactions: list[Transaction], skip_ids: set[str], purch
                 cluster.append(t)
                 continue
             if len(cluster) >= 2:
-                f = _duplicate(cluster, name.split(), amount, purchases, credit, debit, today, accounts or {})
-                if f:
-                    out.append(f)
+                back = _take_refunds(refunds, name, amount, cluster[0].date, len(cluster) - 1)
+                if len(back) < len(cluster) - 1:  # some extra charge hasn't been refunded yet
+                    f = _duplicate(cluster, name.split(), amount, purchases, credit, debit, today, accounts or {},
+                                   back)
+                    if f:
+                        out.append(f)
             cluster = [t] if t is not None else []
     return out
 
 
-def _duplicate(cluster, words, amount, purchases, credit, debit, today, accounts) -> Finding | None:
+# Words a bank puts in front of or after a merchant's name on a credit ("REFUND BEST BUY", "BEST BUY RETURN").
+REFUND_WORDS = frozenset({"refund", "refunded", "return", "returned", "credit", "reversal", "reversed", "rev",
+                          "adjustment", "adj", "chargeback", "purchase", "pur", "ret"})
+REFUND_WINDOW_DAYS = 120
+
+
+def _credit_words(description: str) -> str:
+    words = [w for w in merchant_words(description, n=8) if w not in REFUND_WORDS]
+    return " ".join(words[:2])
+
+
+def _credits(transactions: list[Transaction]) -> dict[tuple[str, float], list[Transaction]]:
+    """Money back (negative amounts), by merchant (first two words, refund words removed) and amount."""
+    out: dict[tuple[str, float], list[Transaction]] = defaultdict(list)
+    for t in sorted(transactions, key=lambda t: (t.date, t.id)):
+        if t.amount < 0 and (words := _credit_words(t.description)):
+            out[(words, round(-t.amount, 2))].append(t)
+    return out
+
+
+def _take_refunds(refunds: dict, name: str, amount: float, since: date, wanted: int) -> list[Transaction]:
+    """Credits from the same merchant for the same amount, on or after the first charge (within 120 days), up to
+    one per extra charge. Each credit is used once."""
+    pool = refunds.get((name, round(amount, 2)), [])
+    taken = [c for c in pool if since <= c.date <= since + timedelta(days=REFUND_WINDOW_DAYS)][:wanted]
+    for c in taken:
+        pool.remove(c)
+    return taken
+
+
+def _duplicate(cluster, words, amount, purchases, credit, debit, today, accounts, refunded=()) -> Finding | None:
     first = cluster[0]
     orders = _matching_orders(purchases, words, amount, first.date)
     if len(orders) >= len(cluster):
         return None  # the emails show as many orders as charges: probably real
-    extra = len(cluster) - 1
+    extra = len(cluster) - 1 - len(refunded)  # extra charges not refunded yet
     deadline, rule, how = statement_deadline(first, accounts, credit, debit)
     if deadline is not None and deadline < today:
         return None  # the dispute window has closed
@@ -153,6 +189,9 @@ def _duplicate(cluster, words, amount, purchases, credit, debit, today, accounts
         evidence.append(f"Your email has one {store} order for {money(amount)} on {day(o.order_date)}{number}.")
     else:
         evidence.append("No email receipt found for this order, so check that you didn't buy it twice.")
+    for c in refunded:
+        evidence.append(f"{day(c.date)}: {money(amount)} already came back ({c.description.strip()}), "
+                        "so that charge isn't counted.")
     if deadline:
         evidence.append(_statement_note(how, deadline, rule["days"]))
     if how["card"] == "debit":
