@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from . import connect, demo_data, llm
 from .config import settings
+from .features import features_payload
 from .findings import actions, rulebook
 from .findings.detect import sort_key
 from .models import ActionPrep, Finding
@@ -86,6 +87,12 @@ def health():
 @app.get("/api/missing")
 def missing_list():
     return REGISTRY
+
+
+@app.get("/api/features")
+def feature_board():
+    """Every planned feature and its phase (planned, started, built, live), for the build-status board."""
+    return features_payload()
 
 
 @app.get("/api/trace")

@@ -141,7 +141,7 @@ def test_email_connect_switches_to_real_data(client, fake):
     assert client.get("/api/health").json()["integrations"]["email"] is True
 
     r = connect_email(client)
-    assert r.status_code == 302 and r.headers["location"] == "http://localhost:3000/?connected=email"
+    assert r.status_code == 302 and r.headers["location"] == "http://localhost:3000/dashboard?connected=email"
 
     status = client.get("/api/connections").json()
     assert status["mode"] == "real"
@@ -224,7 +224,7 @@ def test_rate_limit_is_retried(fake):
 
 def test_callback_errors_redirect_with_a_short_message(client, fake):
     r = client.get("/api/connect/email/callback", params={"code": "good-code", "state": "forged"}, follow_redirects=False)
-    assert r.status_code == 302 and r.headers["location"].startswith("http://localhost:3000/?connect_error=")
+    assert r.status_code == 302 and r.headers["location"].startswith("http://localhost:3000/dashboard?connect_error=")
 
     state = state_of(client.get("/api/connect/email").json()["auth_url"])
     r = client.get("/api/connect/email/callback", params={"error": "access_denied", "state": state}, follow_redirects=False)

@@ -1,420 +1,198 @@
-"use client";
+import Link from "next/link";
+import BuildTeaser from "./components/BuildTeaser";
+import LiveMonth from "./components/LiveMonth";
+import SiteNav from "./components/SiteNav";
+import Statement from "./components/Statement";
+import { Check } from "./components/icons";
+import "./landing.css";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  API, call,
-  type ActionPrep, type Alternatives, type CancelPrep, type Connection, type Connections, type Finding, type MissingItem,
-  type Subscription, type Summary, type TraceStep,
-} from "./api";
-import { groupOf, money, reclaimable, type GroupKey } from "./format";
-import FindingRow from "./components/FindingRow";
-import Strip from "./components/Strip";
-import SubscriptionRow, { type RowPanel } from "./components/SubscriptionRow";
-import { Check, Chevron, Close, Logo } from "./components/icons";
-
-type Notice = { tone: "info" | "error" | "missing"; text: string } | null;
-
-const GROUPS: { key: GroupKey; title: string }[] = [
-  { key: "decide", title: "Subscriptions to decide on" },
-  { key: "bills", title: "Bills you could lower" },
-  { key: "check", title: "Worth a look" },
-  { key: "fine", title: "Looks fine" },
+const AREAS = [
+  {
+    name: "Subscriptions",
+    finds: "Services you've stopped using, two plans doing one job, free trials about to convert, and prices that crept up.",
+    prepares: "The cancel page and a cancellation email, or a cheaper plan that fits how you use it.",
+    ex: "HULU 877-8244858 CA  9.99",
+  },
+  {
+    name: "Bills",
+    finds: "Internet, phone and insurance that jumped when a promotional rate ended.",
+    prepares: "A negotiation script with what you paid before and what others charge now.",
+    ex: "COMCAST XFINITY  85.00, was 55.00",
+  },
+  {
+    name: "Bank charges",
+    finds: "The same charge twice, and fees a bank will often reverse if you ask.",
+    prepares: "A dispute letter with its deadline, or a polite request to reverse the fee.",
+    ex: "BEST BUY 00012345  129.99, twice",
+  },
+  {
+    name: "Refunds owed",
+    finds: "Price drops inside a store's adjustment window, and flights that were cancelled or moved.",
+    prepares: "The claim, citing the store's policy or the US Department of Transportation refund rule.",
+    ex: "UNITED UA 1532  cancelled, 412.40",
+  },
+  {
+    name: "Settlements",
+    finds: "Open class-action settlements that match things you bought.",
+    prepares: "The official claim link and the proof it asks for. You file it yourself.",
+    ex: "APPLE.COM/BILL  Landsheft v. Apple",
+  },
 ];
 
-const PLAID_SCRIPT = "https://cdn.plaid.com/link/v2/stable/link-initialize.js";
+const MODELS = [
+  { name: "Nemotron 3.5 Lightning", id: "nvidia/Nemotron-3_5-Lightning", job: "Reads each email that passes the rules into plain facts, once.", when: "Every new email" },
+  { name: "Nemotron 3 Nano", id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B", job: "Takes over when Lightning fails.", when: "Only on failure" },
+  { name: "Nemotron 3 Super", id: "nvidia/nemotron-3-super-120b-a12b", job: "Reads plan and pricing pages into a list of plans.", when: "“Find cheaper”" },
+  { name: "Nemotron 3 Ultra", id: "nvidia/Nemotron-3-Ultra-550b-a55b", job: "Fits those plans to how you use the service, and writes the cancellation email.", when: "When you click" },
+  { name: "Nemotron 3.5 Super-VL", id: "nvidia/Nemotron-3.5-Super-VL", job: "Will read receipts sent as images and PDFs.", when: "Planned", planned: true },
+];
+
+const RULES = [
+  { b: "Nothing happens without you.", p: "ClawBack never cancels, pays, sends or files anything. It prepares the request, and you send it." },
+  { b: "It only reads.", p: "Email access is read-only. Your bank sign-in happens on Plaid's page, so ClawBack never sees your bank password." },
+  { b: "Every find shows its working.", p: "The charges and emails it relied on, the rule behind the claim, and a link to that rule's official source." },
+  { b: "Models don't make up links or numbers.", p: "Code does every date and every dollar. Links come from search results or checked pages, never from a model." },
+];
 
 export default function Home() {
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [subs, setSubs] = useState<Subscription[]>([]);
-  const [findings, setFindings] = useState<Finding[]>([]);
-  const [findOpen, setFindOpen] = useState<string | null>(null);
-  const [findPrep, setFindPrep] = useState<{ id: string; a: ActionPrep } | null>(null);
-  const [trace, setTrace] = useState<TraceStep[]>([]);
-  const [missing, setMissing] = useState<MissingItem[]>([]);
-  const [conns, setConns] = useState<Connections | null>(null);
-  const [open, setOpen] = useState<string | null>(null);
-  const [panel, setPanel] = useState<{ id: string; p: RowPanel } | null>(null);
-  const [notice, setNotice] = useState<Notice>(null);
-  const [busy, setBusy] = useState<string | null>(null);
-  const [showMissing, setShowMissing] = useState(false);
-  const [intro, setIntro] = useState(true);
-  const loaded = useRef(false);
-
-  const load = useCallback(async () => {
-    try {
-      const [s, list, t, m] = await Promise.all([
-        call<Summary>("/api/summary"),
-        call<Subscription[]>("/api/subscriptions"),
-        call<TraceStep[]>("/api/trace"),
-        call<MissingItem[]>("/api/missing"),
-      ]);
-      setSummary(s); setSubs(list); setTrace(t); setMissing(m);
-      setFindings(await call<Finding[]>("/api/findings").catch(() => []));
-      setConns(await call<Connections>("/api/connections").catch(() => null));
-      if (!loaded.current) {
-        loaded.current = true;
-        setTimeout(() => setIntro(false), 1600); // the highlighter pass runs once, on first load
-      }
-    } catch {
-      setNotice({ tone: "error", text: `Can't reach the ClawBack server at ${API}. Start it from the backend folder with: .venv\\Scripts\\python -m uvicorn clawback.main:app --port 8000` });
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-    // Coming back from the email sign-in lands here with ?connected=email or ?connect_error=...
-    const q = new URLSearchParams(window.location.search);
-    if (q.get("connected") === "email") setNotice({ tone: "info", text: "Email connected. ClawBack read your recent receipts and billing emails." });
-    if (q.get("connect_error")) setNotice({ tone: "error", text: `Couldn't connect: ${q.get("connect_error")}` });
-    if (q.toString()) window.history.replaceState(null, "", window.location.pathname);
-  }, [load]);
-
-  async function act<T>(key: string, path: string, init?: RequestInit): Promise<T | null> {
-    setBusy(key);
-    try {
-      const out = await call<T>(path, init);
-      await load();
-      return out;
-    } catch (e) {
-      const text = (e as Error).message;
-      setNotice({ tone: /^MISSING/i.test(text) ? "missing" : "error", text });
-      return null;
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  const post = <T,>(key: string, path: string, body?: unknown) =>
-    act<T>(key, path, {
-      method: "POST",
-      headers: body ? { "Content-Type": "application/json" } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-
-  async function connectEmail() {
-    const out = await act<{ auth_url: string }>("email", "/api/connect/email");
-    if (out?.auth_url) window.location.assign(out.auth_url);
-  }
-
-  async function connectBank() {
-    const out = await post<{ link_token: string }>("plaid", "/api/connect/plaid/link-token");
-    if (!out?.link_token) return;
-    try {
-      const Plaid = await loadPlaid();
-      Plaid.create({
-        token: out.link_token,
-        onSuccess: async (public_token: string, meta: { institution?: { name?: string } }) => {
-          const r = await post<{ added_transactions: number; institution: string | null; pending: boolean }>(
-            "plaid", "/api/connect/plaid/exchange", { public_token, institution: meta?.institution?.name ?? null });
-          if (r) setNotice({
-            tone: "info",
-            text: r.pending
-              ? `${r.institution ?? "Your bank"} is connected. Plaid is still preparing transactions. Press Sync in a minute.`
-              : `${r.institution ?? "Your bank"} is connected. Read ${r.added_transactions} transactions.`,
-          });
-        },
-        onExit: (err: { display_message?: string; error_message?: string } | null) => {
-          if (err) setNotice({ tone: "error", text: err.display_message || err.error_message || "Bank connection didn't finish." });
-        },
-      }).open();
-    } catch (e) {
-      setNotice({ tone: "error", text: (e as Error).message });
-    }
-  }
-
-  async function upload(file: File) {
-    const form = new FormData();
-    form.append("file", file);
-    const out = await act<{ added_transactions: number }>("upload", "/api/ingest/statement", { method: "POST", body: form });
-    if (out) setNotice({ tone: "info", text: `Added ${out.added_transactions} transactions from ${file.name}.` });
-  }
-
-  async function openPanel(id: string, kind: "cancel" | "cheaper") {
-    setOpen(id);
-    const data = kind === "cancel"
-      ? await post<CancelPrep>(`row-${id}`, `/api/subscriptions/${id}/cancel-prep`)
-      : await act<Alternatives>(`row-${id}`, `/api/subscriptions/${id}/alternatives`);
-    if (data) setPanel({ id, p: kind === "cancel" ? { kind, data: data as CancelPrep } : { kind, data: data as Alternatives } });
-  }
-
-  async function negotiate(id: string) {
-    setOpen(id);
-    const data = await post<ActionPrep>(`row-${id}`, `/api/subscriptions/${id}/negotiate`);
-    if (data) setPanel({ id, p: { kind: "negotiate", data } });
-  }
-
-  async function prepareFinding(id: string) {
-    setFindOpen(id);
-    const a = await post<ActionPrep>(`find-${id}`, `/api/findings/${id}/prepare`);
-    if (a) setFindPrep({ id, a });
-  }
-
-  async function finishFinding(id: string, gotBack: number) {
-    const out = await post<Finding>(`find-${id}`, `/api/findings/${id}/done`, { got_back: gotBack });
-    if (out) { setFindOpen(null); setNotice({ tone: "info", text: `Nice. ${money(gotBack)} added to what you've recovered.` }); }
-  }
-
-  async function dismissFinding(id: string) {
-    const out = await post<Finding>(`find-${id}`, `/api/findings/${id}/dismiss`);
-    if (out) setFindOpen(null);
-  }
-
-  function pick(id: string) {
-    setOpen(id);
-    requestAnimationFrame(() => document.getElementById(`sub-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
-  }
-
-  const p0 = missing.filter((m) => m.priority === "P0").length;
-  const openFindings = findings.filter((f) => f.status === "open");
-  const closedFindings = findings.length - openFindings.length;
-  const owed = summary?.owed_total ?? openFindings.reduce((t, f) => t + f.amount, 0);
-  const demo = (conns?.mode ?? "demo") === "demo";
-  const save = summary?.potential_monthly_savings ?? 0;
-
   return (
-    <div className={intro ? "intro" : undefined}>
-      <header className="shell">
-        <div className="wrap">
-          <div className="topbar">
-            <div className="brand"><Logo /> <span>ClawBack</span></div>
-            <div className="connect">
-              <ConnectButton name="email" c={conns?.email} detail={conns?.email.account} busy={busy === "email"}
-                onConnect={connectEmail} onDisconnect={() => post("email", "/api/connect/email/disconnect")} />
-              <ConnectButton name="bank" c={conns?.plaid} detail={conns?.plaid.institution} busy={busy === "plaid"}
-                onConnect={connectBank} onDisconnect={() => post("plaid", "/api/connect/plaid/disconnect")} />
-              <label className="btn ghost">
-                Upload a statement
-                <input type="file" accept=".csv" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
-              </label>
-              {!demo && <button className="ghost" disabled={busy === "sync"} onClick={() => post("sync", "/api/sync")}>{busy === "sync" ? "Syncing" : "Sync now"}</button>}
-            </div>
-          </div>
+    <div className="lp">
+      <SiteNav current="home">
+        <Link className="btn solid" href="/dashboard">Open the dashboard</Link>
+      </SiteNav>
 
-          {summary && (
-            <div className="hero">
-              <h1>
-                You pay {money(summary.monthly_total)} a month for {recurringLabel(summary)}.
-                <span className="second">
-                  <HeroSecond save={save} owed={owed} any={summary.subscriptions + (summary.bills ?? 0) > 0} />
-                </span>
-              </h1>
-              <Strip subs={subs} onPick={pick} />
-              <div className="legend">
-                <span><i className="sw mark" /> Could save</span>
-                <span><i className="sw keep" /> Keeping</span>
-                <span className="recovered">
-                  Recovered so far <b className="num">{money(summary.recovered_total)}</b>
-                  <span className="tag missing on-field" title={summary.recovered_note}>{summary.recovered_total > 0 ? "Self-reported" : "Not tracked yet"}</span>
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <div className="proto">
-        <div className="wrap proto-line">
-          <p>
-            <b>Prototype.</b> {missing.length} pieces are missing, {p0} of them needed for the demo.{" "}
-            {demo ? "Everything below is made-up demo data." : "This is your real data, kept in memory on this computer only."}
-          </p>
-          <div className="proto-actions">
-            <button className="quiet" aria-expanded={showMissing} onClick={() => setShowMissing((v) => !v)}>
-              {showMissing ? "Hide what's missing" : "Show what's missing"} <Chevron className={showMissing ? "chev up" : "chev"} />
-            </button>
-            {demo && <button className="quiet" disabled={!!busy} onClick={() => post("sync", "/api/sync")}>Re-run</button>}
-            <button className="quiet" disabled={!!busy} onClick={() => { setPanel(null); setOpen(null); post("seed", "/api/demo/seed"); }}>
-              {demo ? "Reset demo data" : "Switch to demo data"}
-            </button>
-          </div>
-        </div>
-        {showMissing && (
+      <main id="content">
+        <section className="lp-hero">
           <div className="wrap">
+            <h1>Your statements are hiding money. <em>ClawBack finds it.</em></h1>
+            <div className="lp-hero-grid">
+              <div>
+                <p className="lp-lead">
+                  ClawBack reads your bank and email the way a careful friend would. It finds <b>subscriptions you&apos;ve
+                  stopped using</b>, <b>bills that crept up</b>, <b>fees you can get reversed</b>, <b>refunds you&apos;re
+                  owed</b> and <b>settlements you qualify for</b>. Then it writes the email, the script or the claim.
+                  You make the final click.
+                </p>
+                <div className="lp-ctas">
+                  <Link className="btn solid big" href="/dashboard">See it on a demo month</Link>
+                  <a className="btn big" href="#how">How it works</a>
+                </div>
+                <p className="lp-note">A hackathon prototype. The dashboard opens on made-up demo data; no sign-up.</p>
+              </div>
+              <Statement />
+            </div>
+          </div>
+        </section>
+
+        <LiveMonth />
+
+        <section className="lp-sec" id="finds" aria-labelledby="h-finds">
+          <div className="wrap">
+            <div className="lp-sec-head">
+              <h2 id="h-finds">Five places money slips away.</h2>
+              <p>One bank feed and one inbox cover all five. Each find comes with the request that gets the money back.</p>
+            </div>
+            <ol className="ledger">
+              {AREAS.map((a, k) => (
+                <li key={a.name}>
+                  <span className="no">0{k + 1}</span>
+                  <div>
+                    <h3>{a.name}</h3>
+                    <code className="ex">{a.ex}</code>
+                  </div>
+                  <p>{a.finds}</p>
+                  <p className="prep"><b>ClawBack prepares</b>{a.prepares}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section className="lp-sec" id="how" aria-labelledby="h-how">
+          <div className="wrap">
+            <div className="lp-sec-head">
+              <h2 id="h-how">Connect, read, prepare.</h2>
+              <p>Cheap steps run on everything. Models only see what needs judgement, and code checks what they write.</p>
+            </div>
+            <ol className="flow">
+              <li>
+                <h3>Connect</h3>
+                <p>Sign in to your email on your provider&apos;s own page: Gmail, Outlook, Yahoo, iCloud and others. Link your bank through Plaid, or upload a statement.</p>
+                <div className="uses"><span className="tag">Nylas</span><span className="tag">Plaid</span><span className="tag">CSV upload</span></div>
+              </li>
+              <li>
+                <h3>Read</h3>
+                <p>Rules set aside email that can&apos;t matter. Nemotron 3.5 Lightning reads the rest into plain facts. Code finds the recurring charges and does all the date and money arithmetic.</p>
+                <div className="uses"><span className="tag">Rules</span><span className="tag">Nemotron 3.5 Lightning</span><span className="tag">Code</span></div>
+              </li>
+              <li>
+                <h3>Prepare</h3>
+                <p>Each find gets its evidence and the rule behind it. Nemotron 3 Ultra writes the request, Tavily finds the right page, and you read it and send it.</p>
+                <div className="uses"><span className="tag">Nemotron 3 Ultra</span><span className="tag">Tavily</span><span className="tag">You</span></div>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <section className="lp-sec" id="models" aria-labelledby="h-models">
+          <div className="wrap">
+            <div className="lp-sec-head">
+              <h2 id="h-models">Small models read. Big models judge.</h2>
+              <p>NVIDIA Nemotron models on Nebius Token Factory. If one fails, the next takes over, then plain code, so the app keeps working.</p>
+            </div>
             <div className="table-scroll">
-              <table className="missing-table">
-                <thead><tr><th>Priority</th><th>Area</th><th>What&apos;s missing</th><th>Where in the code</th></tr></thead>
+              <table className="models">
+                <thead><tr><th>Model</th><th>Its job</th><th>Runs</th><th>Model ID</th></tr></thead>
                 <tbody>
-                  {[...missing].sort((a, b) => a.priority.localeCompare(b.priority)).map((m) => (
-                    <tr key={m.id}>
-                      <td>{m.priority}</td><td>{m.area}</td>
-                      <td>{m.what}{m.note && <span className="note">{m.note}</span>}</td>
-                      <td><code>{m.where}</code></td>
+                  {MODELS.map((m) => (
+                    <tr key={m.id} className={m.planned ? "planned" : undefined}>
+                      <td>{m.name}</td><td>{m.job}</td><td>{m.when}</td><td><code>{m.id}</code></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            <p className="lp-after">
+              Every call is logged with its model, time, tokens and cost, and the dashboard shows that log. Reading 15
+              emails costs about $0.0005; one &ldquo;find cheaper&rdquo; click about $0.005.
+            </p>
           </div>
-        )}
-      </div>
+        </section>
 
-      <main className="wrap">
-        {notice && (
-          <div className={`notice ${notice.tone}`} role="status">
-            {notice.tone === "missing" && <span className="tag missing">Missing</span>}
-            <p>{notice.tone === "missing" ? notice.text.replace(/^MISSING\s*(\[[^\]]+\])?:?\s*/i, "") : notice.text}</p>
-            <button className="icon" aria-label="Dismiss" onClick={() => setNotice(null)}><Close /></button>
-          </div>
-        )}
-
-        {openFindings.length > 0 && (
-          <section className="group owed" aria-labelledby="h-owed">
-            <div className="group-head">
-              <h2 id="h-owed">Owed to you <span className="count">{openFindings.length}</span></h2>
-              <span className="group-sum num">{money(owed)} to claim</span>
+        <section className="lp-sec" id="trust" aria-labelledby="h-trust">
+          <div className="wrap">
+            <div className="lp-sec-head">
+              <h2 id="h-trust">You make the final click.</h2>
+              <p>Getting money back usually means sending something. ClawBack writes it; you decide whether it goes.</p>
             </div>
-            <div className="sheet">
-              <div className="row-line owed cols" aria-hidden>
-                <span>From</span><span>What ClawBack found</span><span>Deadline</span><span className="num">Amount</span><span />
-              </div>
-              <ol className="rows">
-                {openFindings.map((f) => (
-                  <FindingRow
-                    key={f.id}
-                    f={f}
-                    open={findOpen === f.id}
-                    prep={findPrep?.id === f.id ? findPrep.a : null}
-                    busy={busy === `find-${f.id}`}
-                    onToggle={() => setFindOpen(findOpen === f.id ? null : f.id)}
-                    onPrepare={() => prepareFinding(f.id)}
-                    onClosePrep={() => setFindPrep(null)}
-                    onDone={(v) => finishFinding(f.id, v)}
-                    onDismiss={() => dismissFinding(f.id)}
-                  />
-                ))}
-              </ol>
-            </div>
-            {closedFindings > 0 && <p className="fine-print after">{closedFindings} more marked done or dismissed.</p>}
-          </section>
-        )}
-
-        {GROUPS.map((g) => {
-          const rows = subs
-            .filter((s) => groupOf(s) === g.key)
-            .sort((a, b) => reclaimable(b) - reclaimable(a) || b.monthly_cost - a.monthly_cost);
-          if (!rows.length) return null;
-          const cost = rows.reduce((t, s) => t + s.monthly_cost, 0);
-          return (
-            <section key={g.key} className={`group ${g.key}`} aria-labelledby={`h-${g.key}`}>
-              <div className="group-head">
-                <h2 id={`h-${g.key}`}>{g.title} <span className="count">{rows.length}</span></h2>
-                {rows.length > 0 && <span className="group-sum num">{money(cost)} a month</span>}
-              </div>
-              {(
-                <div className="sheet">
-                  <div className="row-line cols" aria-hidden>
-                    <span>{g.key === "bills" ? "Bill" : g.key === "fine" ? "Subscription or bill" : "Subscription"}</span><span>What ClawBack found</span><span className="num">Costs</span><span className="num">Could save</span><span />
-                  </div>
-                  <ol className="rows">
-                    {rows.map((s) => (
-                      <SubscriptionRow
-                        key={s.id}
-                        s={s}
-                        open={open === s.id}
-                        panel={panel?.id === s.id ? panel.p : null}
-                        busy={busy === `row-${s.id}`}
-                        onToggle={() => setOpen(open === s.id ? null : s.id)}
-                        onCheckin={(used) => post(`row-${s.id}`, `/api/subscriptions/${s.id}/checkin`, { used })}
-                        onKeep={() => { setPanel(null); post(`row-${s.id}`, `/api/subscriptions/${s.id}/keep`); }}
-                        onCancel={() => openPanel(s.id, "cancel")}
-                        onCheaper={() => openPanel(s.id, "cheaper")}
-                        onNegotiate={() => negotiate(s.id)}
-                        onClosePanel={() => setPanel(null)}
-                      />
-                    ))}
-                  </ol>
-                </div>
-              )}
-            </section>
-          );
-        })}
-
-        <details className="trace">
-          <summary>
-            <span>How ClawBack worked this out</span>
-            <span className="trace-meta num">{trace.length} steps, {costLabel(trace)} in model costs</span>
-            <Chevron className="chev" />
-          </summary>
-          <p className="fine-print">Each step records which engine ran it, how long it took and what it cost. Rows marked missing are stand-ins for parts not built yet; fallback rows are where a backup model took over.</p>
-          <div className="table-scroll">
-            <table className="trace-table">
-              <thead><tr><th>Step</th><th>Tier</th><th>Engine</th><th>Result</th><th className="num">Time</th><th className="num">Tokens in, out</th><th className="num">Cost</th><th>Note</th></tr></thead>
-              <tbody>
-                {trace.map((t, i) => (
-                  <tr key={i} className={t.status}>
-                    <td>{t.stage}</td><td>{t.tier || "—"}</td><td><code>{t.engine}</code></td><td>{t.status}</td>
-                    <td className="num">{t.ms.toFixed(1)} ms</td><td className="num">{t.input_tokens}, {t.output_tokens}{t.reasoning_tokens > 0 ? ` (+${t.reasoning_tokens} thinking)` : ""}</td>
-                    <td className="num">${t.cost_usd.toFixed(5)}</td><td>{t.note}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ul className="rules">
+              {RULES.map((r) => (
+                <li key={r.b}><Check /><div><b>{r.b}</b><p>{r.p}</p></div></li>
+              ))}
+            </ul>
           </div>
-        </details>
+        </section>
+
+        <section className="lp-sec" aria-label="Build status">
+          <div className="wrap"><BuildTeaser /></div>
+        </section>
+
+        <section className="lp-end" aria-labelledby="h-end">
+          <div className="wrap">
+            <h2 id="h-end">See what a month looks like <em>with the highlighter on.</em></h2>
+            <div className="lp-ctas">
+              <Link className="btn solid big" href="/dashboard">Open the dashboard</Link>
+            </div>
+          </div>
+        </section>
       </main>
 
-      <footer className="wrap foot">
-        ClawBack never cancels, pays or sends anything on its own. Still missing: login, a database, email drafts and confirmed savings. See STATUS.md.
+      <footer className="site-foot">
+        <div className="wrap">
+          <p>Built for the Nebius x NVIDIA Global AI Hackathon, 2026. NVIDIA Nemotron on Nebius Token Factory, Tavily for search, Nylas for email and Plaid for banks.</p>
+          <p>ClawBack is a prototype and not financial or legal advice.</p>
+        </div>
       </footer>
     </div>
   );
-}
-
-function recurringLabel(s: Summary) {
-  const subs = `${s.subscriptions} subscription${s.subscriptions === 1 ? "" : "s"}`;
-  const bills = s.bills ?? 0;
-  return bills ? `${subs} and ${bills} bill${bills === 1 ? "" : "s"}` : subs;
-}
-
-function HeroSecond({ save, owed, any }: { save: number; owed: number; any: boolean }) {
-  if (save > 0 && owed > 0) return <>You could save <span className="hl">{money(save)}</span> a month and claim <span className="hl">{money(owed)}</span> you&apos;re owed.</>;
-  if (save > 0) return <>You could get back <span className="hl">{money(save)}</span> of it.</>;
-  if (owed > 0) return <>And you&apos;re owed <span className="hl">{money(owed)}</span>.</>;
-  return any ? <>Nothing looks wasted right now.</> : <>Connect your email or bank to find them.</>;
-}
-
-function ConnectButton({ name, c, detail, busy, onConnect, onDisconnect }: {
-  name: string; c?: Connection; detail?: string | null; busy: boolean; onConnect: () => void; onDisconnect: () => void;
-}) {
-  if (c?.connected && c.needs_reconnect) {
-    return (
-      <button className="light" disabled={busy} onClick={onConnect} title={c.error ?? undefined}>
-        Reconnect {name} <span className="tag missing">Expired</span>
-      </button>
-    );
-  }
-  if (c?.connected) {
-    return (
-      <span className="linked" title={c.error ?? undefined}>
-        <Check /> <span>{detail || (name === "bank" ? "Bank" : "Email")} connected</span>
-        <button className="icon" aria-label={`Disconnect ${name}`} title={`Disconnect ${name}`} disabled={busy} onClick={onDisconnect}><Close /></button>
-      </span>
-    );
-  }
-  return (
-    <button className="light" disabled={busy} onClick={onConnect}>
-      {busy ? "Connecting" : `Connect ${name}`}
-      {c && !c.configured && <span className="tag missing">Keys needed</span>}
-      {!c && <span className="tag missing">Not built</span>}
-    </button>
-  );
-}
-
-function costLabel(trace: TraceStep[]) {
-  const total = trace.reduce((t, s) => t + s.cost_usd, 0);
-  return `$${total.toFixed(total < 0.01 ? 4 : 2)}`;
-}
-
-type PlaidLink = { create: (o: Record<string, unknown>) => { open: () => void } };
-
-function loadPlaid(): Promise<PlaidLink> {
-  const w = window as unknown as { Plaid?: PlaidLink };
-  if (w.Plaid) return Promise.resolve(w.Plaid);
-  return new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = PLAID_SCRIPT;
-    s.onload = () => (w.Plaid ? resolve(w.Plaid) : reject(new Error("Plaid Link loaded but didn't start.")));
-    s.onerror = () => reject(new Error("Couldn't load Plaid Link. Check your internet connection."));
-    document.head.appendChild(s);
-  });
 }
