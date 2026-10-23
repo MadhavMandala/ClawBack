@@ -51,7 +51,7 @@ fit this app worse than a VM:
   and a new endpoint gets a **new URL**, which breaks the registered Nylas callback and webhooks.
 - The default container disk is 250 GiB, which raises the cost to about $107 unless it is set smaller.
 
-A VM keeps the same URL, IP address and database for the whole judging window (Dec 1 to Dec 15). The Nebius web
+A VM keeps the same URL, IP address and database all the way to Dec 15. The Nebius web
 console covers every step from Windows. The container files are still in the repo (see [section 12](#12-the-container-route-not-used)).
 
 ## 2. Before you start

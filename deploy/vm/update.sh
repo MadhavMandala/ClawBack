@@ -56,7 +56,7 @@ else
   say "Pulling $BRANCH"
   as_app git -C "$APP_DIR" fetch --prune origin
   # reset rather than merge: nobody edits code on the VM, and history may be rewritten before the repo goes public.
-  as_app git -C "$APP_DIR" checkout -q -B "$BRANCH" "origin/$BRANCH"
+  as_app git -C "$APP_DIR" checkout -q -f -B "$BRANCH" "origin/$BRANCH"
   as_app git -C "$APP_DIR" reset -q --hard "origin/$BRANCH"
   as_app git -C "$APP_DIR" log -1 --format='Now at %h %s (%cr)'
 fi
