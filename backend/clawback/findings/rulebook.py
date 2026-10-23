@@ -109,6 +109,7 @@ def norm_settlement(e: dict) -> dict:
         "match": list(e.get("match") or []),
         "who_qualifies": e.get("who_qualifies") or "",
         "evidence_words": [str(w).upper() for w in e.get("evidence_words") or []],
+        "states": [str(c).upper() for c in e.get("states") or []],
         "class_start": as_date(period.get("start")) if isinstance(period, dict) else None,
         "class_end": as_date(period.get("end")) if isinstance(period, dict) else None,
         "claim_deadline": as_date(e.get("claim_deadline")),

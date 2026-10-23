@@ -67,13 +67,19 @@ def run_findings(user_id: str, u: UserData, rules: Rulebook | None, subs: list[S
 
     settled = _step(
         user_id, "settlements",
-        lambda: settlement_findings(u.transactions, u.emails, rules.settlements_matching, today),
-        lambda r: f"{len(r)} open settlements match your charges or emails ({len(rules.settlements)} verified in the list)")
+        lambda: settlement_findings(u.transactions, u.emails, rules.settlements_matching, today, u.state),
+        lambda r: f"{len(r)} open settlements fit your charges or emails ({_open(rules.settlements, today)} open and "
+                  f"verified in the list" + ("" if u.state else "; state-limited ones need your state") + ")")
 
     found = fees + dups + drops + flights + settled
     for f in found:
         f.status = u.finding_status.get(f.id, "open")
     return found
+
+
+def _open(settlements: list[dict], today: date) -> int:
+    """Settlements still taking claims: rows whose deadline has passed are never counted or shown."""
+    return sum(1 for s in settlements if s["claim_deadline"] is None or s["claim_deadline"] >= today)
 
 
 def _deadline_note(dups: list[Finding]) -> str:
