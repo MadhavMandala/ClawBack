@@ -133,13 +133,25 @@ def update_plaid(user_id: str, conn: PlaidConnection) -> None:
 
 # --- Lookups for webhooks and the nightly job --------------------------------------------------------
 
-def find_user(source: str, external_id: str) -> str | None:
-    """The user whose saved connection has this Nylas grant id (source "email") or Plaid item id ("plaid")."""
+def find_users(source: str, external_id: str) -> list[str]:
+    """Users whose saved connection has this Nylas grant id (source "email") or Plaid item id ("plaid").
+
+    Usually one. Nylas gives the same grant to the same inbox, so one person connecting their inbox in two
+    browsers (two sessions) shares a grant."""
     if not external_id:
-        return None
-    row = db.one("SELECT user_id FROM connections WHERE source = ? AND lookup = ?",
-                 (source, lookup_key(source, external_id)))
-    return row["user_id"] if row else None
+        return []
+    return [r["user_id"] for r in db.query("SELECT user_id FROM connections WHERE source = ? AND lookup = ? "
+                                           "ORDER BY user_id", (source, lookup_key(source, external_id)))]
+
+
+def find_user(source: str, external_id: str) -> str | None:
+    users = find_users(source, external_id)
+    return users[0] if users else None
+
+
+def shared(source: str, external_id: str, user_id: str) -> bool:
+    """True when another user still uses this grant or item, so it must not be deleted at the provider."""
+    return any(u != user_id for u in find_users(source, external_id))
 
 
 def users_with_connections() -> list[str]:

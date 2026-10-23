@@ -197,7 +197,9 @@ def delete(user_id: str) -> dict:
     """DELETE /api/me: end the connections at Nylas and Plaid (best effort), then delete every row for this user."""
     c, u = connections.get(user_id), store.user(user_id)
     removed: dict = {}
-    if c.email:
+    if c.email and connections.shared("email", c.email.grant_id, user_id):
+        removed["email_connection"] = "forgotten here; kept at Nylas because another session uses the same inbox"
+    elif c.email:
         ok = config.settings.email_configured() and nylas.delete_grant(user_id, c.email.grant_id)
         removed["email_connection"] = ("deleted at Nylas" if ok else
                                        "forgotten here; Nylas didn't confirm deleting the grant")
