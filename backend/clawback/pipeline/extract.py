@@ -4,9 +4,10 @@ With NEBIUS_API_KEY set, Nemotron 3.5 Lightning does the extraction. Without it,
 the demo emails only. Models never do date math: they report what the email says ("ends in 3 days"), and
 code turns that into a date.
 
-MISSING [prompt-injection]: email text is wrapped in tags and the model is told to ignore instructions inside
-it, but there is no real injection screen yet.
-MISSING [pdf-receipts]: attachments are ignored.
+Email text is untrusted. The prompt-injection screen (guard.py) reads it first: a flagged email is read by the
+rules only, never by a model. The email is wrapped in tags and the model is told to ignore instructions inside it.
+Every amount the model reports must be written in the email (grounded.py), or it is dropped.
+Receipts sent as PDF or image attachments are read for purchases (receipts.py), not here.
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ from ..merchants import find_in_text, match_sender
 from ..models import Email, Fact
 from ..store import store
 from ..trace import record
+from . import grounded, guard
 
 __all__ = ["Fact", "extract_all"]
 
@@ -89,18 +91,23 @@ def _extract_rules(email: Email) -> Fact:
     return fact
 
 
+class Screened(Exception):
+    """The prompt-injection screen flagged the email: the rules read it instead of a model."""
+
+
 def _extract_llm(user_id: str, email: Email) -> Fact | None:
-    """Lightning (Nano as backup) reads the email. None when every model failed."""
+    """Lightning (Nano as backup) reads the email. None when every model failed. Raises Screened when the
+    prompt-injection screen flags the email."""
+    text = guard.email_text(email)
+    if guard.check_email(user_id, "extract", email, text).flagged:
+        raise Screened(email.id)
     data, _ = llm.chat_json(
         user_id,
         "extract",
         "fast",
         [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": f"<email>\nFrom: {email.sender}\nSubject: {email.subject}\n\n{email.body_text[:6000]}\n</email>",
-            },
+            {"role": "user", "content": guard.wrap(text)},
         ],
         FACT_SCHEMA,
     )
@@ -113,10 +120,11 @@ def _extract_llm(user_id: str, email: Email) -> Fact | None:
         received=received,
         kind=kind,
         merchant=_known_merchant(data.get("merchant"), kind, email),
-        amount=_num(data.get("amount")),
-        saved_amount=_num(data.get("saved_amount")),
-        old_price=_num(data.get("old_price")),
-        new_price=_num(data.get("new_price")),
+        # An amount counts only if the email writes it, so the model can't invent or change one.
+        amount=_grounded(data.get("amount"), text),
+        saved_amount=_grounded(data.get("saved_amount"), text),
+        old_price=_grounded(data.get("old_price"), text),
+        new_price=_grounded(data.get("new_price"), text),
     )
     days = data.get("trial_days_left")
     if isinstance(days, int) and not isinstance(days, bool) and 0 <= days <= 365:
@@ -150,11 +158,9 @@ def _known_merchant(model_name, kind: str, email: Email) -> str | None:
     return _plain_name(name)
 
 
-def _num(v) -> float | None:
-    try:
-        return float(v) if v is not None else None
-    except (TypeError, ValueError):
-        return None
+def _grounded(v, text: str) -> float | None:
+    """A model's number, kept only if the email text writes it. A string such as "$12.99" is not a number."""
+    return grounded.amount_ok(v, text)
 
 
 def extract_all(user_id: str, emails: list[Email]) -> list[Fact]:
@@ -175,13 +181,14 @@ def extract_all(user_id: str, emails: list[Email]) -> list[Fact]:
     fallbacks: dict[str, Fact] = {}
     todo = [e for e in emails if e.id not in cache]
     start = time.perf_counter()
-    fell_back = 0
+    fell_back = screened = 0
     if todo:
         with ThreadPoolExecutor(max_workers=8) as pool:
             results = list(pool.map(lambda e: _safe_extract(user_id, e), todo))
         for email, fact in zip(todo, results):
-            if fact is None:
-                # Not cached: the email goes to the model again on the next run.
+            if fact is None or fact is SCREENED:
+                # Not cached: the email goes through the screen (and maybe a model) again on the next run.
+                screened += fact is SCREENED
                 fact, fell_back = _extract_rules(email), fell_back + 1
                 fallbacks[email.id] = fact
             else:
@@ -194,15 +201,21 @@ def extract_all(user_id: str, emails: list[Email]) -> list[Fact]:
         tier="fast",
         ms=(time.perf_counter() - start) * 1000,
         note=f"{len(emails)} emails: {len(todo) - fell_back} sent to Lightning, "
-        f"{len(emails) - len(todo)} cached, {fell_back} used rules",
+        f"{len(emails) - len(todo)} cached, {fell_back} used rules"
+        + (f" ({screened} flagged by the prompt-injection screen)" if screened else ""),
     )
     return [cache.get(e.id) or fallbacks[e.id] for e in emails]
 
 
-def _safe_extract(user_id: str, email: Email) -> Fact | None:
+SCREENED = object()  # what _safe_extract returns for an email the prompt-injection screen flagged
+
+
+def _safe_extract(user_id: str, email: Email):
     """One odd email must not fail the whole run: any error means the rules handle it."""
     try:
         return _extract_llm(user_id, email)
+    except Screened:
+        return SCREENED
     except Exception as exc:
         record(user_id, "extract", "tiers:fast", status="error", tier="fast", note=f"{email.id}: {str(exc)[:200]}")
         return None

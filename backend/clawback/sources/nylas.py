@@ -38,7 +38,8 @@ import httpx
 from .. import config
 from ..connections import EmailConnection, now
 from ..missing import Missing, missing
-from ..models import Email
+from ..models import Attachment, Email
+from ..pipeline import guard
 from ..pipeline.triage import is_candidate
 from ..trace import timed
 from . import net, text
@@ -235,7 +236,10 @@ def to_email(m: dict, provider: str | None) -> Email | None:
         received = datetime.fromtimestamp(int(m["date"]), tz=timezone.utc)  # unix seconds
     except (KeyError, TypeError, ValueError, OverflowError, OSError):
         received = now()
-    body = text.to_text(str(m.get("body") or "")) or text.tidy(unescape(str(m.get("snippet") or "")))
+    visible, hidden = text.to_parts(str(m.get("body") or ""))
+    body = visible or text.tidy(unescape(str(m.get("snippet") or "")))
+    # Hidden HTML stays out of the body. If it carries instructions, the prompt-injection screen is told (labels only).
+    strong = guard.signals(hidden)[0] if hidden else []
     return Email(
         id=str(m["id"]),
         received_at=received,
@@ -243,7 +247,68 @@ def to_email(m: dict, provider: str | None) -> Email | None:
         subject=str(m.get("subject") or "").strip(),
         body_text=body[:BODY_LIMIT],
         source=provider if provider in SOURCES else "email",
+        attachments=_attachments(m),
+        screen=[f"hidden-text:{s}" for s in strong],
     )
+
+
+def _attachments(m: dict) -> list[Attachment]:
+    """Attachment metadata from a message ({id, filename, content_type, size, is_inline}). No file contents."""
+    out: list[Attachment] = []
+    for a in m.get("attachments") or []:
+        if not isinstance(a, dict) or not a.get("id"):
+            continue
+        try:
+            size = int(a.get("size") or 0)
+        except (TypeError, ValueError):
+            size = 0
+        out.append(Attachment(id=str(a["id"]), filename=str(a.get("filename") or "")[:200],
+                              content_type=str(a.get("content_type") or "").split(";")[0].strip().lower()[:100],
+                              size=size, inline=bool(a.get("is_inline"))))
+    return out
+
+
+# --- Attachments ------------------------------------------------------------------------------------
+
+ATTACHMENT_LIMIT = 5 * 1024 * 1024  # bytes; receipts are small, and anything bigger isn't read
+
+
+def download_attachment(user_id: str, conn: EmailConnection, message_id: str, attachment_id: str,
+                        limit: int = ATTACHMENT_LIMIT) -> bytes | None:
+    """One attachment's bytes, in memory only (never written to disk or the trace). None when it is too big or the
+    download fails. GET /v3/grants/{grant_id}/attachments/{attachment_id}/download?message_id=... answers with the
+    raw file (application/octet-stream). Checked against developer.nylas.com on 2026-10-23."""
+    require_config()
+    if conn.needs_reconnect:
+        return None
+    s = config.settings
+    path = f"/v3/grants/{quote(conn.grant_id, safe='')}/attachments/{quote(attachment_id, safe='')}/download"
+    with net.client() as c, timed(user_id, "email: attachment", ENGINE) as info:
+        for attempt in range(3):
+            chunks: list[bytes] = []
+            total = 0
+            try:
+                with c.stream("GET", s.nylas_api_uri + path, params={"message_id": message_id},
+                              headers={"Authorization": f"Bearer {s.nylas_api_key}"}) as r:
+                    if r.status_code in (429, 502, 503, 504) and attempt < 2:
+                        _sleep(_backoff(r, attempt))
+                        continue
+                    if not r.is_success:
+                        info["note"] = f"attachment download answered HTTP {r.status_code}"
+                        return None
+                    for chunk in r.iter_bytes():
+                        total += len(chunk)
+                        if total > limit:
+                            info["note"] = f"attachment skipped: over {limit // (1024 * 1024)} MB"
+                            return None
+                        chunks.append(chunk)
+            except httpx.HTTPError:
+                info["note"] = "attachment download failed: couldn't reach Nylas"
+                return None
+            info["note"] = f"attachment downloaded ({total:,} bytes, kept in memory only)"
+            return b"".join(chunks)
+        info["note"] = "attachment download rate limited"
+        return None
 
 
 # --- HTTP -------------------------------------------------------------------------------------------
