@@ -37,7 +37,7 @@ TIERS: dict[str, Tier] = {
     "fast_fallback": Tier("nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B", None, False, 300, 20),
     "mid": Tier("nvidia/nemotron-3-super-120b-a12b", None, True, 2000, 60),  # read plan / pricing pages
     "reason": Tier("nvidia/Nemotron-3-Ultra-550b-a55b", None, True, 2000, 90),  # fit to usage, email wording
-    "vision": Tier("nvidia/Nemotron-3.5-Super-VL", None, True, 1024, 60),  # receipts as images (MISSING [pdf-receipts])
+    "vision": Tier("nvidia/Nemotron-3.5-Super-VL", None, True, 1024, 60),  # receipt images and scanned PDFs (findings/receipts.py)
 }
 
 MODELS = {role: tier.model for role, tier in TIERS.items()}

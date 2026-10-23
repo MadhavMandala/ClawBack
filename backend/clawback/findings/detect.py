@@ -6,7 +6,9 @@ import time
 from datetime import date
 
 from .. import connections, llm
+from ..config import settings
 from ..models import Finding, Subscription, Transaction
+from ..sources import nylas
 from ..store import UserData
 from ..tools import prices
 from ..trace import record
@@ -22,6 +24,33 @@ def _step(user_id: str, stage: str, fn, note_fn, engine: str = "code", status: s
     result = fn()
     record(user_id, stage, engine, status=status, ms=(time.perf_counter() - start) * 1000, note=note_fn(result)[:400])
     return result
+
+
+def _how_note(purchases: list[Purchase]) -> str:
+    """' (3 by Lightning, 1 from PDF attachments)', or '' when the rules read everything."""
+    counts: dict[str, int] = {}
+    for p in purchases:
+        counts[p.how] = counts.get(p.how, 0) + 1
+    if not counts or set(counts) == {"rules"}:
+        return ""
+    labels = {"model": "by Lightning", "rules": "by rules", "pdf": "from PDF attachments", "vision": "from receipt images"}
+    return f" ({', '.join(f'{n} {labels.get(h, h)}' for h, n in counts.items())})"
+
+
+def _attachment_fetch(user_id: str, u: UserData):
+    """Downloads receipt attachments from the connected inbox (Nylas). None in demo mode or without an inbox."""
+    if u.mode != "real" or not settings.email_configured():
+        return None
+    conn = connections.get(user_id).email
+    if conn is None or conn.needs_reconnect:
+        return None
+
+    def fetch(email, att):
+        if email.source not in nylas.SOURCES:
+            return None  # only mail that came from this connection
+        return nylas.download_attachment(user_id, conn, email.id, att.id)
+
+    return fetch
 
 
 def _bank_name(user_id: str, u: UserData) -> str:
@@ -45,9 +74,10 @@ def run_findings(user_id: str, u: UserData, rules: Rulebook | None, subs: list[S
         lambda r: f"{len(r[0])} bank fees found ({', '.join(sorted({f.title.split(':')[0] for f in r[0]})) or 'none'})")
 
     purchases = _step(
-        user_id, "extract purchases", lambda: extract_purchases(user_id, u.emails, rules.retailer_for),
-        lambda r: f"{len(r)} purchases read from receipt emails"
-                  + ("" if llm.available() else " (regex rules. MISSING [purchase-extraction]: NEBIUS_API_KEY for Nemotron)"),
+        user_id, "extract purchases",
+        lambda: extract_purchases(user_id, u.emails, rules.retailer_for, _attachment_fetch(user_id, u)),
+        lambda r: f"{len(r)} purchases read from receipt emails" + _how_note(r)
+                  + ("" if llm.available() else " (regex rules. MISSING: NEBIUS_API_KEY for Nemotron 3.5 Lightning)"),
         engine="code" if llm.available() else "rules", status="ok" if llm.available() else "missing")
 
     dups = _step(
@@ -85,7 +115,7 @@ def _price_step(user_id: str, u: UserData, rules: Rulebook, purchases: list[Purc
             return PriceCheck(price=price, how="simulated") if price is not None else None
         if not adjusts or not live:
             return None  # don't spend search credits on stores that won't adjust
-        return prices.live_price(user_id, p.store, item.name, prices.store_domain(p.retailer))
+        return prices.live_price(user_id, p.store, item.name, prices.store_domain(p.retailer), paid=item.price)
 
     notes: list[str] = []
     start = time.perf_counter()
@@ -97,7 +127,7 @@ def _price_step(user_id: str, u: UserData, rules: Rulebook, purchases: list[Purc
         how = "live price check (Tavily + Nemotron)"
         status = "ok"
     else:
-        how = "MISSING [live-price-check]: no TAVILY_API_KEY / NEBIUS_API_KEY, so prices weren't checked"
+        how = "MISSING: no TAVILY_API_KEY / NEBIUS_API_KEY, so prices weren't checked (live-price-check)"
         status = "missing"
     record(user_id, "price drops", "code", status=status, ms=(time.perf_counter() - start) * 1000,
            note=(f"{len(drops)} price drops; {how}" + (f"; {'; '.join(notes)}" if notes else ""))[:400])
