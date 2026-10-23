@@ -9,7 +9,7 @@ import pytest
 from clawback import demo_data, llm
 from clawback.config import settings
 from clawback.pipeline.extract import _extract_rules, extract_all
-from clawback.pipeline.triage import triage
+from clawback.pipeline.triage import is_candidate
 from clawback.store import store
 
 pytestmark = pytest.mark.skipif(os.environ.get("CLAWBACK_LIVE") != "1", reason="live: set CLAWBACK_LIVE=1")
@@ -27,7 +27,8 @@ def live(monkeypatch):
 
 def test_lightning_matches_rules_on_demo_emails(live):
     store.reset("live")
-    emails = triage("live", demo_data.emails(TODAY))
+    # The rules' candidates only: this compares extraction, and the triage model may add emails the rules never read.
+    emails = [e for e in demo_data.emails(TODAY) if is_candidate(e)]
     facts = extract_all("live", emails)
     problems = []
     for email, fact in zip(emails, facts):
