@@ -30,11 +30,12 @@ def load(data_dir: Path = DATA_DIR) -> list[dict]:
 
 
 def fingerprint(data_dir: Path = DATA_DIR) -> str:
-    """sha256 over the data files, so a result can say exactly which data it was measured on."""
+    """sha256 over the data files, so a result can say exactly which data it was measured on. Line endings are
+    normalised, so a Windows checkout (CRLF) gives the same fingerprint."""
     h = hashlib.sha256()
     for p in files(data_dir):
         h.update(p.name.encode())
-        h.update(p.read_bytes())
+        h.update(p.read_bytes().replace(b"\r\n", b"\n"))
     return h.hexdigest()[:16]
 
 

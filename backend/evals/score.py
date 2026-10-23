@@ -270,10 +270,14 @@ def score_person(person: dict, out: dict, ablation: dict | None = None) -> dict:
                 continue
             row = next(r for r in email_rows if r["email"] == c["email"])
             fact_clean = collapse(row["predicted"]) == "none"
-            flags_now = {s["merchant"]: sorted(f["kind"] for f in s["flags"]) for s in preds}
+
+            def flag_map(subs: list[dict]) -> dict[str, list[str]]:
+                # Keyed by name and amount: two subscriptions can share a merchant name.
+                return {f"{s['merchant']} (${s['amount'] or 0:.2f})": sorted(f["kind"] for f in s["flags"])
+                        for s in subs}
+            flags_now = flag_map(preds)
             without = (ablation or {}).get(c["email"])
-            flags_without = ({s["merchant"]: sorted(f["kind"] for f in s["flags"]) for s in without}
-                             if without is not None else None)
+            flags_without = flag_map(without) if without is not None else None
             changed = None if flags_without is None else sorted(
                 m for m in set(flags_now) | set(flags_without) if flags_now.get(m) != flags_without.get(m))
             injection = {"email": c["email"], "predicted_kind": row["predicted"],
