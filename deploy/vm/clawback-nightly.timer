@@ -1,0 +1,13 @@
+# Runs the ClawBack nightly job at 3:00 AM Pacific time, every day.
+# Persistent=true runs a missed job after the VM was off at 3:00.
+
+[Unit]
+Description=ClawBack nightly job at 3:00 AM Pacific
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 America/Los_Angeles
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

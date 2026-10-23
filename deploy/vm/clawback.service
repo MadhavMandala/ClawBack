@@ -1,0 +1,31 @@
+# ClawBack API: FastAPI under uvicorn on 127.0.0.1:8000. Caddy is the only way in from outside.
+# Installed by deploy/vm/setup.sh. Settings come from /etc/clawback/clawback.env, never from backend/.env.
+
+[Unit]
+Description=ClawBack API
+After=network-online.target
+Wants=network-online.target
+RequiresMountsFor=/var/lib/clawback
+
+[Service]
+Type=simple
+User=clawback
+Group=clawback
+WorkingDirectory=/opt/clawback/app/backend
+Environment=CLAWBACK_DOTENV=0
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+EnvironmentFile=/etc/clawback/clawback.env
+# One worker: sign-in state is kept in memory, so every request must reach the same process.
+ExecStart=/opt/clawback/venv/bin/python -m uvicorn clawback.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=on-failure
+RestartSec=3
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/clawback
+
+[Install]
+WantedBy=multi-user.target
