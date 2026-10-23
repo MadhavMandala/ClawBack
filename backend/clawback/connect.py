@@ -58,7 +58,7 @@ def _iso(d) -> str | None:
 # --- Email (Nylas) ----------------------------------------------------------------------------------
 
 def finish_email(state: str | None, code: str | None, error: str | None, error_description: str | None = None) -> str:
-    """Handle the redirect back from Nylas. Returns where to send the browser: the app, with a short result."""
+    """Handle the redirect back from Nylas. Returns where to send the browser: the dashboard, with a short result."""
     origin = config.settings.frontend_origin.rstrip("/")
     user_id = None
     try:
@@ -79,7 +79,7 @@ def finish_email(state: str | None, code: str | None, error: str | None, error_d
         if was_demo:
             _pull_others(user_id, "email")
         run(user_id)
-        return f"{origin}/?connected=email"
+        return f"{origin}/dashboard?connected=email"
     except SourceError as exc:
         message = exc.safe_message
     except Missing as exc:
@@ -91,7 +91,7 @@ def finish_email(state: str | None, code: str | None, error: str | None, error_d
         message = "Email connect failed unexpectedly. The trace has details."
     if user_id and store.user(user_id).mode == "real":
         _rerun_quietly(user_id)  # show the error rows and whatever data there is
-    return f"{origin}/?{urlencode({'connect_error': message[:200]})}"
+    return f"{origin}/dashboard?{urlencode({'connect_error': message[:200]})}"
 
 
 def _pull_email(user_id: str) -> int:

@@ -356,6 +356,7 @@ statements are kept. `POST /api/demo/seed` switches back to demo; saved connecti
 |---|---|---|---|
 | GET | /api/health | Connected services + model roles | [built] |
 | GET | /api/missing | Everything not built | [built] |
+| GET | /api/features | Every planned feature and its phase, for the build-status board | [built] |
 | GET | /api/summary | Subscriptions and bills (counts, totals), monthly total, potential savings, flagged, owed (open findings, USD), recovered (self-reported) | [built] |
 | GET | /api/subscriptions | Subscriptions sorted by savings | [built] |
 | POST | /api/subscriptions/{id}/checkin `{used}` | Record a check-in, re-run | [built] |
@@ -382,12 +383,12 @@ statements are kept. `POST /api/demo/seed` switches back to demo; saved connecti
 
 ## 11. Frontend (Next.js)
 
-One page today [built]:
-- a header with connect buttons (showing "missing") and a statement upload;
-- the MISSING banner;
-- totals;
-- subscription cards with flags, evidence, Yes/No check-in, Keep, Find cheaper and Prepare cancel;
-- the model trace.
+Two pages today [built] (design rules in `docs/DESIGN.md`):
+- `/`, the front page: what ClawBack does, shown on one demo month of statement lines, the five areas, how it works,
+  which model does what, the trust rules, and a pointer to the build status;
+- `/dashboard`: connect buttons and a statement upload; one sentence about the month and the spend bar; money owed
+  to you; subscriptions and bills grouped by what to do, with evidence, Yes/No check-in, Keep, Find cheaper,
+  Prepare cancel and Negotiate; the build status of every planned feature (`GET /api/features`); the model trace.
 
 [MISSING]:
 - login, plus a demo login for judges;

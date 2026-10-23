@@ -46,7 +46,8 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. The backend seeds a demo user on start-up. "Reset demo data" reloads it.
+Open http://localhost:3000 for the front page and http://localhost:3000/dashboard for the app. The backend seeds a
+demo user on start-up. "Reset demo data" reloads it.
 
 ### Connect real email and a bank (optional)
 
@@ -127,7 +128,7 @@ backend/clawback/
   tools/             tavily.py (web search), prices.py (current-price checks)
   missing.py         the list of everything not built yet
   demo_data.py       the fake user
-frontend/app/        one-page dashboard
+frontend/app/        front page (page.tsx) and dashboard (dashboard/page.tsx)
 docs/ARCHITECTURE.md full design
 docs/DESIGN.md       visual design rules
 STATUS.md            what works / what's MISSING

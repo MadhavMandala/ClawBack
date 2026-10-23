@@ -10,6 +10,7 @@ import { money, reclaimable } from "../format";
 const GAP = 2; // px of field showing between slices
 const LABEL_PX_PER_CHAR = 7.4; // rough width of a 12.5px label character
 const LABEL_PAD = 14;
+const LABEL_LEFT = 9; // px from the slice's left edge
 
 type Slice = { s: Subscription; mark: number; keep: number };
 
@@ -42,6 +43,7 @@ export default function Strip({ subs, onPick }: { subs: Subscription[]; onPick: 
         {slices.map(({ s, mark, keep }, i) => {
           const w = (s.monthly_cost / total) * usable;
           const fits = w >= s.merchant.length * LABEL_PX_PER_CHAR + LABEL_PAD;
+          const markPx = (mark / s.monthly_cost) * w; // where the yellow ends, so the label can change colour there
           const label = `${s.merchant}, ${money(s.monthly_cost)} a month` + (mark > 0 ? `, could get back ${money(mark)}` : "");
           return (
             <li key={s.id} style={{ flexGrow: s.monthly_cost }}>
@@ -54,9 +56,16 @@ export default function Strip({ subs, onPick }: { subs: Subscription[]; onPick: 
                 onFocus={(e) => setHover({ id: s.id, x: sliceCenter(e.currentTarget, ref.current) })}
                 onBlur={() => setHover(null)}
               >
-                {mark > 0 && <span className="part mark" style={{ flexGrow: mark, ["--i" as string]: i }} />}
-                {keep > 0.005 && <span className="part keep" style={{ flexGrow: keep }} />}
-                {fits && <span className="slice-label">{s.merchant}</span>}
+                {mark > 0 && (
+                  <span className="part mark" style={{ flexGrow: mark, ["--i" as string]: i }}>
+                    {fits && <span className="slice-label" style={{ left: LABEL_LEFT }}>{s.merchant}</span>}
+                  </span>
+                )}
+                {keep > 0.005 && (
+                  <span className="part keep" style={{ flexGrow: keep }}>
+                    {fits && <span className="slice-label" style={{ left: LABEL_LEFT - (mark > 0 ? markPx : 0) }} aria-hidden>{s.merchant}</span>}
+                  </span>
+                )}
               </button>
             </li>
           );

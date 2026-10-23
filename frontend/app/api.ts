@@ -114,6 +114,22 @@ export type Connection = {
 
 export type Connections = { mode: "demo" | "real"; email: Connection; plaid: Connection };
 
+// GET /api/features: every planned feature and how far along it is (backend/clawback/features.py).
+export type PhaseId = "planned" | "started" | "built" | "live";
+export type Phase = { id: PhaseId; label: string; description: string };
+export type Feature = {
+  id: string;
+  area: string;
+  name: string;
+  phase: PhaseId;
+  summary: string;
+  next: string | null;
+  where: string;
+  missing_id: string | null;
+  priority: "P0" | "P1" | "P2" | null;
+};
+export type Features = { phases: Phase[]; areas: string[]; features: Feature[]; counts: Record<PhaseId, number>; updated: string };
+
 export async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, { cache: "no-store", ...init });
   const body = await res.json().catch(() => ({}));

@@ -10,6 +10,9 @@ With a Token Factory key set, the Nemotron model tiers make live calls; all five
 2026-10-22 (`python -m clawback.llm --check`). The findings' own model calls (purchases, flight details, price
 checks) haven't been run live yet.
 
+The dashboard's build-status board lists every planned feature and its phase (planned, started, built, live-tested),
+from `backend/clawback/features.py` (served at `GET /api/features`).
+
 Every gap is marked with the word `MISSING`:
 - in the code (`grep -rn MISSING backend frontend/app`),
 - in the API (unbuilt routes answer HTTP 501 with a `MISSING [...]` message instead of pretending to work),
@@ -48,8 +51,9 @@ The list below is generated from `backend/clawback/missing.py`, the single sourc
 | Disconnect | Forgets the connection, deletes the Nylas grant / removes the Plaid Item (best effort), drops that source's data from memory | `connect.py` |
 | Model trace | Every step, including each Nylas / Plaid call, logs its tier, engine, time, tokens (incl. thinking) and cost. Sync rows and click-time rows survive re-runs. Shown on the dashboard | `trace.py` |
 | Token Factory client | Five model tiers, verified live; strict JSON, fallbacks, retries, timeouts; `python -m clawback.llm --check` | `llm.py` |
-| Dashboard | One page: monthly total and what you could get back, money owed to you, subscriptions and bills in groups, check-ins, cancel / cheaper / negotiate panels, connect buttons, trace, MISSING banner | `frontend/app/page.tsx` |
-| Tests | 193 offline backend tests (no network; a fake model client): the demo data, every findings detector (with the negative cases), the findings API, email (Nylas) and Plaid against fake APIs, model tiers and fallbacks, extraction, "find cheaper" and the cancel email. `tests/test_rules.py` checks the rules data. Plus an opt-in live extraction test (`CLAWBACK_LIVE=1`) | `backend/tests/` |
+| Front page | Explains ClawBack through one demo month of statement lines with margin notes; the demo's numbers and the build status come live from the backend | `frontend/app/page.tsx` |
+| Dashboard | Monthly total and what you could get back, money owed to you, subscriptions and bills in groups, check-ins, cancel / cheaper / negotiate panels, connect buttons, the build status of every feature, and the trace | `frontend/app/dashboard/page.tsx` |
+| Tests | 199 offline backend tests (no network; a fake model client): the demo data, every findings detector (with the negative cases), the findings API, email (Nylas) and Plaid against fake APIs, model tiers and fallbacks, extraction, "find cheaper" and the cancel email. `tests/test_rules.py` checks the rules data. Plus an opt-in live extraction test (`CLAWBACK_LIVE=1`) | `backend/tests/` |
 
 ## MISSING
 
