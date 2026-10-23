@@ -95,8 +95,8 @@ def run(user_id: str, today: date | None = None) -> dict:
             if s.kind == "bill":
                 rule = bill_rules.get(s.merchant, {})
                 amounts = [t.amount for t in series.get(s.id, [])]
-                s.flags = cancel_flags(s) + ([] if s.status == "cancelled" else
-                                             bill_flags(s, amounts, rule, [p for p in promos if p.provider == s.merchant], today))
+                mine = [p for p in promos if p.provider == s.merchant]
+                s.flags = cancel_flags(s) + ([] if s.status == "cancelled" else bill_flags(s, amounts, rule, mine, today))
                 u.bill_info[s.id] = {"rule": rule, "amounts": amounts}
                 continue
             s.usage = summarize(signals_for(s, facts, checkins, today, trust), checkins, today)
