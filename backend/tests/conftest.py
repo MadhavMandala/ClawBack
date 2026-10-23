@@ -36,6 +36,7 @@ def isolated(monkeypatch, tmp_path):
     monkeypatch.setattr(s, "plaid_env", "sandbox")
     monkeypatch.setattr(s, "frontend_origin", "http://localhost:3000")
     monkeypatch.setattr(s, "connections_path", tmp_path / "connections.json")
+    monkeypatch.setattr(s, "cancel_cache_path", tmp_path / "cancel_pages.json")
     monkeypatch.setattr(net, "transport", httpx.MockTransport(_no_network))
     monkeypatch.setattr(nylas, "_sleep", lambda seconds: None)
     nylas._states.clear()

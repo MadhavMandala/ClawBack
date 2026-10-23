@@ -469,6 +469,66 @@ def settlements_matching(text: str, today: date | None = None, include_unverifie
     return [s for n, s in sorted(hits, key=lambda h: -h[0]) if n]
 
 
+# ---------------------------------------------------------------- merchant_sites.json
+
+# Hosts and paths where anyone can post, so a page there is never the merchant's own word.
+_USER_CONTENT_HOSTS = ("community.", "communities.", "forum.", "forums.", "discussions.", "groups.", "sites.",
+                       "docs.", "answers.", "discuss.")
+_USER_CONTENT_PATHS = ("/thread/", "/threads/", "/community/", "/forum", "/discussion", "/questions/")
+
+
+def on_domains(url: str, domains: tuple[str, ...] | list[str]) -> bool:
+    """True when `url` is https, its host is one of `domains` or a subdomain of one, and it isn't a place for
+    user-written posts (community., forum., /thread/ ...). Look-alikes such as netflix-cancel.com or
+    netflix.com.example.io, and user@host tricks, are False."""
+    from urllib.parse import urlsplit
+
+    try:
+        parts = urlsplit((url or "").strip())
+        host = (parts.hostname or "").rstrip(".").lower()
+    except ValueError:
+        return False
+    if parts.scheme != "https" or not host or parts.username or parts.password:
+        return False
+    if not any(host == d.lower() or host.endswith("." + d.lower()) for d in domains if d):
+        return False
+    if any(host.startswith(p) for p in _USER_CONTENT_HOSTS):
+        return False
+    path = parts.path.lower()
+    return not any(p in path for p in _USER_CONTENT_PATHS)
+
+
+class MerchantSite(_Model):
+    merchant: str
+    aliases: tuple[str, ...] = ()
+    domains: tuple[str, ...] = Field(min_length=1)  # lowercase registrable domains, e.g. "netflix.com"
+    help_url: HttpsUrl
+    checked_on: date
+
+    def owns(self, url: str) -> bool:
+        return on_domains(url, self.domains)
+
+
+class MerchantSitesFile(_Model):
+    note: str
+    checked_on: date
+    merchants: tuple[MerchantSite, ...]
+
+
+@lru_cache
+def merchant_sites() -> MerchantSitesFile:
+    return MerchantSitesFile.model_validate(_load("merchant_sites.json"))
+
+
+def merchant_site(name: str) -> MerchantSite | None:
+    """The merchant's own domains, by its name or an alias (case-insensitive), e.g. "Netflix"."""
+    key = (name or "").strip().lower()
+    for m in merchant_sites().merchants:
+        if key == m.merchant.lower() or key in (a.lower() for a in m.aliases):
+            return m
+    return None
+
+
 # ---------------------------------------------------------------- loading
 
 
@@ -479,11 +539,12 @@ def _load(name: str) -> dict:
 
 def clear_cache() -> None:
     """Drop cached files (e.g. after editing the JSON in a running process)."""
-    for fn in (retailers, flights, disputes, bank_fees, bills, settlements):
+    for fn in (retailers, flights, disputes, bank_fees, bills, settlements, merchant_sites):
         fn.cache_clear()
 
 
 __all__ = [
+    "MerchantSite", "merchant_site", "merchant_sites", "on_domains",
     "Airline", "BankFee", "BillProvider", "DisputeRule", "Retailer", "Settlement",
     "airline_for", "bank_fee_for", "bank_fees", "bill_provider_for", "bills", "clear_cache",
     "delay_compensation", "dispute_deadline", "dispute_rule", "disputes", "fee_kind_for", "flights",
