@@ -127,6 +127,17 @@ def user_of(headers: dict[str, str]) -> str:
     return sessions.resolve(headers[sessions.HEADER])
 
 
+def connect_both(c: TestClient, headers: dict[str, str]) -> None:
+    """Connect the fake bank and the fake inbox for this session (needs the `fake` fixture)."""
+    from urllib.parse import parse_qs, urlparse
+
+    c.post("/api/connect/plaid/exchange", headers=headers, json={"public_token": "p", "institution": "First Platypus Bank"})
+    url = c.get("/api/connect/email", headers=headers).json()["auth_url"]
+    state = parse_qs(urlparse(url).query)["state"][0]
+    r = c.get("/api/connect/email/callback", params={"code": "good-code", "state": state}, follow_redirects=False)
+    assert r.headers["location"].endswith("?connected=email"), r.headers["location"]
+
+
 # --- Fake Nylas --------------------------------------------------------------------------------------
 
 def nylas_message(msg_id: str, sender: str, subject: str, body: str | None, days_ago: float = 1,
@@ -164,6 +175,7 @@ class FakeNylas:
         self.messages_status = 200  # e.g. 401 for an expired grant
         self.reject_search = False  # 400 for search_query_native
         self.rate_limit_once = False
+        self.grant_status = "valid"  # what GET /v3/grants/{id} says; "gone" answers 404
         self.calls: list[tuple[str, str, dict]] = []
         self.deleted: list[str] = []
 
@@ -189,8 +201,18 @@ class FakeNylas:
 
         assert request.headers.get("authorization") == "Bearer nylas-key"
         if path == f"/v3/grants/{self.grant_id}" and method == "GET":
+            if self.grant_status == "gone":
+                return httpx.Response(404, json={"request_id": "r", "error": {"type": "not_found_error",
+                                                                              "message": "grant not found"}})
             return httpx.Response(200, json={"request_id": "r", "data": {
-                "id": self.grant_id, "provider": self.provider, "grant_status": "valid", "email": "me@example.com"}})
+                "id": self.grant_id, "provider": self.provider, "grant_status": self.grant_status,
+                "email": "me@example.com"}})
+        if path.startswith(f"/v3/grants/{self.grant_id}/messages/") and method == "GET":  # one message
+            found = next((m for m in self.messages if m["id"] == path.rsplit("/", 1)[-1]), None)
+            if found is None:
+                return httpx.Response(404, json={"request_id": "r", "error": {"type": "not_found_error",
+                                                                              "message": "message not found"}})
+            return httpx.Response(200, json={"request_id": "r", "data": found})
         if path.startswith("/v3/grants/") and path.count("/") == 3 and method == "DELETE":
             self.deleted.append(path.rsplit("/", 1)[-1])
             return httpx.Response(200, json={"request_id": "r"})
@@ -245,6 +267,7 @@ class FakePlaid:
         self.sync_pages: list[dict] = [sync_page(added=netflix_history())]
         self.errors: dict[str, tuple[int, dict]] = {}
         self.calls: list[tuple[str, dict]] = []
+        self.verification_keys: dict[str, dict] = {}  # kid -> JWK, for /webhook_verification_key/get
 
     def __call__(self, request: httpx.Request) -> httpx.Response | None:
         if request.url.host != "sandbox.plaid.com":
@@ -266,6 +289,12 @@ class FakePlaid:
             return httpx.Response(200, json=page)
         if path == "/item/remove":
             return httpx.Response(200, json={"request_id": "r3"})
+        if path == "/webhook_verification_key/get":
+            key = self.verification_keys.get(body.get("key_id"))
+            if key is None:
+                return httpx.Response(400, json={"error_type": "INVALID_INPUT", "error_code": "INVALID_KEY_ID",
+                                                 "error_message": "key not found"})
+            return httpx.Response(200, json={"key": key, "request_id": "r4"})
         return httpx.Response(404, json={"error_message": "unknown path"})
 
     def paths(self) -> list[str]:
