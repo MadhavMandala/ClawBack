@@ -368,14 +368,17 @@ async def email_webhook(request: Request, background: BackgroundTasks):
         event = nylas.parse_webhook(json.loads(raw))
     except (ValueError, AttributeError):
         raise HTTPException(400, "not a JSON object")
-    user_id = await run_in_threadpool(connections.find_user, "email", event.grant_id or "")
-    if user_id is None:
+    # Usually one user; the same inbox connected in two sessions shares a grant.
+    users = await run_in_threadpool(connections.find_users, "email", event.grant_id or "")
+    if not users:
         return {"ok": True, "handled": "unknown grant"}
     if event.type in nylas.MESSAGE_EVENTS:
-        background.add_task(_in_background, user_id, connect.on_new_message, event.grant_id, event.message_id)
+        for user_id in users:
+            background.add_task(_in_background, user_id, connect.on_new_message, event.grant_id, event.message_id)
         return {"ok": True, "handled": "queued"}
     if event.type in nylas.GRANT_LOST_EVENTS:
-        await run_in_threadpool(connections.mark_reconnect, user_id, "email", nylas.EXPIRED)
+        for user_id in users:
+            await run_in_threadpool(connections.mark_reconnect, user_id, "email", nylas.EXPIRED)
         return {"ok": True, "handled": "needs reconnect"}
     return {"ok": True, "handled": "ignored"}
 

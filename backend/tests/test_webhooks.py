@@ -120,6 +120,22 @@ def test_truncated_notification_and_a_cold_start(api, fake, connected):
     assert api.get("/api/alerts", headers=h).json()["unseen"] == 1
 
 
+def test_one_inbox_in_two_sessions_shares_the_grant(api, fake, hooks):
+    laptop, phone = new_session(api), new_session(api)
+    connect_both(api, laptop)
+    connect_both(api, phone)  # Nylas hands the same inbox the same grant
+    fake.nylas.messages.insert(0, spotify_trial())
+    post_nylas(api, nylas_event("message.created", obj={"id": "s1"}))
+    for h in (laptop, phone):
+        assert api.get("/api/alerts", headers=h).json()["unseen"] == 1
+
+    r = api.delete("/api/me", headers=laptop).json()
+    assert "kept at Nylas" in r["removed"]["email_connection"] and fake.nylas.deleted == []
+    assert api.get("/api/connections", headers=phone).json()["email"]["connected"]
+    api.post("/api/connect/email/disconnect", headers=phone)
+    assert fake.nylas.deleted == ["grant-1"]  # the last session to let go deletes it
+
+
 def test_unknown_grant_and_other_events(api, connected):
     assert post_nylas(api, nylas_event("message.created", grant="grant-x", obj={"id": "s1"})).json()["handled"] == "unknown grant"
     assert post_nylas(api, nylas_event("calendar.created")).json()["handled"] == "ignored"

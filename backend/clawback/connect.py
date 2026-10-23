@@ -78,7 +78,7 @@ def finish_email(state: str | None, code: str | None, error: str | None, error_d
         new = nylas.finish_connect(user_id, code)
         old = connections.get(user_id).email
         if old and old.grant_id != new.grant_id:
-            nylas.delete_grant(user_id, old.grant_id)  # one inbox at a time; the Sandbox counts every grant
+            release_grant(user_id, old.grant_id)  # one inbox at a time; the Sandbox counts every grant
         connections.set_email(user_id, new)
         was_demo = _enter_real_mode(user_id)
         _pull_email(user_id)
@@ -98,6 +98,15 @@ def finish_email(state: str | None, code: str | None, error: str | None, error_d
     if user_id and store.user(user_id).mode == "real":
         _rerun_quietly(user_id)  # show the error rows and whatever data there is
     return f"{origin}/dashboard?{urlencode({'connect_error': message[:200]})}"
+
+
+def release_grant(user_id: str, grant_id: str) -> bool:
+    """Delete a grant at Nylas when this user lets go of it, unless another session still uses the same grant
+    (the same inbox connected in two browsers). True when it is gone at Nylas or still needed elsewhere."""
+    if connections.shared("email", grant_id, user_id):
+        record(user_id, "email: delete grant", nylas.ENGINE, note="kept at Nylas: another session uses this inbox")
+        return True
+    return nylas.delete_grant(user_id, grant_id)
 
 
 def _pull_email(user_id: str) -> int:
@@ -361,7 +370,7 @@ def disconnect(user_id: str, source: str) -> dict:
     if source == "email":
         drop(user_id, (nylas.ENGINE,))
         if c.email:
-            nylas.delete_grant(user_id, c.email.grant_id)
+            release_grant(user_id, c.email.grant_id)
         connections.set_email(user_id, None)
         u.emails = [e for e in u.emails if e.source not in nylas.SOURCES]
     elif source == "plaid":

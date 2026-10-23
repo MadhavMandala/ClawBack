@@ -47,6 +47,7 @@ def test_refreshes_connected_users_and_alerts_once(api, fake, connected):
     subs = {s["merchant"] for s in api.get("/api/subscriptions", headers=h).json()}
     assert {"Spotify", "Netflix", "Super Duolingo"} <= subs  # the API sees what the job saved
     assert db.get_meta("nightly_last_run")
+    assert api.post("/api/alerts/seen", headers=h).json() == {"ok": True, "marked": 2, "unseen": 0}  # no body: all
 
 
 def test_lost_grant_is_flagged_and_results_are_kept(api, fake, connected):
