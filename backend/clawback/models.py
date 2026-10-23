@@ -16,6 +16,16 @@ class Transaction(BaseModel):
     source: str = "demo"  # demo | plaid | statement
 
 
+class Attachment(BaseModel):
+    """An email attachment's metadata. The file itself is downloaded only when needed and kept in memory only."""
+
+    id: str
+    filename: str = ""
+    content_type: str = ""
+    size: int = 0  # bytes, as the provider reports it
+    inline: bool = False  # inline images are usually logos, not receipts
+
+
 class Email(BaseModel):
     id: str
     received_at: datetime
@@ -23,6 +33,10 @@ class Email(BaseModel):
     subject: str
     body_text: str
     source: str = "demo"  # demo, or the Nylas provider it came from: google | microsoft | yahoo | icloud | imap | ews
+    attachments: list[Attachment] = Field(default_factory=list)
+    # Prompt-injection signals noticed while the body was turned into text, such as instructions in hidden HTML.
+    # Short labels only, never body text (pipeline/guard.py reads them).
+    screen: list[str] = Field(default_factory=list)
 
 
 class Cadence(str, Enum):
@@ -128,6 +142,8 @@ class ActionMessage(BaseModel):
     to: str | None = None
     subject: str | None = None
     body: str
+    # Who wrote this message and the talking points next to it: the model id (Nemotron 3 Ultra), or "template".
+    written_by: str = "template"
 
 
 class ActionPrep(BaseModel):
