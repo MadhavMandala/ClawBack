@@ -89,8 +89,8 @@ class Settings:
         return {
             "nebius_token_factory": bool(self.nebius_api_key),
             "tavily": bool(self.tavily_api_key),
-            "email": self.email_configured(),  # Nylas, read-only; webhooks and drafts are still MISSING
-            "plaid": self.plaid_configured(),  # Link + /transactions/sync; webhook still MISSING
+            "email": self.email_configured(),  # Nylas: read mail and save drafts (never send); webhooks still MISSING
+            "plaid": self.plaid_configured(),  # Link + /transactions/sync + liabilities; webhook still MISSING
             "supabase": False,  # MISSING: still using the in-memory store
         }
 
