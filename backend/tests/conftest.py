@@ -1,5 +1,7 @@
-"""Shared test setup: no network, no backend/.env, no model or Tavily calls, and never the real
-backend/.local/connections.json. Live checks (tests/test_live.py, CLAWBACK_LIVE=1) read backend/.env."""
+"""Shared test setup: no network, no backend/.env, no model or Tavily calls, and never the real backend/.local
+(each test gets its own database file and key). Single-user mode by default, so the older tests keep using the
+user "demo" with no session header; test_sessions.py switches to visitor sessions.
+Live checks (tests/test_live.py, CLAWBACK_LIVE=1) read backend/.env."""
 
 import os
 
@@ -13,11 +15,16 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from clawback import config, llm
-from clawback.sources import net, nylas
+from cryptography.fernet import Fernet
+
+from clawback import config, crypto, db, demo, llm, sessions
+from clawback.sources import net, nylas, plaid
+from clawback.store import store
 from clawback.tools import tavily
 
 from fakes import FakeLLM
+
+TEST_KEY = Fernet.generate_key().decode()
 
 
 def _no_network(request: httpx.Request) -> httpx.Response:
@@ -36,13 +43,37 @@ def isolated(monkeypatch, tmp_path):
     monkeypatch.setattr(s, "plaid_env", "sandbox")
     monkeypatch.setattr(s, "frontend_origin", "http://localhost:3000")
     monkeypatch.setattr(s, "connections_path", tmp_path / "connections.json")
+    # Storage, sessions and caps: a fresh database and key per test, single-user mode, default limits.
+    monkeypatch.setattr(s, "db_path", tmp_path / "clawback.db")
+    monkeypatch.setattr(s, "secret_key", TEST_KEY)
+    monkeypatch.setattr(s, "secret_key_path", tmp_path / "secret.key")
+    monkeypatch.setattr(s, "sessions", "single")
+    monkeypatch.setattr(s, "session_idle_days", 14)
+    monkeypatch.setattr(s, "sessions_per_ip_hour", 20)
+    monkeypatch.setattr(s, "session_daily_usd", 0.25)
+    monkeypatch.setattr(s, "global_daily_usd", 5.0)
+    monkeypatch.setattr(s, "autoseed_demo", True)
+    monkeypatch.setattr(s, "nylas_webhook_secret", None)
+    monkeypatch.setattr(s, "public_api_url", None)
     monkeypatch.setattr(net, "transport", httpx.MockTransport(_no_network))
     monkeypatch.setattr(nylas, "_sleep", lambda seconds: None)
     nylas._states.clear()
+    plaid._keys.clear()
+    plaid._failed_keys.clear()
+    _forget_process_state()
     # Tests never reach Token Factory or Tavily, even when backend/.env has real keys.
     monkeypatch.setattr(llm, "available", lambda: False)
     monkeypatch.setattr(tavily, "available", lambda: False)
     yield
+    _forget_process_state()
+
+
+def _forget_process_state() -> None:
+    db.close()
+    crypto.reset()
+    store.clear()
+    demo.clear()
+    sessions.reset()
 
 
 @pytest.fixture()
@@ -68,6 +99,32 @@ def client():
 
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture()
+def visitor(monkeypatch):
+    """Hosted mode: each visitor gets a session (X-ClawBack-Session)."""
+    monkeypatch.setattr(config.settings, "sessions", "visitor")
+
+
+@pytest.fixture()
+def api(visitor):
+    """A test client in visitor mode. Use new_session(api) for a session's headers."""
+    from clawback.main import app
+
+    with TestClient(app) as c:
+        yield c
+
+
+def new_session(c: TestClient) -> dict[str, str]:
+    r = c.post("/api/session")
+    assert r.status_code == 200, r.text
+    return {sessions.HEADER: r.json()["session_id"]}
+
+
+def user_of(headers: dict[str, str]) -> str:
+    """The user id behind a session (tests only; the API never reveals it)."""
+    return sessions.resolve(headers[sessions.HEADER])
 
 
 # --- Fake Nylas --------------------------------------------------------------------------------------

@@ -5,17 +5,23 @@ The first time a real source connects while the user is looking at demo data, th
 (store.use_real_data), so real and fake data never mix. POST /api/demo/seed switches back to demo; saved
 connections stay saved but unused until the next connect or a restart.
 
-On startup, saved connections put the user straight into real mode and are synced again (restore()).
+Single-user mode: on startup, saved connections put the user straight into real mode and are synced again
+(restore()). Visitor sessions load lazily: a real-mode user loaded from disk has no mail in memory (bodies are
+never saved, see store.py), so ensure_fresh() reads it again before the first request uses it.
+
+Webhooks (on_new_message, on_plaid_update) and the nightly job pull in the background, re-run the pipeline,
+and record an in-app alert for each flag or finding that is new (alerts.py).
 """
 
 from __future__ import annotations
 
 from urllib.parse import urlencode
 
-from . import config, connections
+from . import alerts, config, connections
 from .connections import now
 from .missing import Missing
 from .pipeline.run import run
+from .pipeline.triage import is_candidate
 from .sources import nylas, plaid
 from .sources.net import SourceError
 from .sources.nylas import EmailError, EmailExpired
@@ -59,7 +65,7 @@ def _iso(d) -> str | None:
 
 def finish_email(state: str | None, code: str | None, error: str | None, error_description: str | None = None) -> str:
     """Handle the redirect back from Nylas. Returns where to send the browser: the dashboard, with a short result."""
-    origin = config.settings.frontend_origin.rstrip("/")
+    origin = config.settings.return_origin
     user_id = None
     try:
         user_id = nylas.check_state(state)  # CSRF check first, even when an error came back
@@ -109,6 +115,7 @@ def _pull_email(user_id: str) -> int:
         return 0
     u = store.user(user_id)
     u.emails = [e for e in u.emails if e.source not in nylas.SOURCES] + emails
+    store.mark_warm(user_id)
     conn.last_sync, conn.error, conn.needs_reconnect = now(), None, False
     connections.update_email(user_id, conn)
     return len(emails)
@@ -218,20 +225,134 @@ def _attempt(user_id: str, engine: str, pull) -> dict:
 
 
 def restore(user_id: str) -> bool:
-    """Startup: if connections were saved, switch to real data and pull it again. Never raises.
+    """Startup (single-user mode): if connections were saved, switch to real data and pull it again. Never raises.
 
+    What was saved (decisions, check-ins, statements, bank history and its cursor) is kept; mail is read again.
     Returns True when the user ended up in real mode (so the demo shouldn't be seeded).
     """
     try:
         if not connections.get(user_id).any():
             return False
-        store.reset(user_id)
         store.use_real_data(user_id)
+        store.mark_warm(user_id)  # the sync below reads the mail
         sync_sources(user_id, wait_for_plaid=False)
     except Exception as exc:
         reason = getattr(exc, "safe_message", None) or type(exc).__name__
         record(user_id, "startup sync", "code", status="error", note=f"restoring saved connections failed: {reason}")
     return store.user(user_id).mode == "real"
+
+
+def ensure_fresh(user_id: str) -> dict | None:
+    """A real-mode user loaded from disk has no mail in memory (bodies are never saved): read it again, once,
+    before anything re-runs the pipeline on it. The saved results stay as they are until then. Never raises.
+
+    Returns the email pull's result ({"ok": ..., "error": ...}) when it read the mail, None when nothing was needed.
+    """
+    store.user(user_id)  # load it, if this process hasn't yet
+    if not store.is_cold(user_id):
+        return None
+    store.mark_warm(user_id)  # one try per load; failures show on the connection, and Sync tries again
+    if store.user(user_id).mode != "real" or not connections.get(user_id).email:
+        return None
+    return _attempt(user_id, nylas.ENGINE, lambda: {"emails": _pull_email(user_id)})
+
+
+# --- Background updates: webhooks and the nightly job -------------------------------------------------
+
+def _mail_ready(pull: dict | None) -> bool:
+    """False when the mail had to be read and couldn't be: then a pipeline re-run would lose every email finding."""
+    return pull is None or bool(pull.get("ok"))
+
+
+def _rerun_and_alert(user_id: str, before: set[str]) -> int:
+    _rerun_quietly(user_id)
+    return alerts.record_new(user_id, before, store.user(user_id))
+
+
+def on_new_message(user_id: str, grant_id: str, message_id: str | None) -> str:
+    """Nylas says a message arrived: read it and, if it may be about money, re-run the pipeline. Never raises."""
+    conn = connections.get(user_id).email
+    if conn is None or conn.grant_id != grant_id or store.user(user_id).mode != "real":
+        return "ignored"
+    before = set(alerts.keys(store.user(user_id)))
+    if store.is_cold(user_id):
+        if not _mail_ready(ensure_fresh(user_id)):  # reads every recent message, this one included
+            return "error"
+    elif not message_id:
+        if not _attempt(user_id, nylas.ENGINE, lambda: {"emails": _pull_email(user_id)})["ok"]:
+            return "error"
+    else:
+        try:
+            email = nylas.fetch_message(user_id, conn, message_id)
+        except SourceError as exc:
+            conn.error = exc.safe_message
+            conn.needs_reconnect = conn.needs_reconnect or isinstance(exc, EmailExpired)
+            connections.update_email(user_id, conn)
+            return "error"
+        except Exception as exc:
+            record(user_id, "email: read new message", nylas.ENGINE, status="error",
+                   note=f"unexpected {type(exc).__name__}")
+            return "error"
+        if email is None or not is_candidate(email):
+            return "not subscription mail"
+        u = store.user(user_id)
+        kept = [e for e in u.emails if e.id != email.id] + [email]
+        mail = sorted((e for e in kept if e.source in nylas.SOURCES), key=lambda e: e.received_at, reverse=True)
+        u.emails = [e for e in kept if e.source not in nylas.SOURCES] + mail[:max(1, config.settings.email_max_messages)]
+    _rerun_and_alert(user_id, before)
+    return "processed"
+
+
+def on_plaid_update(user_id: str, item_id: str) -> str:
+    """Plaid says new transactions are ready for this item: pull them and re-run the pipeline. Never raises."""
+    conn = connections.get(user_id).plaid
+    if conn is None or conn.item_id != item_id or store.user(user_id).mode != "real":
+        return "ignored"
+    before = set(alerts.keys(store.user(user_id)))
+    mail = ensure_fresh(user_id)
+    result = _attempt(user_id, plaid.ENGINE,
+                      lambda: dict(zip(("added_transactions", "pending"), _pull_plaid(user_id, wait=False))))
+    if _mail_ready(mail):
+        _rerun_and_alert(user_id, before)
+    return "processed" if result.get("ok") else "error"
+
+
+def check_grant(user_id: str) -> str | None:
+    """The nightly grant check. Marks the connection for a new sign-in when Nylas says the grant is gone or invalid.
+    Returns the grant status (valid | invalid | gone | unknown), or None when no email is connected."""
+    conn = connections.get(user_id).email
+    if conn is None or not config.settings.email_configured():
+        return None
+    status = nylas.grant_status(user_id, conn.grant_id)
+    if status in ("gone", "invalid"):
+        connections.mark_reconnect(user_id, "email", nylas.EXPIRED)
+    return status
+
+
+def nightly_refresh(user_id: str) -> dict:
+    """The nightly job for one user: check the grant, pull every source, re-run the pipeline (price checks
+    included) and alert on what is new. A user in demo mode keeps their saved connections unused: grant check only.
+
+    When the mail can't be read, the pipeline isn't re-run (it would drop every email finding); the bank data is
+    still pulled and the error shows on the connection."""
+    grant = check_grant(user_id)
+    u = store.user(user_id)
+    if u.mode != "real":
+        return {"grant": grant, "synced": {}, "alerts": 0, "mode": u.mode, "rerun": False}
+    before = set(alerts.keys(u))
+    c = connections.get(user_id)
+    synced: dict[str, dict] = {}
+    if c.email:
+        synced["email"] = ensure_fresh(user_id) or _attempt(user_id, nylas.ENGINE,
+                                                            lambda: {"emails": _pull_email(user_id)})
+    else:
+        store.mark_warm(user_id)
+    if c.plaid:
+        synced["plaid"] = _attempt(user_id, plaid.ENGINE,
+                                   lambda: dict(zip(("added_transactions", "pending"), _pull_plaid(user_id, wait=False))))
+    rerun = _mail_ready(synced.get("email"))
+    added = _rerun_and_alert(user_id, before) if rerun else 0
+    return {"grant": grant, "synced": synced, "alerts": added, "mode": "real", "rerun": rerun}
 
 
 def disconnect(user_id: str, source: str) -> dict:

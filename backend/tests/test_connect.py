@@ -18,6 +18,12 @@ from clawback.store import store
 USER = "demo"
 
 
+def db_bytes() -> bytes:
+    """Everything SQLite wrote for this test (the main file and its write-ahead log)."""
+    path = config.settings.db_path
+    return b"".join(p.read_bytes() for p in (path, path.with_name(path.name + "-wal")) if p.exists())
+
+
 def state_of(url: str) -> str:
     return parse_qs(urlparse(url).query)["state"][0]
 
@@ -160,9 +166,9 @@ def test_email_connect_switches_to_real_data(client, fake):
     subs = {s["merchant"]: s for s in client.get("/api/subscriptions").json()}
     assert set(subs) == {"Super Duolingo"} and subs["Super Duolingo"]["status"] == "trial"
 
-    saved = json.loads(config.settings.connections_path.read_text())["users"][USER]["email"]
-    assert saved["grant_id"] == "grant-1" and saved["provider"] == "google"
-    assert "nylas-key" not in config.settings.connections_path.read_text()
+    saved = connections.get(USER).email  # in the database now, encrypted (test_store_db.py)
+    assert saved.grant_id == "grant-1" and saved.provider == "google"
+    assert b"grant-1" not in db_bytes() and b"nylas-key" not in db_bytes()
 
     trace = client.get("/api/trace").json()
     assert any(t["engine"] == "nylas" and "read 4 messages" in t["note"] for t in trace)
@@ -258,7 +264,7 @@ def test_email_disconnect_deletes_the_grant(client, fake):
     assert fake.nylas.deleted == ["grant-1"]
     assert status["email"]["connected"] is False and status["mode"] == "real"
     assert store.user(USER).emails == []
-    assert "email" not in json.loads(config.settings.connections_path.read_text())["users"].get(USER, {})
+    assert connections.get(USER).email is None
 
 
 def test_connecting_another_inbox_deletes_the_old_grant(client, fake):
@@ -306,8 +312,9 @@ def test_plaid_link_exchange_sync_disconnect(client, fake):
     u = store.user(USER)
     assert {t.source for t in u.transactions} == {"plaid"} and u.emails == []
     assert [s["merchant"] for s in client.get("/api/subscriptions").json()] == ["Netflix"]
-    saved = json.loads(config.settings.connections_path.read_text())["users"][USER]["plaid"]
-    assert saved["access_token"] == "access-sandbox-1" and saved["cursor"] == "cursor-1"
+    saved = connections.get(USER).plaid
+    assert saved.access_token == "access-sandbox-1" and saved.cursor == "cursor-1"
+    assert b"access-sandbox-1" not in db_bytes()
     assert any(t["engine"] == "plaid" and "+7 new" in t["note"] for t in client.get("/api/trace").json())
 
     # Sync carries on from the cursor and applies changes and removals.

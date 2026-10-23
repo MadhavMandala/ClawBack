@@ -10,6 +10,7 @@ SOURCE_ENGINES), which are replaced on the next sync of that source, and rows fr
 
 from __future__ import annotations
 
+import re
 import time
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -43,6 +44,17 @@ def record(user_id: str, stage: str, engine: str, status: str = "ok", **kw) -> T
     step = TraceStep(at=datetime.now(timezone.utc), stage=stage, engine=engine, status=status, **kw)
     store.user(user_id).trace.append(step)
     return step
+
+
+def record_repeat(user_id: str, stage: str, engine: str, status: str, note: str, **kw) -> TraceStep:
+    """Like record(), but a repeat of the same stage + status + note in this run adds to one row ("x3")."""
+    trace = store.user(user_id).trace
+    for step in reversed(trace):
+        if (step.stage, step.engine, step.status) == (stage, engine, status) and step.note.startswith(note):
+            count = int(m.group(1)) if (m := re.search(r" \(x(\d+)\)$", step.note)) else 1
+            step.note = f"{note} (x{count + 1})"
+            return step
+    return record(user_id, stage, engine, status=status, note=note, **kw)
 
 
 def drop(user_id: str, engines: tuple[str, ...]) -> None:

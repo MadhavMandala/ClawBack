@@ -1,61 +1,76 @@
-"""ClawBack API (prototype). Run with:  uvicorn clawback.main:app --reload --port 8000"""
+"""ClawBack API (prototype). Run with:  uvicorn clawback.main:app --reload --port 8000
+
+Every route that reads or changes a person's data takes `user_id: UserId` (sessions.current_user): the visitor
+behind the X-ClawBack-Session header, or "demo" with CLAWBACK_SESSIONS=single. The user is saved after each
+request. Business functions take that user_id; nothing here may use a fixed user.
+"""
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
+import json
+import logging
 from contextlib import asynccontextmanager
 from datetime import date
 
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
 
-from . import connect, demo_data, llm
+from . import alerts, connect, connections, demo, llm, sessions
 from .config import settings
 from .features import features_payload
-from .findings import actions, rulebook
+from .findings import actions
 from .findings.detect import sort_key
 from .models import ActionPrep, Finding
 from .missing import REGISTRY, Missing, missing
 from .pipeline.cancel import cancel_prep
 from .pipeline.recommend import alternatives
 from .pipeline.run import best_saving, run, summary
+from .sessions import UserId, user_scope
 from .sources import nylas, plaid
 from .sources.net import SourceError
 from .sources.statements import parse_csv
 from .store import store
 from .trace import view
 
-# MISSING [auth]: one hard-coded user. Replace with Supabase Auth and a demo login for judges.
-USER = "demo"
+log = logging.getLogger("clawback.api")
 
 
-def seed(today: date | None = None) -> dict:
+def seed(user_id: str, today: date | None = None) -> dict:
     """Switch to demo mode and load the fake data. Saved connections stay saved but unused."""
-    today = today or date.today()
-    u = store.reset(USER)
-    u.transactions = demo_data.transactions(today)
-    u.emails = demo_data.emails(today)
-    book = rulebook.current()
-    if book:
-        u.emails += demo_data.settlement_story(today, u.transactions, u.emails, book)
-    return run(USER, today)
+    return demo.seed(user_id, today)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Saved email / bank connections mean real mode: sync them (failures only add trace rows).
-    if not connect.restore(USER) and settings.autoseed_demo:
-        seed()
+    warm = None
+    if settings.single_user:
+        # The one local user: saved email / bank connections mean real mode, so sync them (failures only add
+        # trace rows); otherwise a fresh demo, as before persistence.
+        user_id = sessions.ensure_single()
+        if not connect.restore(user_id) and settings.autoseed_demo:
+            seed(user_id)
+        store.save(user_id)
+    elif settings.autoseed_demo and llm.available():
+        # Build today's demo now, so the first visitor doesn't wait for its model calls.
+        warm = asyncio.create_task(run_in_threadpool(demo.template, date.today()))
     yield
+    if warm is not None:
+        with contextlib.suppress(Exception):
+            await warm
 
 
 app = FastAPI(title="ClawBack (prototype)", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_origin],
+    allow_origins=settings.frontend_origins,
+    allow_origin_regex=settings.frontend_origin_regex,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"],  # includes X-ClawBack-Session; the session id only ever comes back in a JSON body
 )
 
 
@@ -70,8 +85,8 @@ async def source_error_handler(request: Request, exc: SourceError):
     return JSONResponse(status_code=exc.status, content={"detail": exc.safe_message})
 
 
-def _sub(sub_id: str):
-    sub = store.user(USER).subscriptions.get(sub_id)
+def _sub(user_id: str, sub_id: str):
+    sub = store.user(user_id).subscriptions.get(sub_id)
     if sub is None:
         raise HTTPException(404, f"no subscription {sub_id!r}")
     return sub
@@ -81,7 +96,8 @@ def _sub(sub_id: str):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "integrations": settings.integrations(), "models": llm.MODELS}
+    return {"ok": True, "integrations": settings.integrations(), "models": llm.MODELS,
+            "sessions": settings.sessions}
 
 
 @app.get("/api/missing")
@@ -96,34 +112,75 @@ def feature_board():
 
 
 @app.get("/api/trace")
-def trace():
-    return view(USER)
+def trace(user_id: UserId):
+    return view(user_id)
+
+
+# --- Session --------------------------------------------------------------------------------------
+
+@app.post("/api/session")
+def new_session(request: Request):
+    """A new visitor session with its own demo data. The id comes back once; send it as X-ClawBack-Session."""
+    if settings.single_user:
+        return {"session_id": "single-user"}
+    try:
+        return {"session_id": sessions.create(request.client.host if request.client else None)}
+    except sessions.TooManySessions:
+        raise HTTPException(429, "Too many new sessions from this address. Try again in an hour.")
+
+
+@app.get("/api/me")
+def me(user_id: UserId):
+    """Session details for a settings page. Never tokens or ids."""
+    return sessions.info(user_id)
+
+
+@app.delete("/api/me")
+def delete_me(user_id: UserId):
+    """Delete everything ClawBack holds for this session, and end its email and bank connections."""
+    return sessions.delete(user_id)
+
+
+@app.get("/api/alerts")
+def get_alerts(user_id: UserId):
+    """In-app alerts: new flags and findings that background updates (nightly job, webhooks) found."""
+    return alerts.list_for(user_id)
+
+
+class Seen(BaseModel):
+    ids: list[int] | None = None  # None: mark every alert seen
+
+
+@app.post("/api/alerts/seen")
+def alerts_seen(user_id: UserId, body: Seen | None = None):
+    changed = alerts.mark_seen(user_id, body.ids if body else None)
+    return {"ok": True, "marked": changed, "unseen": alerts.unseen(user_id)}
 
 
 # --- Dashboard ------------------------------------------------------------------------------------
 
 @app.post("/api/demo/seed")
-def demo_seed():
-    return seed()
+def demo_seed(user_id: UserId):
+    return seed(user_id)
 
 
 @app.post("/api/sync")
-def sync():
+def sync(user_id: UserId):
     """Real mode: pull from every connected source, then re-run. Demo mode: just re-run.
 
-    MISSING [email-webhooks]/[plaid-webhook]: new data arrives only when this is called.
+    With webhooks set up, new mail and bank data also arrive on their own (see /api/ingest/*/webhook).
     """
-    return connect.sync_now(USER)
+    return connect.sync_now(user_id)
 
 
 @app.get("/api/summary")
-def get_summary():
-    return summary(USER)
+def get_summary(user_id: UserId):
+    return summary(user_id)
 
 
 @app.get("/api/subscriptions")
-def subscriptions():
-    subs = list(store.user(USER).subscriptions.values())
+def subscriptions(user_id: UserId):
+    subs = list(store.user(user_id).subscriptions.values())
     return sorted(subs, key=lambda s: (-best_saving(s), -s.monthly_cost))
 
 
@@ -132,70 +189,70 @@ class Checkin(BaseModel):
 
 
 @app.post("/api/subscriptions/{sub_id}/checkin")
-def checkin(sub_id: str, body: Checkin):
-    _sub(sub_id)
-    store.user(USER).checkins[sub_id].append((date.today(), body.used))
-    run(USER)
-    return _sub(sub_id)
+def checkin(user_id: UserId, sub_id: str, body: Checkin):
+    _sub(user_id, sub_id)
+    store.user(user_id).checkins[sub_id].append((date.today(), body.used))
+    run(user_id)
+    return _sub(user_id, sub_id)
 
 
 @app.post("/api/subscriptions/{sub_id}/keep")
-def keep(sub_id: str):
-    _sub(sub_id)
-    store.user(USER).kept[sub_id] = date.today()
-    store.user(USER).cancel_pending.pop(sub_id, None)
-    run(USER)
-    return _sub(sub_id)
+def keep(user_id: UserId, sub_id: str):
+    _sub(user_id, sub_id)
+    store.user(user_id).kept[sub_id] = date.today()
+    store.user(user_id).cancel_pending.pop(sub_id, None)
+    run(user_id)
+    return _sub(user_id, sub_id)
 
 
 @app.post("/api/subscriptions/{sub_id}/cancel-prep")
-def prepare_cancel(sub_id: str):
+def prepare_cancel(user_id: UserId, sub_id: str):
     """Gather the cancel link, steps and email. Never cancels or sends anything."""
-    prep = cancel_prep(USER, _sub(sub_id), date.today())
-    store.user(USER).cancel_pending[sub_id] = date.today()
-    store.user(USER).kept.pop(sub_id, None)
-    run(USER)
+    prep = cancel_prep(user_id, _sub(user_id, sub_id), date.today())
+    store.user(user_id).cancel_pending[sub_id] = date.today()
+    store.user(user_id).kept.pop(sub_id, None)
+    run(user_id)
     return prep
 
 
 @app.get("/api/subscriptions/{sub_id}/alternatives")
-def find_cheaper(sub_id: str):
-    return alternatives(USER, _sub(sub_id), date.today())
+def find_cheaper(user_id: UserId, sub_id: str):
+    return alternatives(user_id, _sub(user_id, sub_id), date.today())
 
 
 @app.post("/api/subscriptions/{sub_id}/negotiate", response_model=ActionPrep)
-def negotiate(sub_id: str):
+def negotiate(user_id: UserId, sub_id: str):
     """Talking points and a chat message to ask a bill (or subscription) provider for a lower price."""
-    sub = _sub(sub_id)
-    info = store.user(USER).bill_info.get(sub_id, {})
-    return actions.negotiate(USER, sub, info.get("rule"), info.get("amounts", []), date.today())
+    sub = _sub(user_id, sub_id)
+    info = store.user(user_id).bill_info.get(sub_id, {})
+    return actions.negotiate(user_id, sub, info.get("rule"), info.get("amounts", []), date.today())
 
 
 # --- One-time money: findings ---------------------------------------------------------------------
 
-def _finding(finding_id: str) -> Finding:
-    f = store.user(USER).findings.get(finding_id)
+def _finding(user_id: str, finding_id: str) -> Finding:
+    f = store.user(user_id).findings.get(finding_id)
     if f is None:
         raise HTTPException(404, f"no finding {finding_id!r}")
     return f
 
 
 @app.get("/api/findings", response_model=list[Finding])
-def findings():
+def findings(user_id: UserId):
     """Open first, then by deadline (soonest first, none last), then by amount."""
-    return sorted(store.user(USER).findings.values(), key=sort_key)
+    return sorted(store.user(user_id).findings.values(), key=sort_key)
 
 
 @app.post("/api/findings/{finding_id}/prepare", response_model=ActionPrep)
-def prepare_finding(finding_id: str):
+def prepare_finding(user_id: UserId, finding_id: str):
     """The request, letter or script for one finding. ClawBack never sends or files anything."""
-    return actions.prepare(_finding(finding_id), date.today())
+    return actions.prepare(_finding(user_id, finding_id), date.today())
 
 
 @app.post("/api/findings/{finding_id}/dismiss", response_model=Finding)
-def dismiss_finding(finding_id: str):
-    f = _finding(finding_id)
-    u = store.user(USER)
+def dismiss_finding(user_id: UserId, finding_id: str):
+    f = _finding(user_id, finding_id)
+    u = store.user(user_id)
     u.finding_status[f.id] = f.status = "dismissed"
     u.got_back.pop(f.id, None)
     return f
@@ -206,10 +263,10 @@ class Done(BaseModel):
 
 
 @app.post("/api/findings/{finding_id}/done", response_model=Finding)
-def finding_done(finding_id: str, body: Done | None = None):
+def finding_done(user_id: UserId, finding_id: str, body: Done | None = None):
     """Mark it done. `got_back` is what the user says they recovered (self-reported, not checked)."""
-    f = _finding(finding_id)
-    u = store.user(USER)
+    f = _finding(user_id, finding_id)
+    u = store.user(user_id)
     u.finding_status[f.id] = f.status = "done"
     u.got_back[f.id] = round(body.got_back if body else 0.0, 2)
     return f
@@ -218,41 +275,52 @@ def finding_done(finding_id: str, body: Done | None = None):
 # --- Data in --------------------------------------------------------------------------------------
 
 @app.post("/api/ingest/statement")
-async def upload_statement(file: UploadFile = File(...)):
+async def upload_statement(user_id: UserId, file: UploadFile = File(...)):
     content = (await file.read()).decode("utf-8-sig", errors="replace")
     try:
         txs = parse_csv(content)
     except ValueError as exc:
         raise HTTPException(400, str(exc))
-    store.user(USER).transactions.extend(txs)
-    result = run(USER)
+    store.user(user_id).transactions.extend(txs)
+    result = await run_in_threadpool(run, user_id)
     return {"added_transactions": len(txs), **result}
 
 
 # --- Connections ----------------------------------------------------------------------------------
 
 @app.get("/api/connections")
-def connections_status():
-    return connect.status(USER)
+def connections_status(user_id: UserId):
+    return connect.status(user_id)
 
 
 @app.get("/api/connect/email")
-def email_start(login_hint: str | None = None):
+def email_start(user_id: UserId, login_hint: str | None = None):
     """Where to send the browser: the Nylas provider picker, then the provider's sign-in. Not configured -> 501."""
-    return {"auth_url": nylas.start_url(USER, login_hint)}
+    return {"auth_url": nylas.start_url(user_id, login_hint)}
 
 
 @app.get("/api/connect/email/callback")
-def email_callback(code: str | None = None, state: str | None = None, error: str | None = None,
-                   error_description: str | None = None):
-    """Nylas redirects here. Always answers with a redirect back to the app (?connected= or ?connect_error=)."""
-    return RedirectResponse(connect.finish_email(state, code, error, error_description), status_code=302)
+async def email_callback(code: str | None = None, state: str | None = None, error: str | None = None,
+                         error_description: str | None = None):
+    """Nylas redirects here (no session header: the sign-in `state` says whose session it is).
+
+    Always answers with a redirect back to the app (?connected= or ?connect_error=)."""
+    user_id = nylas.state_user(state)
+
+    def finish() -> str:
+        return connect.finish_email(state, code, error, error_description)
+
+    if user_id is None:  # finish_email turns a bad or expired state into a clean error redirect
+        return RedirectResponse(await run_in_threadpool(finish), status_code=302)
+    async with user_scope(user_id):
+        url = await run_in_threadpool(finish)
+    return RedirectResponse(url, status_code=302)
 
 
 @app.post("/api/connect/plaid/link-token")
-def plaid_link_token():
+def plaid_link_token(user_id: UserId):
     """Token for Plaid Link in the browser. Not configured -> 501."""
-    return {"link_token": plaid.create_link_token(USER)}
+    return {"link_token": plaid.create_link_token(user_id)}
 
 
 class PlaidExchange(BaseModel):
@@ -261,29 +329,89 @@ class PlaidExchange(BaseModel):
 
 
 @app.post("/api/connect/plaid/exchange")
-def plaid_exchange(body: PlaidExchange):
+def plaid_exchange(user_id: UserId, body: PlaidExchange):
     """Link's public_token -> saved connection -> first transactions pull -> pipeline."""
-    return connect.connect_plaid(USER, body.public_token, body.institution)
+    return connect.connect_plaid(user_id, body.public_token, body.institution)
 
 
 @app.post("/api/connect/{source}/disconnect")
-def source_disconnect(source: str):
+def source_disconnect(user_id: UserId, source: str):
     if source not in connect.SOURCES:
         raise HTTPException(404, f"unknown source {source!r}")
-    return connect.disconnect(USER, source)
+    return connect.disconnect(user_id, source)
+
+
+# --- Webhooks (no session: each is verified by its signature, then mapped to a user) ----------------
+
+async def _in_background(user_id: str, work, *args) -> None:
+    try:
+        async with user_scope(user_id):
+            await run_in_threadpool(work, user_id, *args)
+    except Exception:  # never let one bad delivery take the worker down
+        log.exception("webhook work failed")
+
+
+@app.get("/api/ingest/email/webhook")
+def email_webhook_challenge(challenge: str = ""):
+    """Nylas checks the address once: echo `challenge` as plain text."""
+    return PlainTextResponse(challenge)
 
 
 @app.post("/api/ingest/email/webhook")
-def email_webhook(payload: dict):
-    nylas.handle_webhook(payload)  # raises Missing -> 501
+async def email_webhook(request: Request, background: BackgroundTasks):
+    """Nylas notifications. message.created: read that message and re-run in the background.
+    grant.expired / grant.deleted: the connection needs a new sign-in. Unsigned or badly signed: 401."""
+    raw = await request.body()
+    if not nylas.verify_webhook(raw, request.headers.get("x-nylas-signature")):
+        raise HTTPException(401, "bad signature")
+    try:
+        event = nylas.parse_webhook(json.loads(raw))
+    except (ValueError, AttributeError):
+        raise HTTPException(400, "not a JSON object")
+    user_id = await run_in_threadpool(connections.find_user, "email", event.grant_id or "")
+    if user_id is None:
+        return {"ok": True, "handled": "unknown grant"}
+    if event.type in nylas.MESSAGE_EVENTS:
+        background.add_task(_in_background, user_id, connect.on_new_message, event.grant_id, event.message_id)
+        return {"ok": True, "handled": "queued"}
+    if event.type in nylas.GRANT_LOST_EVENTS:
+        await run_in_threadpool(connections.mark_reconnect, user_id, "email", nylas.EXPIRED)
+        return {"ok": True, "handled": "needs reconnect"}
+    return {"ok": True, "handled": "ignored"}
 
 
 @app.post("/api/ingest/plaid/webhook")
-def plaid_webhook(payload: dict):
-    plaid.handle_webhook(payload)  # raises Missing -> 501
+async def plaid_webhook(request: Request, background: BackgroundTasks):
+    """Plaid webhooks, checked with the Plaid-Verification JWT. SYNC_UPDATES_AVAILABLE: pull in the background.
+    ITEM ERROR / PENDING_EXPIRATION / ...: the bank needs a new sign-in. Unsigned or badly signed: 401."""
+    raw = await request.body()
+    try:
+        await run_in_threadpool(plaid.verify_webhook, raw, request.headers.get("plaid-verification"))
+    except plaid.WebhookInvalid as exc:
+        log.info("plaid webhook refused: %s", exc)
+        raise HTTPException(401, "bad signature")
+    try:
+        payload = json.loads(raw)
+        kind, code, item_id = (str(payload.get(k) or "") for k in ("webhook_type", "webhook_code", "item_id"))
+    except (ValueError, AttributeError):
+        raise HTTPException(400, "not a JSON object")
+    user_id = await run_in_threadpool(connections.find_user, "plaid", item_id)
+    if user_id is None:
+        return {"ok": True, "handled": "unknown item"}
+    if kind == "TRANSACTIONS" and code == "SYNC_UPDATES_AVAILABLE":
+        background.add_task(_in_background, user_id, connect.on_plaid_update, item_id)
+        return {"ok": True, "handled": "queued"}
+    if kind == "ITEM" and code in plaid.RECONNECT_ITEM_CODES:
+        message = "Your bank connection needs you to sign in again. Connect the bank again."
+        await run_in_threadpool(connections.mark_reconnect, user_id, "plaid", message)
+        return {"ok": True, "handled": "needs reconnect"}
+    if kind == "ITEM" and code == "LOGIN_REPAIRED":
+        await run_in_threadpool(connections.mark_reconnect, user_id, "plaid", "", False)
+        return {"ok": True, "handled": "repaired"}
+    return {"ok": True, "handled": "ignored"}
 
 
 @app.post("/api/subscriptions/{sub_id}/email-draft")
-def save_email_draft(sub_id: str):
-    _sub(sub_id)
+def save_email_draft(user_id: UserId, sub_id: str):
+    _sub(user_id, sub_id)
     missing("email-drafts")
