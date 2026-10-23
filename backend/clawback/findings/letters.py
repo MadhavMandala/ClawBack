@@ -36,10 +36,13 @@ SCHEMA = {
 PROMPT = """Write a short {what}. The person sends it themselves; ClawBack never sends anything.
 Facts (use only these; never add numbers, dates, prices, account or order numbers, names or links that are not here):
 {facts}
-Keep these placeholders exactly as written, where they belong: {placeholders}
+Every one of these placeholders must appear in the body, exactly as written: {placeholders}
+(the person fills them in; keep them all, even when two look alike).
 {script_rule}
-Style: plain and polite, short sentences, under {words} words in the body, end with [your name]. No links. No dashes.
-No exclamation marks. No threats, no legal talk beyond naming the rule in the facts, no promises of a result.
+Layout of the body: a greeting line ("Hello,"), one or two short paragraphs separated by blank lines, then "Thank you,"
+and [your name] on its own line. Keep any "Label: [placeholder]" lines as their own lines.
+Style: plain and polite, short sentences, under {words} words in the body. No links. No dashes. No exclamation marks.
+No threats, no legal talk beyond naming the rule in the facts, no promises of a result.
 Return JSON: {{"subject": str, "body": str, "script": [str]}}"""
 SCRIPT_RULE = ('Also write "script": 2 to 5 short things to say on a call or in a chat, one sentence each, '
                "using the same facts.")
@@ -73,6 +76,7 @@ def _days(text: str) -> set[str]:
 def tidy(text: str) -> str:
     """The wording rules: no long dashes, no exclamation marks, tidy spaces."""
     text = _DASHES.sub(", ", text).replace("!", ".")
+    text = re.sub(r"[ \t]+-[ \t]+", ", ", text)  # a spaced hyphen used as a dash
     text = re.sub(r"[ \t]+", " ", text)
     return re.sub(r"\n{3,}", "\n\n", text).strip()
 
