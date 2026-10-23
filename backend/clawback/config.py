@@ -62,6 +62,10 @@ class Settings:
     connections_path: Path = field(
         default_factory=lambda: Path(_env("CLAWBACK_CONNECTIONS_FILE") or BACKEND_DIR / ".local" / "connections.json")
     )
+    # Cancel pages found per merchant (public URLs and steps only, shared by every user). See pipeline/cancel_lookup.py.
+    cancel_cache_path: Path = field(
+        default_factory=lambda: Path(_env("CLAWBACK_CANCEL_CACHE") or BACKEND_DIR / ".local" / "cancel_pages.json")
+    )
 
     # MISSING: not used by the code yet.
     supabase_url: str | None = field(default_factory=lambda: _env("SUPABASE_URL"))

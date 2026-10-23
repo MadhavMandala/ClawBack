@@ -5,9 +5,10 @@ Why not cancel automatically: that needs the user's password for every service (
 a wrong cancellation can hurt (e.g. stopping iCloud backups), and Google's Workspace data policy requires the
 user to confirm agent actions.
 
-MISSING [cancel-lookup]: outside Apple / Google Play billing, the cancel page comes from a Tavily search that
-nobody has checked. Results are labelled "unverified".
-MISSING [email-drafts]: the email is only shown in the app, not saved as a draft in the user's mailbox.
+Where the cancel page comes from, in order: Apple / Google Play subscription pages for store-billed apps, a
+merchant's hand-checked cancel URL (merchants.py), a bill provider's page from rules/bills.json, else
+cancel_lookup.py (a Tavily search whose result must be on the merchant's own domain, cached per merchant).
+The email can be saved as a draft in the user's own mailbox (sources/nylas.py create_draft); it is never sent.
 MISSING [cancel-confirmation]: nothing checks that the charge actually stopped.
 """
 
@@ -17,13 +18,14 @@ import re
 from datetime import date
 
 from .. import llm
+from ..findings import rulebook
 from ..merchants import APPLE_SUBSCRIPTIONS_URL, GOOGLE_PLAY_SUBSCRIPTIONS_URL, by_name
 from ..models import Subscription
-from ..tools import tavily
+from . import cancel_lookup
 
 
 PLACEHOLDER = "[your account email]"
-DRAFT_STATUS = "MISSING [email-drafts]: not saved to your mailbox yet. Copy it, or use the merchant's cancel page."
+DRAFT_STATUS = "Not sent. Copy it, or save it to your email drafts and send it from there."
 EMAIL_SCHEMA = {
     "type": "object",
     "properties": {"subject": {"type": "string"}, "body": {"type": "string"}},
@@ -102,6 +104,7 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
     links: list[dict] = []
     steps: list[str] = []
     missing: list[str] = []
+    lookup: dict = {}  # how the cancel page was found (search date, cache), when it was searched for
 
     if m and m.billed_by == "apple":
         links.append({"label": "Apple subscriptions page", "url": APPLE_SUBSCRIPTIONS_URL, "verified": True})
@@ -112,19 +115,39 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
     elif m and m.billed_by == "google_play":
         links.append({"label": "Google Play subscriptions", "url": GOOGLE_PLAY_SUBSCRIPTIONS_URL, "verified": True})
         steps = ["Open the link signed in to your Google account.", f"Choose {sub.merchant}, then Cancel."]
+    elif m and m.known_cancel_url:
+        links.append({"label": f"{sub.merchant} cancel page", "url": m.known_cancel_url, "verified": True})
+        steps = ["Open the link signed in to your account.", "Follow its cancel steps."]
+    elif bill := _bill_rule(sub):
+        links.append({"label": f"Cancel or change your {sub.merchant} plan", "url": bill["cancel_or_retention"],
+                      "verified": True})
+        steps = [f"Open {sub.merchant}'s page below, or call the number on your bill.",
+                 "Ask to cancel. If they offer a lower price instead, get the new price in writing."]
     else:
-        found = tavily.search(user_id, "cancel_lookup", f"how to cancel {sub.merchant} subscription official help")
-        links = [{"label": r["title"], "url": r["url"], "verified": False} for r in found[:3]]
-        if links:
-            steps = [
-                "Open the merchant's own help page from the links (check the address is the merchant's site).",
-                "Follow its cancel steps, or send the email below if it accepts cancellation by email.",
-            ]
+        found = cancel_lookup.lookup(user_id, sub.merchant, today)
+        lookup = {k: found.get(k) for k in ("checked_on", "verified", "from_cache", "steps_url", "support_email")}
+        links = found["links"]
+        verified = next((l for l in links if l["verified"]), None)
+        if verified and found["steps"]:
+            host = cancel_lookup.host_of(found["steps_url"] or verified["url"])
+            checked = date.fromisoformat(found["checked_on"])
+            steps = found["steps"] + [f"These steps are from {host} (checked {checked:%b} {checked.day}, {checked.year}). "
+                                      "If the page has changed, follow the page."]
+        elif verified:
+            steps = [f"Open {sub.merchant}'s own page below ({cancel_lookup.host_of(verified['url'])}).",
+                     "Follow its cancel steps, or send the email below if it accepts cancellation by email."]
+        elif links:
+            steps = [f"We couldn't confirm a cancel page on {sub.merchant}'s own site. The links below are search "
+                     "results: check the web address before you sign in anywhere.",
+                     "Or sign in on the merchant's website and look for Account > Subscription or Membership."]
         else:
-            missing.append("MISSING [cancel-lookup]: no TAVILY_API_KEY, so no cancel page was looked up.")
             steps = ["Sign in on the merchant's website and look for Account > Subscription or Membership."]
+        if found.get("note"):
+            missing.append(found["note"])
 
     missing.append("MISSING [cancel-confirmation]: ClawBack won't yet check that the next charge stopped.")
+    email = write_email(user_id, sub)
+    email["to"] = lookup.get("support_email")  # only an address found on the merchant's own page
     return {
         "subscription_id": sub.id,
         "merchant": sub.merchant,
@@ -132,7 +155,18 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
         "next_charge": sub.next_expected.isoformat() if sub.next_expected else None,
         "links": links,
         "steps": steps,
-        "email": write_email(user_id, sub),
+        "email": email,
+        "lookup": lookup,
         "missing": missing,
         "prepared_on": today.isoformat(),
     }
+
+
+def _bill_rule(sub: Subscription) -> dict | None:
+    """A bill provider's verified cancel / retention page from rules/bills.json, when it is a web page."""
+    if sub.kind != "bill":
+        return None
+    book = rulebook.current()
+    rule = next((b for b in (book.bills if book else []) if b["provider"] == sub.merchant), None)
+    url = (rule or {}).get("cancel_or_retention")
+    return rule if isinstance(url, str) and url.startswith("https://") else None
