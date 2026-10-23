@@ -5,7 +5,7 @@ from datetime import timedelta
 from urllib.parse import parse_qs, urlparse
 
 import httpx
-from conftest import new_session, user_of
+from conftest import connect_both, new_session, user_of
 from fastapi.testclient import TestClient
 
 from clawback import budget, config, connections, db, demo, llm, sessions
@@ -148,13 +148,6 @@ def test_email_callback_lands_on_the_session_that_started_it(api, fake):
 
 
 # --- GET and DELETE /api/me -------------------------------------------------------------------------
-
-def connect_both(api, h) -> None:
-    api.post("/api/connect/plaid/exchange", headers=h, json={"public_token": "p", "institution": "First Platypus Bank"})
-    url = api.get("/api/connect/email", headers=h).json()["auth_url"]
-    state = parse_qs(urlparse(url).query)["state"][0]
-    api.get("/api/connect/email/callback", params={"code": "good-code", "state": state}, follow_redirects=False)
-
 
 def test_me_shows_the_session_without_secrets(api, fake):
     h = new_session(api)
