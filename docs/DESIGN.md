@@ -3,10 +3,12 @@
 **The idea:** a bank statement read late at night under a desk lamp, highlighter in hand. The highlighter marks
 money you can get back, and nothing else. Everything else stays quiet so the yellow means something.
 
-Two pages share one system:
+Four pages share one system:
 - `/`, the front page. It explains ClawBack through one month of the demo user's statement, with margin notes.
 - `/dashboard`, the app. One sentence about your month, the spend bar, findings grouped by what to do, the build
   status of every feature, and the model trace.
+- `/settings`, "Your data": the session, connections, the state, what's stored, today's model use, and delete.
+- `/privacy`, the prototype privacy policy.
 
 References, picked on 2026-10-23 from [dark.design](https://www.dark.design/) and
 [craftwork.design](https://craftwork.design/inspiration/websites):
@@ -56,6 +58,22 @@ that way.
 - Each row gets one main action that matches its problem. In tables it's a quiet filled pill; a column of white
   pills would outshout the yellow. The white pill is for the page's main call to action only.
 - Surfaces are nearly square (2-3px radius); controls are fully round. No shadows.
+
+## Pieces added on 2026-10-23
+
+- **Settings and privacy pages** use the privacy policy's ledger: a serif head on the left of each rule, plain text
+  on the right, one column on small screens. Connections sit on one sheet with a button at the end of each row.
+  "Delete all my data" is a red-outlined pill. It confirms in the page with "Yes, delete it" and "Keep it", never a
+  browser dialog. The model-use meter is a thin bar in the built-phase green; it isn't money back, so it's never yellow.
+- **First-visit guide** on the dashboard: one quiet band on `--ground-2` with three numbered lines (it's a demo month,
+  open a yellow row, try it on your own) and "Got it". It shows once per browser and only in demo mode.
+- **Alerts band**, "New since you last looked": a `--sheet` band with a 2px ink rule on the left, one line per alert,
+  the amount highlighted only when it's money back, and "Mark as seen". Nothing else on the page uses a left rule.
+- **Cancelled group and Money back table:** cancelled subscriptions get their own group at the end, out of the spend
+  bar. Money back is a plain table: when, from, what happened, how it was checked, amount. "In your bank data" uses
+  the green `ok` tag; "You told us" uses the neutral tag.
+- **Who wrote it:** a letter or cancel email has a small neutral tag after its heading, "Written by Nemotron 3 Ultra"
+  or "Template", so people can see which ones a model wrote.
 
 ## Motion
 

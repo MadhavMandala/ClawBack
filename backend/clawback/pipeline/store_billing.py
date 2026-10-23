@@ -243,12 +243,14 @@ def _shown(value, text: str) -> float | None:
 
 
 def _read_with_model(user_id: str, email: Email, store_name: str) -> StoreReceipt | None:
-    # TODO(clawback): route this through the prompt-injection guard once the models workstream lands it.
+    from . import guard  # noqa: PLC0415 (imported here to keep this module's imports light)
+
+    text_for_model = guard.email_text(email, 6000)
+    if guard.check_email(user_id, "store_receipt", email, text_for_model).flagged:
+        return None  # flagged by the prompt-injection screen: code's own reading stands, no model
     data, res = llm.chat_json(
         user_id, "store_receipt", "fast",
-        [{"role": "system", "content": RECEIPT_PROMPT},
-         {"role": "user", "content": f"<email>\nFrom: {email.sender}\nSubject: {email.subject}\n\n"
-                                     f"{email.body_text[:6000]}\n</email>"}],
+        [{"role": "system", "content": RECEIPT_PROMPT}, {"role": "user", "content": guard.wrap(text_for_model)}],
         RECEIPT_SCHEMA)
     if not data:
         return None
