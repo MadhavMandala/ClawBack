@@ -18,8 +18,9 @@ import re
 import time
 from dataclasses import dataclass
 
+from . import budget
 from .config import settings
-from .trace import record
+from .trace import record, record_repeat
 
 # One row per tier: which model, its backup tier, whether thinking may be on, and limits.
 @dataclass(frozen=True)
@@ -71,6 +72,10 @@ class ThinkingNotAllowed(ValueError):
     """Asked for thinking on a tier that must not think (Lightning)."""
 
 
+class BudgetExceeded(RuntimeError):
+    """The daily model spend cap (budget.py) is reached: no call was made. Callers take their non-model path."""
+
+
 @functools.cache
 def _make_client(base_url: str, api_key: str):
     from openai import OpenAI
@@ -104,10 +109,16 @@ def chat(
     max_tokens: int | None = None,
     schema: dict | None = None,
 ) -> LLMResult:
-    """One model call (with one retry on rate limits / server errors), recorded in the trace."""
+    """One model call (with one retry on rate limits / server errors), recorded in the trace.
+
+    Refuses before calling, with BudgetExceeded and a "skipped" trace row, once a daily spend cap is reached.
+    """
     tier = TIERS[role]
     if thinking and not tier.thinking_allowed:
         raise ThinkingNotAllowed(f"thinking is not allowed on the {role!r} tier ({tier.model})")
+    if reason := budget.blocked(user_id):
+        record_repeat(user_id, stage, tier.model, "skipped", reason, tier=role)
+        raise BudgetExceeded(reason)
     kwargs: dict = {
         "model": tier.model,
         "messages": messages,
@@ -141,6 +152,7 @@ def chat(
     treason = (getattr(details, "reasoning_tokens", 0) or 0) if details else 0
     pin, pout = PRICES.get(tier.model, (0.0, 0.0))
     cost = tin / 1e6 * pin + tout / 1e6 * pout
+    budget.add(user_id, cost)
     record(user_id, stage, tier.model, tier=role, ms=ms, input_tokens=tin, output_tokens=tout,
            reasoning_tokens=treason, cost_usd=cost)
     # Only `content` is the answer. `reasoning_content` (thinking) is never returned to callers.
@@ -169,6 +181,8 @@ def chat_json(
             reason = "reply was not a JSON object"
         except ThinkingNotAllowed:
             raise
+        except BudgetExceeded:
+            return None, None  # the backup tiers would be refused too
         except Exception as exc:
             reason = str(exc)[:200]
         if tier.fallback is None:

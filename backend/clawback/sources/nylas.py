@@ -17,17 +17,29 @@ Built (checked against developer.nylas.com on 2026-10-22), plain REST over httpx
   - A 401 / 404 on the grant means it expired or was removed: the connection needs a reconnect. A 429 waits for
     Retry-After (or backs off) and retries. Requests to one grant run one at a time, as Nylas advises.
   - delete_grant(): disconnect deletes the grant at Nylas (best effort).
+  - Webhooks (checked against developer.nylas.com on 2026-10-23): Nylas checks the URL once with
+    GET ?challenge=<value>, which must echo the value as plain text within 10 seconds. Each notification is a
+    CloudEvents-style JSON body {specversion, type, source, id, time, webhook_delivery_attempt,
+    data: {application_id, object}}, signed in X-Nylas-Signature: hex HMAC-SHA256 of the raw body, keyed with
+    the webhook_secret Nylas returned when the webhook was created (NYLAS_WEBHOOK_SECRET). For message.created
+    (and message.created.truncated, sent without the body when over 1 MB) data.object has id and grant_id; for
+    grant.expired / grant.deleted data.object has grant_id. Delivery is at least once, up to 3 tries.
+    fetch_message() then reads that one message (GET /v3/grants/{id}/messages/{message_id}); the body in the
+    notification itself is never used or stored.
+  - grant_status(): GET /v3/grants/{id}, for the nightly grant check.
 
-MISSING [email-webhooks]: Nylas message.created webhooks. Each Sync re-reads the newest matching mail instead.
 MISSING [email-drafts]: cancellation emails saved as drafts through Nylas's drafts API.
 MISSING [nylas-production]: the free Sandbox allows 5 connected accounts, and mail passes through Nylas.
 """
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import secrets
 import threading
 import time
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from html import unescape
 from typing import Callable
@@ -159,14 +171,50 @@ def finish_connect(user_id: str, code: str) -> EmailConnection:
     return conn
 
 
-def delete_grant(user_id: str, grant_id: str) -> None:
-    """Best effort: delete the grant at Nylas. Our saved copy is forgotten either way."""
+def delete_grant(user_id: str, grant_id: str) -> bool:
+    """Best effort: delete the grant at Nylas. Our saved copy is forgotten either way.
+
+    True when Nylas confirmed, or answered that the grant was already gone."""
     try:
         with net.client() as c, timed(user_id, "email: delete grant", ENGINE) as info:
             r = _call(c, "DELETE", f"/v3/grants/{quote(grant_id, safe='')}")
             info["note"] = "grant deleted at Nylas" if r.is_success else f"delete answered HTTP {r.status_code}"
+            return r.is_success or r.status_code == 404
     except Exception:
-        pass
+        return False
+
+
+def state_user(state: str | None) -> str | None:
+    """The user a sign-in state belongs to, without using it up (the callback route locks that user first)."""
+    with _states_lock:
+        entry = _states.get(state or "")
+    return entry[0] if entry and entry[1] >= time.time() else None
+
+
+def forget_states(user_id: str) -> None:
+    """Drop this user's unfinished sign-ins (on delete)."""
+    with _states_lock:
+        for k in [k for k, (uid, _) in _states.items() if uid == user_id]:
+            del _states[k]
+
+
+def grant_status(user_id: str, grant_id: str) -> str:
+    """The nightly grant check: valid | invalid (needs a new sign-in) | gone (deleted at Nylas) | unknown."""
+    require_config()
+    try:
+        with net.client() as c, timed(user_id, "email: grant check", ENGINE) as info:
+            r = _call(c, "GET", f"/v3/grants/{quote(grant_id, safe='')}")
+            if r.status_code in (401, 403, 404):
+                status = "gone"
+            elif r.is_success:
+                state = str((net.json_or_empty(r).get("data") or {}).get("grant_status") or "valid").lower()
+                status = "valid" if state == "valid" else "invalid"
+            else:
+                status = "unknown"
+            info["note"] = f"grant {status}" + ("" if r.is_success else f" (HTTP {r.status_code})")
+    except EmailError:  # couldn't reach Nylas: say nothing about the grant
+        return "unknown"
+    return status
 
 
 # --- Reading mail -----------------------------------------------------------------------------------
@@ -332,7 +380,10 @@ def _call(c: httpx.Client, method: str, path: str, auth: bool = True, **kw) -> h
 
 
 def _get_json(c: httpx.Client, path: str, params: dict) -> dict:
-    r = _call(c, "GET", path, params=params)
+    return _json_or_raise(_call(c, "GET", path, params=params))
+
+
+def _json_or_raise(r: httpx.Response) -> dict:
     if r.is_success:
         return net.json_or_empty(r)
     data = net.json_or_empty(r)
@@ -359,11 +410,61 @@ def _backoff(r: httpx.Response, attempt: int) -> float:
         return float(min(2**attempt, 16))
 
 
+# --- Webhooks ---------------------------------------------------------------------------------------
+
+MESSAGE_EVENTS = frozenset({"message.created", "message.created.truncated", "message.created.transformed"})
+GRANT_LOST_EVENTS = frozenset({"grant.expired", "grant.deleted"})
+
+
+@dataclass
+class WebhookEvent:
+    type: str
+    grant_id: str | None
+    message_id: str | None  # for message.* events
+
+
+def webhook_secret() -> str:
+    secret = config.settings.nylas_webhook_secret
+    if not secret:
+        raise Missing("Email webhooks aren't set up on this server. Create the webhook in Nylas, put its "
+                      "webhook_secret in NYLAS_WEBHOOK_SECRET in backend/.env, then restart the backend.")
+    return secret
+
+
+def verify_webhook(raw: bytes, signature: str | None) -> bool:
+    """X-Nylas-Signature is the hex HMAC-SHA256 of the raw body, keyed with the webhook secret."""
+    expected = hmac.new(webhook_secret().encode("utf-8"), raw, hashlib.sha256).hexdigest()
+    return bool(signature) and hmac.compare_digest(expected, (signature or "").strip().lower())
+
+
+def parse_webhook(payload: dict) -> WebhookEvent:
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+    obj = data.get("object") if isinstance(data.get("object"), dict) else {}
+    kind = str(payload.get("type") or "")
+    grant = obj.get("grant_id") or data.get("grant_id")
+    message = obj.get("id") if kind.startswith("message.") else None
+    return WebhookEvent(kind, str(grant) if grant else None, str(message) if message else None)
+
+
+def fetch_message(user_id: str, conn: EmailConnection, message_id: str) -> Email | None:
+    """One message, for a webhook. None when it is gone or older than the 180-day window."""
+    require_config()
+    if conn.needs_reconnect:
+        raise EmailExpired(conn.error or EXPIRED, status=401)
+    path = f"/v3/grants/{quote(conn.grant_id, safe='')}/messages/{quote(message_id, safe='')}"
+    with net.client() as c, timed(user_id, "email: read new message", ENGINE) as info:
+        r = _call(c, "GET", path)
+        if r.status_code == 404:  # deleted already (a lost grant shows up in the nightly grant check)
+            info["note"] = "the new message is gone"
+            return None
+        email = to_email(_json_or_raise(r).get("data") or {}, conn.provider)
+        if email and email.received_at < now() - timedelta(days=DAYS):
+            email = None
+        info["note"] = "read 1 new message" if email else "new message skipped"
+    return email
+
+
 # --- Still MISSING ----------------------------------------------------------------------------------
-
-def handle_webhook(payload: dict) -> None:
-    missing("email-webhooks")
-
 
 def create_draft(user_id: str, to: str, subject: str, body: str) -> str:
     missing("email-drafts")
