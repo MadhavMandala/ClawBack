@@ -1,0 +1,408 @@
+{
+  "note": "Store price-adjustment policies: whether a store refunds the difference when its OWN price drops after you buy. Rows with verified=false could not be confirmed on the store's official page on checked_on and must not drive requests. Stores change these terms often; re-check source_url before relying on a row older than ~3 months. Match entries are UPPERCASE bank-descriptor fragments or lowercase sender domains.",
+  "checked_on": "2026-10-22",
+  "retailers": [
+    {
+      "store": "Best Buy",
+      "match": [
+        "BESTBUY",
+        "BEST BUY",
+        "bestbuy.com",
+        "emailinfo.bestbuy.com"
+      ],
+      "exclude": [],
+      "adjusts": true,
+      "window_days": 15,
+      "window_from": "delivery",
+      "tiers": [
+        {
+          "name": "Standard",
+          "window_days": 15
+        },
+        {
+          "name": "My Best Buy Plus / My Best Buy Total",
+          "window_days": 60
+        }
+      ],
+      "conditions": "Price Match Guarantee terms (effective date shown: September 2, 2026): 'If we lower our in-store, online or app price during the return and exchange period, we will match our lower price, upon request.' The window is the return and exchange period, which 'begins the day you receive your product' (Return & Exchange Promise, effective February 23, 2026): 15 days standard, 60 days for My Best Buy Plus and Total members. Category overrides apply to everyone, members included: activatable devices 14 days (Verizon activatable devices 30), holiday decorations 15, Microsoft Office 30, pet training devices and hearing aids 60, litter boxes 90. Plus/Total extended windows do not apply to Marketplace purchases. Multiple price matches are allowed during the return period. Online and app prices are matched on in-store purchases, and in-store prices on online purchases. For delivery-scheduled items, a price drop before the scheduled delivery date is refunded at 100% of the difference including tax (phone request only). Pre-orders are charged the lower price automatically at shipment. Puerto Rico stores have their own policy. Online chat requests must be made by the purchaser. The page does not say whether Best Buy's own daily/hourly deals or doorbusters count; it does not name doorbusters at all.",
+      "exclusions": [
+        "Marketplace (third-party seller) products",
+        "clearance items",
+        "open-box items",
+        "refurbished and pre-owned items",
+        "items advertised as limited quantity",
+        "member-only, loyalty or paid-program pricing (listed in the general exclusions)",
+        "pricing errors and out-of-stock items",
+        "Best Buy Education and Best Buy Business transactions"
+      ],
+      "how_to_claim": "In-store purchases: talk to a Customer Specialist or go to the Customer Service desk. BestBuy.com purchases: online chat (purchaser only) or phone 1-888-BEST BUY (1-888-237-8289), the number shown on the official FAQ; BestBuy.com requests cannot be done in stores or by email. Order Details (https://www.bestbuy.com/profile/ss/orderlookup) shows eligibility. No online form.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://www.bestbuy.com/site/help-topics/price-match-guarantee/pcmcat290300050002.c?id=pcmcat290300050002",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Target",
+      "match": [
+        "TARGET",
+        "target.com"
+      ],
+      "exclude": [],
+      "adjusts": true,
+      "window_days": 14,
+      "window_from": "purchase",
+      "tiers": [],
+      "conditions": "Price Match Guarantee: Target matches when you buy a qualifying item at Target and then find the identical item for less at Target.com, in Target stores or with an auto-applied Target Circle deal. 'Price matches may be requested at time of purchase or within 14 days after purchase.' Original receipts (physical or digital) or packing slips are required for price adjustments up to 14 days after purchase. The item must be identical (brand, size, weight, color, quantity, model number) and the lower price must be current and verifiable. Screenshots and photos are not accepted; a team member validates the price on Target.com or the digital ad. Target.com prices are matched on in-store purchases and in-store prices on Target.com purchases. Target Plus partner items: 14 days, same partner only. The page does not match competitors.",
+      "exclusions": [
+        "clearance, closeout and liquidation items",
+        "damaged, used, open-package, refurbished, pre-owned and rent-to-own items",
+        "Target Circle Bonuses you must tap to add, gift card offers, Registry completion coupons and Target coupons",
+        "in-store price matches from other Target stores",
+        "typographical pricing errors and non-branded items",
+        "credit card offers, financing, service offers, bundles, sales-tax promotions, free items, rebates and mail-in offers",
+        "contract phone devices and plans, optical, product services (warranties, assembly), clinic and pharmacy purchases",
+        "pre-order items",
+        "alcohol (state rules)",
+        "Target items cannot be matched to Target Plus items"
+      ],
+      "how_to_claim": "In-store purchases: bring proof of the current lower price to Guest Services at your local Target. Target.com or app purchases: chat online or call Guest Services at 1-800-591-3869 (number shown on the official page). Target Plus purchases: call Guest Services.",
+      "claim_url": "https://www.target.com/help/contact-us/target-com-order-experience",
+      "no_automated_requests": false,
+      "source_url": "https://www.target.com/help/articles/policies-guidelines/price-match-guarantee",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Walmart",
+      "match": [
+        "WALMART",
+        "WAL-MART",
+        "WM SUPERCENTER",
+        "walmart.com"
+      ],
+      "exclude": [],
+      "adjusts": false,
+      "window_days": null,
+      "window_from": null,
+      "tiers": [],
+      "conditions": "No post-purchase price adjustment. Walmart.com: 'we do not offer any price matching for items offered on our website', and the policy specifically excludes 'prices for items previously purchased on Walmart.com that have since decreased in price.' Walmart stores: an associate will match the identical item's Walmart.com price only if told 'at the time of checkout'; the policy describes no adjustment after an in-store purchase. Policy text says it was last updated June 8, 2023. Read on corporate.walmart.com because walmart.com help pages returned a bot check.",
+      "exclusions": [
+        "items previously purchased on Walmart.com that later decreased in price",
+        "competitor prices",
+        "Walmart.com special-event prices (clearance, Rollback, Black Friday, Cyber Monday, other limited-time promotions)",
+        "Walmart Marketplace / third-party seller prices",
+        "prices from other Walmart or Neighborhood Market stores"
+      ],
+      "how_to_claim": "Not applicable after purchase. In-store Walmart.com price match must be requested at checkout.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://corporate.walmart.com/policies",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Amazon",
+      "match": [
+        "AMAZON.COM",
+        "AMZN MKTP",
+        "AMAZON MKTPL",
+        "amazon.com"
+      ],
+      "exclude": [],
+      "adjusts": false,
+      "window_days": null,
+      "window_from": null,
+      "tiers": [],
+      "conditions": "No price adjustment after purchase. Amazon's 'Pricing and Price Matching' help page says it compares prices itself and 'As a result, we don't offer price matching compensation.' The only exception is the Pre-order Price Guarantee: for not-yet-released items sold by Amazon.com that show the 'Pre-order Price Guarantee' message, Amazon charges the lowest price it offered between the order and the release date, automatically, so there is nothing to request. Third-party seller items, membership-only prices and erroneous prices are excluded from that guarantee.",
+      "exclusions": [
+        "all regular (released) purchases",
+        "third-party seller items (pre-order guarantee)",
+        "prices that require joining a program (pre-order guarantee)"
+      ],
+      "how_to_claim": "Nothing to request: pre-order price drops are applied automatically. If the order already entered shipping and the price drops by the end of release day, Amazon refunds the difference to the credit or debit card within 48 hours; orders paid another way go through Contact Us.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://www.amazon.com/gp/help/customer/display.html?nodeId=G9EAYKPV5YYDB8P7",
+      "extra_source_urls": [
+        "https://www.amazon.com/gp/help/customer/display.html?nodeId=G4BRP7LCB9DSDNCR"
+      ],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Costco",
+      "match": [
+        "COSTCO",
+        "costco.com"
+      ],
+      "exclude": [],
+      "adjusts": true,
+      "window_days": 30,
+      "window_from": "purchase",
+      "tiers": [],
+      "conditions": "Official page is titled 'Price Match - Costco.com Orders' (document CU1491, published 05/15/2026). 'For members other than resellers, purchases that reduce in price within 30 days of the date of purchase are eligible for a price match.' For items with specific sale dates (for example Holiday Savings promotions), the request must fall within both the active promotional dates and 30 days of the purchase date. Promotional item limits apply. Costco.com prices are not matched to warehouse prices because Costco.com prices include shipping and handling. Credits are typically issued in 5-10 business days to the original payment method. Costco may deny any request at its sole discretion. The page does not say whether delivery date matters.",
+      "exclusions": [
+        "resellers (must buy during promotional dates)",
+        "precious metals",
+        "other retailers' prices (no competitor matching)",
+        "Costco.com orders matched to warehouse prices",
+        "quantities above promotional item limits"
+      ],
+      "how_to_claim": "Costco.com orders: online form ('Request a price match') at https://www.costco.com/PriceAdjustmentView. Warehouse purchases: Returns counter at the warehouse where you bought the item. Special Order Kiosk and Home Improvement installed products: the Costco authorized dealer. Tires: online form if bought online, otherwise the purchasing warehouse.",
+      "claim_url": "https://www.costco.com/PriceAdjustmentView",
+      "no_automated_requests": false,
+      "source_url": "https://customerservice.costco.com/app/answers/detail/a_id/628/~/price-adjustment---costco.com-orders",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Nordstrom",
+      "match": [
+        "NORDSTROM",
+        "nordstrom.com"
+      ],
+      "exclude": [
+        "NORDSTROM RACK",
+        "NORDSTROMRACK",
+        "nordstromrack.com"
+      ],
+      "adjusts": true,
+      "window_days": 10,
+      "window_from": "purchase",
+      "tiers": [],
+      "conditions": "Limited, and refuses automation. Pricing Policy: 'If we lower the price of an item you've already purchased from us at full price' and the same color and size is still available, Nordstrom will adjust 'at your request within 10 days of your in-store purchase or shipment date' (online orders count from the shipment date, not delivery). One price adjustment per item. Items in Nordstrom savings events and the Anniversary Sale qualify. Credit goes to the original payment method. The page states: 'We do not accept automated price adjustment requests from third-party services.' ClawBack must NOT file these; at most it can remind the user to file it themselves (no_automated_requests is set). The page does not cover Nordstrom Rack, so exclude 'NORDSTROM RACK' and nordstromrack.com matches. No competitor matching.",
+      "exclusions": [
+        "items originally purchased on sale",
+        "items from third-party sellers or Nordstrom Marketplace",
+        "more than one adjustment per item",
+        "automated requests from third-party services"
+      ],
+      "how_to_claim": "The user files it personally through the Price Adjustment page in their Nordstrom account. The page names no chat, phone or in-store route.",
+      "claim_url": "https://www.nordstrom.com/my-account/price-adjustment",
+      "no_automated_requests": true,
+      "source_url": "https://www.nordstrom.com/browse/customer-service/policy/pricing-policy",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Gap Inc. (Gap, Gap Factory, Athleta)",
+      "match": [
+        "GAP.COM",
+        "GAPFACTORY",
+        "GAP FACTORY",
+        "ATHLETA",
+        "gap.com",
+        "gapfactory.com",
+        "athleta.com"
+      ],
+      "exclude": [
+        "oldnavy.gap.com",
+        "bananarepublic.gap.com"
+      ],
+      "adjusts": true,
+      "window_days": 14,
+      "window_from": "purchase",
+      "tiers": [],
+      "conditions": "The Gap, Gap Factory and Athleta 'Getting a Price Adjustment' pages use the same wording: if an item you've purchased has gone down in price, you can request 'a one-time price adjustment within 14 days of your order date.' If eligible, the difference goes back to the original payment method. Online purchases cannot be adjusted in a store. The pages say nothing about in-store purchases and do not state that the policy covers all Gap Inc. brands. Old Navy is a separate row because its page could not be read. Banana Republic was also not confirmed: its price-adjustment URLs returned error pages. If sender matching is suffix-based, 'gap.com' also matches oldnavy.gap.com and bananarepublic.gap.com mail, so route those to their own brands first.",
+      "exclusions": [
+        "items bought with a promotion code or other discount (free-shipping-only discount is OK)",
+        "'Final sale' items",
+        "more than one adjustment (one-time)"
+      ],
+      "how_to_claim": "Contact customer service through the site's 'contact us' link within 14 days of the order; have the order number from the confirmation email ready (Athleta page: put it in the email or chat message). Online purchases cannot be adjusted in stores. No dedicated claim form.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://www.gap.com/customer-service/getting-a-price-adjustment?cid=1192378",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Apple",
+      "match": [
+        "APPLE STORE",
+        "APPLE.COM/US",
+        "apple.com"
+      ],
+      "exclude": [
+        "APPLE.COM/BILL",
+        "ITUNES.COM"
+      ],
+      "adjusts": true,
+      "window_days": 14,
+      "window_from": "delivery",
+      "tiers": [],
+      "conditions": "U.S. Sales and Refund Policy (Apple Store Purchase Policies): 'Should Apple reduce the price on any Apple-branded product within 14 calendar days from the date you receive your product', contact Apple 'within 14 days of the price change' for a refund or credit of the difference. That makes two clocks: the drop must happen within 14 days of receipt, and the claim must be filed within 14 days of the drop. Price protection is limited to 10 units of a product, and Apple may require the product or proof of possession. Channel scope: the policy covers Apple Store retail locations, Apple Store Online, the Apple Store app and Retail Customer Care phone orders. The Apple Education terms on the Returns & Refunds page carry the same clause. Apple-branded products only; it does not cover products bought from other retailers or carriers. Business-store terms were not checked. Do not match 'APPLE.COM/BILL' (App Store and subscriptions).",
+      "exclusions": [
+        "limited-time price reductions",
+        "special sales events such as Black Friday",
+        "non-Apple-branded (third-party) products",
+        "more than 10 units of a particular product"
+      ],
+      "how_to_claim": "Visit an Apple Store location or contact Retail Customer Care at 1-800-MY-APPLE (shown on the official page) within 14 days of the price change. No online form.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://www.apple.com/legal/sales-support/sales-policies/retail_us.html",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Dell",
+      "match": [
+        "DELL",
+        "dell.com"
+      ],
+      "exclude": [],
+      "adjusts": true,
+      "window_days": 30,
+      "window_from": "purchase",
+      "tiers": [],
+      "conditions": "Dell 30-Day Price Guarantee (US): 'If you see a lower price on Dell.com within 30 days after your purchase, we will refund the difference.' The FAQ says it 'applies for 30 days from your invoice date'. Limits: five refunds per customer, $10,000 maximum purchase amount, and one approved pricing-policy credit per product per customer (Price Guarantee or Competitor Price Match, not both). Personal use only; business accounts, resellers and bulk purchases are not eligible. Dell may limit quantities and deny requests. No automatic online adjustment. A separate post-purchase Competitor Price Match also has a 30-day-from-invoice window (PCs capped at 10% of the Dell price). The 'DELL' descriptor substring can also match unrelated merchants (e.g. MODELL'S, WENDELL), so confirm with the dell.com email.",
+      "exclusions": [
+        "marketplace resellers",
+        "clearance and Dell Outlet products",
+        "limited-quantity, out-of-stock and discontinued items",
+        "Deal of the Week, Daily Deals / deal-of-the-day, flash sales, doorbusters, special seasonal or holiday offers",
+        "coupons, mail-in rebates, rewards, gift card offers, free bundled items",
+        "financing offers (including Special Finance)",
+        "Member Purchase Program offers",
+        "service and installation offers",
+        "pricing errors",
+        "paid membership club prices"
+      ],
+      "how_to_claim": "Save the lower Dell.com product link and submit it to a customer care agent through the Order Support portal; Dell refunds the difference after verification.",
+      "claim_url": "https://www.dell.com/support/order-status/en-us/order-support",
+      "no_automated_requests": false,
+      "source_url": "https://www.dell.com/en-us/lp/price-match-guarantee",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Staples",
+      "match": [
+        "STAPLES",
+        "staples.com"
+      ],
+      "exclude": [],
+      "adjusts": true,
+      "window_days": 14,
+      "window_from": "purchase",
+      "tiers": [],
+      "conditions": "Staples Price Match Guarantee: 'If you purchase an item from Staples store and tell us within 14 days that you found that item at a lower price in our stores or at staples.com, we'll refund the difference.' Only purchases made in a Staples store qualify ('Price Match is only available for purchases made in a Staples store'); the item must be new, identical (model number, components, US warranty) and in stock. Staples coupons and rebates are deducted from the Staples price first. One price match per customer per item.",
+      "exclusions": [
+        "purchases made on staples.com (store purchases only)",
+        "In Store Pickup orders",
+        "local or special events: grand opening, anniversary, clearance, timed sales, liquidation, Black Friday, Cyber Monday",
+        "Tech Services and Print & Marketing services",
+        "products produced by third-party vendors; custom print and promotional products",
+        "postage, gift cards and phone cards, App Center apps",
+        "taxes, warranties, typographical errors, merchandise credits, contracted Staples Business Advantage or membership prices",
+        "more than one price match per customer per item"
+      ],
+      "how_to_claim": "Bring the receipt to the customer service desk at a Staples store and show the lower Staples or staples.com price.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://www.staples.com/sbd/cre/marketing/pmg/",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": true
+    },
+    {
+      "store": "Home Depot",
+      "match": [
+        "HOME DEPOT",
+        "HOMEDEPOT",
+        "homedepot.com"
+      ],
+      "exclude": [],
+      "adjusts": true,
+      "window_days": 30,
+      "window_from": null,
+      "tiers": [],
+      "conditions": "NOT CONFIRMED on the official page: every homedepot.com URL tried (PM_Policy_Details, Price_Match_Guarantee, price-match-and-price-check, customer-service) returned HTTP 403 to WebFetch. Values are carried over from the prior table. A search-engine snippet of homedepot.com/c/price-match-and-price-check (not opened) mentions a 30-day request window, but exclusions such as clearance and special orders were not seen. Do not send requests based on this row.",
+      "exclusions": [],
+      "how_to_claim": "Not confirmed.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://www.homedepot.com/c/price-match-and-price-check",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": false
+    },
+    {
+      "store": "Kohl's",
+      "match": [
+        "KOHL'S",
+        "KOHLS",
+        "kohls.com"
+      ],
+      "exclude": [],
+      "adjusts": true,
+      "window_days": 14,
+      "window_from": null,
+      "tiers": [],
+      "conditions": "NOT CONFIRMED on the official page: kohls.com/faq/article/88 (Price Adjustments) and cs.kohls.com returned HTTP 403 to WebFetch. Values are carried over from the prior table. Search snippets of the official FAQ (not opened) say the window is 'the prior two weeks', an original dated receipt is needed, clearance, Kohl's Cares and BOGO items are excluded, and Kohl's can declare blackout periods. Do not send requests based on this row.",
+      "exclusions": [],
+      "how_to_claim": "Not confirmed.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://www.kohls.com/faq/article/88",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": false
+    },
+    {
+      "store": "Macy's",
+      "match": [
+        "MACY'S",
+        "MACYS",
+        "macys.com"
+      ],
+      "exclude": [],
+      "adjusts": true,
+      "window_days": 10,
+      "window_from": null,
+      "tiers": [],
+      "conditions": "NOT CONFIRMED on the official page: macys.com returned HTTP 403 and customerservice-macys.com did not resolve (DNS) for WebFetch. Values are carried over from the prior table. Search snippets of the official article (not opened) say: 10 days from the order date; furniture and mattresses counted from the delivery date (White Glove, In-Home, Room of Choice) or the ship date (warehouse or vendor); the lower price must be an advertised Macy's price; Digital Third Party Seller, Direct from Vendor and Last Act items excluded. Do not send requests based on this row.",
+      "exclusions": [],
+      "how_to_claim": "Not confirmed.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://www.macys.com/customer-service/articles/how-can-i-get-a-price-adjustment",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": false
+    },
+    {
+      "store": "Old Navy",
+      "match": [
+        "OLDNAVY",
+        "OLD NAVY",
+        "oldnavy.com",
+        "oldnavy.gap.com"
+      ],
+      "exclude": [],
+      "adjusts": true,
+      "window_days": 14,
+      "window_from": null,
+      "tiers": [],
+      "conditions": "NOT CONFIRMED on the official page: Old Navy customer-service pages loaded but did not contain any price-adjustment text, and guessed price-adjustment URLs returned 'Sorry, this page cannot be displayed.' Values (one-time, 14 days) are carried over from the prior table and only match the sister-brand Gap/Athleta/Gap Factory policy by assumption. Do not send requests based on this row.",
+      "exclusions": [],
+      "how_to_claim": "Not confirmed.",
+      "claim_url": null,
+      "no_automated_requests": false,
+      "source_url": "https://oldnavy.gap.com/customerService/info.do?cid=83041&cs=price_adjustments",
+      "extra_source_urls": [],
+      "checked_on": "2026-10-22",
+      "verified": false
+    }
+  ]
+}

@@ -46,7 +46,7 @@ export function sources(s: Subscription): string {
 }
 
 // Backend text carries ISO dates ("2026-10-04: ..."); show them the way people write dates.
-export const humanDates = (text: string) => text.replace(/(\d{4}-\d{2}-\d{2})/g, (d) => shortDate(d) ?? d);
+export const humanDates = (text: string) => text.replace(/\b(\d{4}-\d{2}-\d{2})\b/g, (d) => shortDate(d) ?? d);
 
 // Whole days from today (the viewer's date) to an ISO date. Negative once it has passed.
 export function daysLeft(iso: string | null | undefined): number | null {

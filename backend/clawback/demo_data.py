@@ -11,6 +11,24 @@ Each subscription is there to exercise one flag:
 - Adobe, ChatGPT Plus: no usage evidence at all (needs a check-in)
 - Super Duolingo: free trial about to convert, email only (trial_ending)
 - Grocery, gas and one-off shopping: noise that must NOT be detected as subscriptions
+
+Bills (matched to providers in rules/bills.json):
+- Xfinity internet: $55 for 3 months, then $85 after a "promotional rate ends" email (bill_increase, high)
+- Verizon Wireless: a steady $80 (negotiable)
+- GEICO auto: $102, then $121 after a renewal email (+18.6%, bill_increase, high)
+- PG&E electric: swings between $60 and $140 (a variable bill: no flag, "looks fine")
+
+One-time money (findings):
+- Best Buy: the same $129.99 charged twice on one day, one order email (duplicate_charge, high)
+- Bank fees: overdraft $35.00, foreign transaction $4.17, out-of-network ATM $3.50 (bank_fee)
+- Target: Sony headphones bought 6 days ago at $199.99, simulated price check $169.99 (price_drop, $30)
+- Walmart: an air fryer whose price also dropped, NOT flagged because Walmart doesn't price-adjust
+- United: a booking ($412.40) and then a cancellation offering a travel credit (flight_refund, $412.40)
+- Settlements: the Kroger, Amazon and Apple charges / emails above match open settlements in
+  rules/settlements.json. settlement_story() adds one dated return email inside the class period of a broad,
+  nationwide one (today Amazon's return-policy settlement), so the demo always shows a match that fits.
+
+PRICE_CHECKS is the simulated current-price table for demo mode (tools/prices.py says so in evidence and trace).
 """
 
 from __future__ import annotations
@@ -18,6 +36,12 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta, timezone
 
 from .models import Email, Transaction
+
+# Simulated "current price" checks for demo mode: (store, words in the item name) -> price now.
+PRICE_CHECKS: dict[tuple[str, str], float] = {
+    ("target", "sony wh-1000xm5"): 169.99,
+    ("walmart", "ninja air fryer"): 69.00,
+}
 
 
 def _monthly_dates(today: date, day: int, months: int = 6) -> list[date]:
@@ -63,6 +87,26 @@ def transactions(today: date) -> list[Transaction]:
     for d in _monthly_dates(today, 3):
         add(d, "OPENAI *CHATGPT SUBSCR SAN FRANCISCO", 20.00)
 
+    # Bills.
+    for i, d in enumerate(_monthly_dates(today, 9)):
+        add(d, "COMCAST XFINITY 800-266-2278", 55.00 if i < 3 else 85.00)
+    for d in _monthly_dates(today, 14):
+        add(d, "VERIZON WIRELESS PAYMENTS", 80.00)
+    for i, d in enumerate(_monthly_dates(today, 21)):
+        add(d, "GEICO *AUTO 800-841-3000", 102.00 if i < 4 else 121.00)
+    for d, amount in zip(_monthly_dates(today, 25), (62.40, 88.15, 139.70, 121.05, 74.30, 60.12)):
+        add(d, "PGANDE WEB ONLINE", amount)
+
+    # One-time money.
+    add(today - timedelta(days=9), "BEST BUY 00012345 ATLANTA", 129.99)
+    add(today - timedelta(days=9), "BEST BUY 00012345 ATLANTA", 129.99)  # charged twice for one order
+    add(today - timedelta(days=17), "OVERDRAFT ITEM FEE", 35.00)
+    add(today - timedelta(days=23), "FOREIGN TRANSACTION FEE", 4.17)
+    add(today - timedelta(days=11), "NON-NETWORK ATM FEE", 3.50)
+    add(today - timedelta(days=6), "TARGET 00011111 ATLANTA", 199.99)
+    add(today - timedelta(days=8), "WALMART.COM 8009256278", 89.00)
+    add(today - timedelta(days=40), "UNITED 0162345678901", 412.40)
+
     # Noise: varying amounts, not subscriptions.
     for k in range(26):
         add(today - timedelta(days=7 * k + 1), "KROGER #0412 ATLANTA GA", round(48 + (k * 13.7) % 61, 2))
@@ -104,6 +148,34 @@ def emails(today: date) -> list[Email]:
     add(today - timedelta(days=2), "hello@duolingo.com", "Your Super Duolingo free trial ends in 3 days",
         "Your free trial ends in 3 days. After that you'll be charged $12.99/month unless you cancel.")
 
+    # Bills.
+    xfinity = _monthly_dates(today, 9)
+    add(xfinity[3] - timedelta(days=15), "online.communications@alerts.comcast.net",
+        "Your promotional rate is ending soon",
+        f"Your promotional rate of $55.00/month ends on {xfinity[3] - timedelta(days=1):%B %d, %Y}. "
+        "Starting with your next bill, your monthly rate for Xfinity Internet will be $85.00/month.")
+    geico = _monthly_dates(today, 21)
+    add(geico[4] - timedelta(days=20), "geico@email.geico.com", "Your GEICO policy renewal",
+        f"Your auto policy renews on {geico[4]:%B %d, %Y}. Your new monthly payment will be $121.00 (was $102.00).")
+
+    # One-time money.
+    add(today - timedelta(days=9), "BestBuyInfo@emailinfo.bestbuy.com", "Thanks for your order",
+        "Order number: BBY01-806512345678. Item: Logitech MX Master 3S Wireless Mouse, $129.99. "
+        "Order total: $129.99. We'll email you when it ships.")
+    add(today - timedelta(days=6), "orders@oe.target.com", "Thanks for your order!",
+        "Order #102938475610. Item: Sony WH-1000XM5 Wireless Noise Canceling Headphones, $199.99. "
+        "Order total: $199.99.")
+    add(today - timedelta(days=8), "help@walmart.com", "Your Walmart order is confirmed",
+        "Order #200011122233. Item: Ninja Air Fryer AF101, $89.00. Order total: $89.00.")
+    flight_day = today + timedelta(days=12)
+    when = f"{flight_day:%b} {flight_day.day}, {flight_day.year}"
+    add(today - timedelta(days=40), "unitedairlines@united.com", "Your United flight confirmation - K7Q2PL",
+        f"Confirmation number: K7Q2PL. Flight UA 1532, San Francisco (SFO) to Chicago (ORD), {when} 8:05 AM. "
+        "Total fare: $412.40, charged to your Visa ending in 4242.")
+    add(today - timedelta(days=4), "notifications@united.com", "Your flight UA 1532 has been cancelled",
+        f"We're sorry. Your flight UA 1532 from SFO to ORD on {when} has been cancelled. "
+        "We've added a travel credit of $412.40 to your MileagePlus account for future travel.")
+
     # Noise the triage step should drop.
     add(today - timedelta(days=1), "noreply@medium.com", "Your daily digest", "Stories picked for you.")
     add(today - timedelta(days=3), "notifications@github.com", "[repo] New issue opened", "Someone opened an issue.")
@@ -111,3 +183,35 @@ def emails(today: date) -> list[Email]:
     add(today - timedelta(days=9), "team@linkedin.com", "You appeared in 12 searches", "See who's looking.")
 
     return sorted(out, key=lambda e: e.received_at)
+
+
+def settlement_story(today: date, transactions: list[Transaction], emails: list[Email], book) -> list[Email]:
+    """One dated return email for a featured settlement, so the demo shows a match that fits who qualifies.
+
+    Picks a verified, open, nationwide settlement (not limited to a state or venue) with its deadline at least 30
+    days away, preferring one the demo data already touches but only outside its class period (today: Amazon's
+    return-policy settlement), and adds a return email from its domain dated inside the class period.
+    """
+    from .findings.settlements import limited
+
+    def touches(s: dict) -> list[date]:
+        hits = [t.date for t in transactions if s in book.settlements_matching(t.description, today)]
+        return hits + [e.received_at.date() for e in emails
+                       if s in book.settlements_matching(f"{e.sender} {e.subject}", today)]
+
+    def inside(s: dict, d: date) -> bool:
+        return s["class_start"] <= d <= s["class_end"]
+
+    pool = [s for s in book.settlements
+            if not limited(s) and s["claim_deadline"] and s["claim_deadline"] >= today + timedelta(days=30)
+            and s["class_start"] and s["class_end"] and s["class_start"] < today
+            and any(m == m.lower() and "." in m for m in s["match"])]
+    pool.sort(key=lambda s: (not touches(s), any(inside(s, d) for d in touches(s)), s["claim_deadline"]))
+    if not pool:
+        return []
+    s = pool[0]
+    domain = next(m for m in s["match"] if m == m.lower() and "." in m)
+    on = max(s["class_start"], min(s["class_end"], today) - timedelta(days=120))
+    return [Email(id="e-settlement", received_at=_dt(on), sender=f"return@{domain}",
+                  subject="Your return request for order 112-4839201",
+                  body_text="We've received your return request. Your refund will be issued when we receive the item.")]

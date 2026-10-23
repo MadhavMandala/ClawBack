@@ -22,7 +22,7 @@ class Email(BaseModel):
     sender: str  # address, e.g. "no-reply@doordash.com"
     subject: str
     body_text: str
-    source: str = "demo"  # demo | gmail | outlook | forward
+    source: str = "demo"  # demo, or the Nylas provider it came from: google | microsoft | yahoo | icloud | imap | ews
 
 
 class Cadence(str, Enum):
@@ -58,7 +58,9 @@ class MembershipValue(BaseModel):
 
 
 class Flag(BaseModel):
-    kind: str  # unused | price_increase | overlap | membership_losing_money | trial_ending | unknown_usage
+    # unused | price_increase | overlap | membership_losing_money | trial_ending | unknown_usage
+    # bills: bill_increase | promo_ending | negotiable
+    kind: str
     severity: str  # high | medium | info
     message: str
     monthly_savings: float = 0.0
@@ -68,6 +70,8 @@ class Subscription(BaseModel):
     id: str
     merchant: str
     category: str
+    kind: str = "subscription"  # subscription | bill
+    bill_category: str | None = None  # internet | mobile | insurance | utility | gym (bills only)
     cadence: Cadence | None = None
     amount: float | None = None  # latest charge
     monthly_cost: float = 0.0
@@ -81,6 +85,63 @@ class Subscription(BaseModel):
     flags: list[Flag] = Field(default_factory=list)
     status: str = "active"  # active | trial | kept | cancel_pending | cancelled
     detected_from: list[str] = Field(default_factory=list)  # bank | email
+
+
+# --- One-time money: findings and the action prepared for each ---------------------------------------
+
+class RuleRef(BaseModel):
+    """The rule a finding relies on, quoted from backend/clawback/rules data (never from memory)."""
+
+    name: str
+    summary: str
+    source_url: str
+
+
+class Finding(BaseModel):
+    id: str  # stable hash of the kind + key facts, so dismiss / done survive re-runs
+    category: str  # charges | refunds | settlements
+    kind: str  # duplicate_charge | bank_fee | price_drop | flight_refund | flight_compensation | settlement
+    merchant: str
+    title: str
+    message: str
+    amount: float = 0.0
+    currency: str = "USD"  # USD | EUR | GBP
+    amount_note: str | None = None
+    deadline: date | None = None
+    deadline_label: str | None = None
+    confidence: str = "medium"  # high | medium | low
+    evidence: list[str] = Field(default_factory=list)
+    rule: RuleRef | None = None
+    status: str = "open"  # open | dismissed | done
+    found_on: date
+    # Facts the action builder needs (order number, flight, fare...). Not sent to the frontend.
+    details: dict = Field(default_factory=dict, exclude=True)
+
+
+class ActionLink(BaseModel):
+    label: str
+    url: str
+    verified: bool = False
+
+
+class ActionMessage(BaseModel):
+    to: str | None = None
+    subject: str | None = None
+    body: str
+
+
+class ActionPrep(BaseModel):
+    """What ClawBack prepares for the user to send or say. It never sends, files or calls anything itself."""
+
+    title: str
+    summary: str
+    channel: str  # email | chat | phone | form | dispute | in_person
+    steps: list[str] = Field(default_factory=list)
+    links: list[ActionLink] = Field(default_factory=list)
+    message: ActionMessage | None = None
+    script: list[str] | None = None
+    deadline: date | None = None
+    missing: list[str] = Field(default_factory=list)
 
 
 class TraceStep(BaseModel):

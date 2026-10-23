@@ -19,7 +19,7 @@ def test_api_smoke(monkeypatch):
         alt = client.get(f"/api/subscriptions/{hulu['id']}/alternatives").json()
         assert alt["hints"] and alt["missing"]
 
-        # Unbuilt integrations answer 501 with a MISSING message instead of pretending to work.
-        r = client.get("/api/connect/gmail")
+        # Unconfigured integrations answer 501 with a MISSING message instead of pretending to work.
+        r = client.get("/api/connect/email")
         assert r.status_code == 501 and "MISSING" in r.json()["missing"]
         assert client.get("/api/trace").json()

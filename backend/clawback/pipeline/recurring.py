@@ -5,6 +5,10 @@ A group of charges counts as a subscription when:
   - the amount is constant, or changes once and stays changed (a price increase).
 Groceries, gas and food orders vary in amount, so they drop out.
 
+Bills: charges that match a verified provider in rules/bills.json (via `bill_for`) are grouped by provider and
+come out with kind="bill". Bills marked variable_amount (utilities) are kept even though the amount swings, and a
+bill whose price stepped more than once is still a bill.
+
 MISSING [app-store-resolution]: APPLE.COM/BILL and GOOGLE * charges are grouped by amount and named only when
 an Apple / Google Play receipt email with the same amount is found (see resolve_store_billed).
 MISSING: an annual plan needs two charges to be detected from bank data, so in the first year it shows up only
@@ -17,6 +21,7 @@ import re
 import statistics
 from collections import defaultdict
 from datetime import date, timedelta
+from typing import Callable
 
 from ..merchants import APPLE_BILL_PATTERN, GOOGLE_PLAY_PATTERN, by_name, match_bank
 from ..models import Cadence, PriceChange, Subscription, Transaction
@@ -59,13 +64,27 @@ def _price_pattern(amounts: list[float]) -> tuple[bool, PriceChange | None, int 
     return False, None, None
 
 
-def detect(transactions: list[Transaction], today: date) -> list[Subscription]:
+def detect(transactions: list[Transaction], today: date,
+           bill_for: Callable[[str], dict | None] | None = None) -> list[Subscription]:
+    return detect_series(transactions, today, bill_for)[0]
+
+
+def detect_series(transactions: list[Transaction], today: date, bill_for: Callable[[str], dict | None] | None = None
+                  ) -> tuple[list[Subscription], dict[str, list[Transaction]]]:
+    """Recurring charges, plus each one's charges (oldest first) by subscription id."""
     groups: dict[str, list[Transaction]] = defaultdict(list)
+    bills: dict[str, dict] = {}
     for t in transactions:
-        if t.amount > 0:
-            groups[group_key(t)].append(t)
+        if t.amount <= 0:
+            continue
+        rule = bill_for(t.description) if bill_for else None
+        key = f"bill:{rule['provider']}" if rule else group_key(t)
+        if rule:
+            bills[key] = rule
+        groups[key].append(t)
 
     subs: list[Subscription] = []
+    series: dict[str, list[Transaction]] = {}
     for key, txs in groups.items():
         txs.sort(key=lambda t: t.date)
         if len(txs) < 2:
@@ -74,7 +93,10 @@ def detect(transactions: list[Transaction], today: date) -> list[Subscription]:
         cadence = _cadence(gaps)
         if cadence is None:
             continue
+        bill = bills.get(key)
         ok, change, idx = _price_pattern([t.amount for t in txs])
+        if bill and (bill.get("variable_amount") or not ok):
+            ok, change, idx = True, None, None  # bills may swing (utilities) or step more than once
         if not ok:
             continue
         if change is not None and idx is not None:
@@ -83,29 +105,34 @@ def detect(transactions: list[Transaction], today: date) -> list[Subscription]:
         last = txs[-1]
         if (today - last.date).days > period * 1.5:
             continue  # stopped: probably already cancelled
-        name, category = _name_for(key)
-        monthly = last.amount * {Cadence.weekly: 52 / 12, Cadence.monthly: 1, Cadence.annual: 1 / 12}[cadence]
-        subs.append(
-            Subscription(
-                id=re.sub(r"[^a-z0-9]+", "-", key.lower()).strip("-"),
-                merchant=name,
-                category=category,
-                cadence=cadence,
-                amount=last.amount,
-                monthly_cost=round(monthly, 2),
-                first_seen=txs[0].date,
-                last_charged=last.date,
-                next_expected=last.date + timedelta(days=round(period)),
-                charge_count=len(txs),
-                price_change=change,
-                detected_from=["bank"],
-            )
+        name, category = _name_for(key, bill)
+        per_month = {Cadence.weekly: 52 / 12, Cadence.monthly: 1, Cadence.annual: 1 / 12}[cadence]
+        typical = statistics.median(t.amount for t in txs[-3:]) if bill and bill.get("variable_amount") else last.amount
+        sub = Subscription(
+            id=re.sub(r"[^a-z0-9]+", "-", key.lower()).strip("-"),
+            merchant=name,
+            category=category,
+            kind="bill" if bill else "subscription",
+            bill_category=bill.get("category") if bill else None,
+            cadence=cadence,
+            amount=last.amount,
+            monthly_cost=round(typical * per_month, 2),
+            first_seen=txs[0].date,
+            last_charged=last.date,
+            next_expected=last.date + timedelta(days=round(period)),
+            charge_count=len(txs),
+            price_change=change,
+            detected_from=["bank"],
         )
-    return subs
+        subs.append(sub)
+        series[sub.id] = txs
+    return subs, series
 
 
-def _name_for(key: str) -> tuple[str, str]:
+def _name_for(key: str, bill: dict | None = None) -> tuple[str, str]:
     kind, _, rest = key.partition(":")
+    if kind == "bill" and bill:
+        return bill["provider"], bill.get("category") or "bill"
     if kind == "merchant":
         m = by_name(rest)
         return rest, (m.category if m else "unknown")

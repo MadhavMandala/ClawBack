@@ -1,0 +1,172 @@
+{
+  "note": "Patterns are heuristics, not bank-published formats: each is a case-insensitive regular expression searched in the raw transaction description, so plain text works as a substring; most patterns start at a word boundary (\\b). Banks word fees differently and change wording, so expect misses and the odd false match; check that the line is a small debit before flagging it, and ignore lines that match exclude_patterns (refunds and reversals of a fee are credits). Kinds are checked in file order and the first match wins, so more specific kinds come first. Reversal tips describe what people can ask for; banks and card issuers decide case by case and nothing here guarantees a refund.",
+  "checked_on": "2026-10-22",
+  "exclude_patterns": [
+    "\\bREFUND",
+    "\\bREVERS",
+    "\\bREBATE",
+    "\\bREIMB",
+    "\\bWAIVE",
+    "\\bFEE CREDIT",
+    "\\bCOURTESY CREDIT"
+  ],
+  "fees": [
+    {
+      "kind": "atm",
+      "label": "ATM fee (out-of-network fee or operator surcharge)",
+      "account": "deposit",
+      "patterns": [
+        "\\bATM (WITHDRAWAL |WDRL |TRANSACTION |TRAN |USAGE |SURCHARGE |OPERATOR |OWNER |ACCESS )?(FEE|CHARGE|CHG)",
+        "\\bATM SURCHARGE",
+        "\\bATM\\b.*\\b(FEE|SURCHARGE|CHG)"
+      ],
+      "rule": "Both your own bank and the ATM's owner can charge a fee for using another bank's ATM. Your bank must disclose its fee in writing when you open the account or when it adds a new fee; the ATM operator must disclose its fee at the machine.",
+      "reversal_tip": "Some banks and credit unions rebate ATM fees, so check the account's fee schedule; if a charge looks wrong or was never disclosed, ask the bank about a refund.",
+      "source_url": "https://www.consumerfinance.gov/ask-cfpb/can-my-bankcredit-union-charge-me-a-fee-to-use-another-bank-or-credit-unions-atm-en-1081/",
+      "extra_source_urls": [
+        "https://www.consumerfinance.gov/ask-cfpb/how-do-i-avoid-atm-fees-en-981/"
+      ],
+      "verified": true,
+      "notes": "Lines like 'NON-WF ATM WITHDRAWAL' are usually the cash withdrawal itself, not the fee, so ATM patterns require FEE/CHARGE/SURCHARGE."
+    },
+    {
+      "kind": "wire",
+      "label": "Wire transfer fee",
+      "account": "deposit",
+      "patterns": [
+        "\\bWIRE( TRANSFER| TRANS| XFER| TRF)?( OUT| IN| INCOMING| OUTGOING| DOMESTIC| DOM| INTL| INTERNATIONAL)? (FEE|CHARGE|CHG)",
+        "\\b(INCOMING|OUTGOING|DOMESTIC|INTL|INTERNATIONAL|FOREIGN) WIRE( TRANSFER)? (FEE|CHARGE|CHG)",
+        "\\bWIRE (TRANSFER )?SVC (FEE|CHARGE|CHG)"
+      ],
+      "rule": "No federal law caps wire transfer fees; each bank sets its own, subject to any state law that applies.",
+      "reversal_tip": "Compare the charge with the bank's fee schedule; some account tiers waive incoming or outgoing wire fees, and a fee charged above the disclosed amount is worth disputing.",
+      "source_url": "https://www.helpwithmybank.gov/help-topics/bank-accounts/electronic-transactions/wire-transfers/wire-transfer-fee.html",
+      "extra_source_urls": [],
+      "verified": true,
+      "notes": null
+    },
+    {
+      "kind": "foreign_transaction",
+      "label": "Foreign transaction fee",
+      "account": "any",
+      "patterns": [
+        "\\bFOREIGN TRANS(ACTION|ACTN|ACT)? (FEE|CHARGE|CHG)",
+        "\\bFOREIGN TXN (FEE|CHARGE|CHG)",
+        "\\bFOREIGN EXCH(ANGE)? (RATE )?(FEE|CHARGE|CHG)",
+        "\\bFOREIGN CURRENCY (CONVERSION )?(FEE|CHARGE|CHG)",
+        "\\bCURRENCY CONVERSION (FEE|CHARGE|CHG)",
+        "\\bINT'?L TRANS(ACTION|ACTN|ACT)? (FEE|CHARGE|CHG)",
+        "\\bINTERNATIONAL TRANS(ACTION)? (FEE|CHARGE|CHG)",
+        "\\bINT'?L PURCHASE (FEE|CHARGE|CHG)"
+      ],
+      "rule": "A foreign transaction fee is any charge a card issuer adds for a purchase made outside the US, in a foreign currency, or with a foreign merchant (online too). It can combine a network charge and an issuer charge. Card issuers must disclose it in the card's rates and fees.",
+      "reversal_tip": "Fees on purchases from a merchant that looked domestic are worth questioning with the issuer; otherwise the usual fix is a card without foreign transaction fees for future travel.",
+      "source_url": "https://www.consumerfinance.gov/rules-policy/regulations/1026/4/",
+      "extra_source_urls": [],
+      "verified": true,
+      "notes": null
+    },
+    {
+      "kind": "returned_payment",
+      "label": "Returned payment fee (credit card or loan payment that bounced)",
+      "account": "credit_card",
+      "patterns": [
+        "\\bRETURNED PA?YM(EN)?T (FEE|CHARGE|CHG)",
+        "\\bRETURN(ED)? PMT (FEE|CHARGE|CHG)",
+        "\\bRETURN(ED)? PYMT (FEE|CHARGE|CHG)",
+        "\\bPAYMENT RETURN(ED)? (FEE|CHARGE|CHG)"
+      ],
+      "rule": "A credit card penalty fee can't exceed the dollar amount associated with the violation, and the issuer can't charge more than one penalty fee for a single event: e.g. a late fee and a returned-payment fee for the same bounced payment (Regulation Z, 12 CFR 1026.52(b)).",
+      "reversal_tip": "If a late fee and a returned-payment fee were both charged for the same bounced payment, ask the issuer to remove one; you can also ask for a one-time waiver.",
+      "source_url": "https://www.consumerfinance.gov/rules-policy/regulations/1026/52/",
+      "extra_source_urls": [
+        "https://www.ecfr.gov/current/title-12/section-1026.52"
+      ],
+      "verified": true,
+      "notes": null
+    },
+    {
+      "kind": "late_payment",
+      "label": "Late payment fee",
+      "account": "credit_card",
+      "patterns": [
+        "\\bLATE (PAYMENT |PMT |PYMT )?(FEE|CHARGE|CHG)",
+        "\\bPAST DUE (FEE|CHARGE)",
+        "\\bLATE PAY(MENT)? PENALTY"
+      ],
+      "rule": "Credit card late fees are limited by Regulation Z 12 CFR 1026.52(b): the fee must reflect the issuer's costs or fit a safe harbor, can't exceed the minimum payment that was due, and only one penalty fee may be charged per event. No dollar cap is given here: the CFPB's 2024 $8 late-fee rule was vacated by a federal court in April 2025 (eCFR still prints its text, while the CFPB's own regulation page shows the older safe-harbor text).",
+      "reversal_tip": "You can ask the issuer to waive a late fee, for example a first one paid soon after the due date; a late fee larger than the minimum payment that was due is not allowed.",
+      "source_url": "https://www.consumerfinance.gov/rules-policy/regulations/1026/52/",
+      "extra_source_urls": [
+        "https://www.ecfr.gov/current/title-12/section-1026.52"
+      ],
+      "verified": true,
+      "notes": null
+    },
+    {
+      "kind": "overdraft",
+      "label": "Overdraft fee",
+      "account": "deposit",
+      "patterns": [
+        "\\bOVERDRAFT (ITEM |PAID |PAID ITEM )?(FEE|CHG|CHARGE)",
+        "\\bOVERDRAFT PROTECTION (TRANSFER )?(FEE|CHARGE|CHG)",
+        "\\bOVERDRAFT TRANSFER (FEE|CHARGE|CHG)",
+        "\\b(EXTENDED|SUSTAINED|CONTINUOUS) OVERDRAFT( BALANCE)? (FEE|CHARGE|CHG)",
+        "\\bOVERDRAWN (ACCOUNT |BALANCE )?(FEE|CHARGE|CHG)",
+        "\\bOD (ITEM |PAID )?(FEE|CHG|CHARGE)",
+        "\\bPAID ITEM (FEE|CHARGE)",
+        "\\bCOURTESY PAY (FEE|CHARGE)"
+      ],
+      "rule": "Banks may not charge an overdraft fee on ATM withdrawals or one-time debit card purchases unless the customer opted in to overdraft coverage (Regulation E, 12 CFR 1005.17). Checks and recurring payments can be charged without opt-in. Customers can withdraw from overdraft coverage at any time.",
+      "reversal_tip": "Ask the bank to refund the fee, especially a first one or one on a debit card or ATM transaction if you never opted in; if you never opted in and were charged for a debit/ATM overdraft, you can complain to the CFPB.",
+      "source_url": "https://www.consumerfinance.gov/ask-cfpb/what-can-i-do-if-my-bank-charged-me-a-fee-for-overdrawing-my-account-en-1037/",
+      "extra_source_urls": [
+        "https://www.consumerfinance.gov/ask-cfpb/what-is-an-overdraft-en-1035/",
+        "https://www.ecfr.gov/current/title-12/section-1005.17"
+      ],
+      "verified": true,
+      "notes": null
+    },
+    {
+      "kind": "nsf",
+      "label": "Non-sufficient funds (NSF) / returned item fee",
+      "account": "deposit",
+      "patterns": [
+        "\\bNSF\\b",
+        "\\bNON[- ]?SUFFICIENT FUNDS",
+        "\\bINSUFFICIENT FUNDS",
+        "\\bINSUFF(ICIENT)? FUNDS? (FEE|CHARGE)",
+        "\\bRETURN(ED)? ITEM (FEE|CHARGE|CHG)",
+        "\\bRETURNED CHECK (FEE|CHARGE)",
+        "\\bRETURNED DEPOSIT(ED)? ITEM (FEE|CHARGE)",
+        "\\bUNPAID ITEM (FEE|CHARGE)"
+      ],
+      "rule": "A bank can charge a fee when a check overdraws the account (a non-sufficient funds or NSF fee) as long as the practice was disclosed beforehand; the deposit account agreement lists the bank's fees.",
+      "reversal_tip": "Ask the bank to waive it, especially if several NSF fees were charged for the same payment being re-presented, or if a deposit was pending; check the account agreement for its rules.",
+      "source_url": "https://helpwithmybank.gov/help-topics/bank-accounts/nsf-fees-overdraft-protection/nsf-fees/nsf-fees-check.html",
+      "extra_source_urls": [],
+      "verified": true,
+      "notes": null
+    },
+    {
+      "kind": "monthly_maintenance",
+      "label": "Monthly maintenance / service fee",
+      "account": "deposit",
+      "patterns": [
+        "\\bMONTHLY (SERVICE|MAINTENANCE|MAINT|ACCOUNT|ACCT) (FEE|CHARGE|CHG)",
+        "\\b(CHECKING|SAVINGS|ACCOUNT|ACCT) MAINT(ENANCE)? (FEE|CHARGE|CHG)",
+        "^MAINT(ENANCE)? (FEE|CHARGE|CHG)",
+        "^MONTHLY FEE",
+        "\\b(ACCOUNT|ACCT) SERVICE (FEE|CHARGE|CHG)",
+        "^SERVICE (FEE|CHARGE|CHG)",
+        "\\bMIN(IMUM)? BAL(ANCE)? (FEE|CHARGE|CHG)"
+      ],
+      "rule": "An account advertised as 'free' or 'no cost' can't charge a monthly service fee, a minimum-balance fee, or per-transaction fees; it can still charge fees such as ATM, overdraft, bounced-check or stop-payment fees.",
+      "reversal_tip": "Check how the bank waives the fee (often a minimum balance or direct deposit); if the account was sold as free, or you met the waiver terms, ask for a refund. Moving to a no-fee account stops it for good.",
+      "source_url": "https://www.consumerfinance.gov/ask-cfpb/i-opened-a-free-checking-account-but-there-are-fees-charged-on-my-account-can-my-bankcredit-union-do-that-en-961/",
+      "extra_source_urls": [],
+      "verified": true,
+      "notes": null
+    }
+  ]
+}

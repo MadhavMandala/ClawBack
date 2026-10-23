@@ -7,7 +7,7 @@ user to confirm agent actions.
 
 MISSING [cancel-lookup]: outside Apple / Google Play billing, the cancel page comes from a Tavily search that
 nobody has checked. Results are labelled "unverified".
-MISSING [gmail-drafts]: the email is only shown in the app, not saved as a Gmail draft.
+MISSING [email-drafts]: the email is only shown in the app, not saved as a draft in the user's mailbox.
 MISSING [cancel-confirmation]: nothing checks that the charge actually stopped.
 """
 
@@ -28,7 +28,7 @@ def draft_email(sub: Subscription) -> dict:
             "does not renew. Please confirm the cancellation in writing by replying to this email.\n\n"
             "Account email: [your account email]\n\nThank you."
         ),
-        "status": "MISSING [gmail-drafts]: not saved to Gmail yet. Copy it, or use the merchant's cancel page.",
+        "status": "MISSING [email-drafts]: not saved to your mailbox yet. Copy it, or use the merchant's cancel page.",
     }
 
 

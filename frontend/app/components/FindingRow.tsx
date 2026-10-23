@@ -53,7 +53,7 @@ export default function FindingRow(p: Props) {
           <span className="svc-plan">{KIND_LABEL[f.kind]}{f.confidence === "low" ? ", might apply" : ""}</span>
         </div>
 
-        <p className="c-find">{humanDates(f.message)}</p>
+        <p className="c-find">{humanDates(f.kind === "settlement" ? f.title : f.message)}</p>
 
         <span className={`c-due${left !== null && left <= 7 ? " soon" : ""}`}>
           {f.deadline ? <>{shortDate(f.deadline)}<span className="due-left">{left !== null ? dueText(left) : ""}</span></> : <span className="nil">No deadline</span>}
@@ -70,6 +70,7 @@ export default function FindingRow(p: Props) {
         <div className="detail" id={detailId}>
           <div className="detail-grid">
             <div>
+              {f.kind === "settlement" && <p className="who">{humanDates(f.message)}</p>}
               <h3>What ClawBack saw</h3>
               <ul className="evidence">{f.evidence.map((e, i) => <li key={i}>{humanDates(e)}</li>)}</ul>
               {f.amount_note && <p className="fine-print">{f.amount_note}</p>}
