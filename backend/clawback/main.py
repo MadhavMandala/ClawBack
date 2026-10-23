@@ -189,7 +189,7 @@ def findings():
 @app.post("/api/findings/{finding_id}/prepare", response_model=ActionPrep)
 def prepare_finding(finding_id: str):
     """The request, letter or script for one finding. ClawBack never sends or files anything."""
-    return actions.prepare(_finding(finding_id), date.today())
+    return actions.prepare(_finding(finding_id), date.today(), USER)
 
 
 @app.post("/api/findings/{finding_id}/dismiss", response_model=Finding)

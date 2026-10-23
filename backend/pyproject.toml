@@ -11,6 +11,9 @@ dependencies = [
     "tavily-python>=0.5",
     "httpx>=0.27",           # Nylas and Plaid REST calls (no vendor SDKs)
     "python-dotenv>=1.0",
+    "pypdf>=5.0",            # text from PDF receipts (pure Python)
+    "pypdfium2>=4.30",       # render scanned PDF receipts to an image (native; optional at runtime, imported lazily)
+    "pillow>=10.0",          # resize receipt images and save rendered pages (native; optional at runtime)
 ]
 
 [project.optional-dependencies]

@@ -5,8 +5,8 @@ Full path (needs NEBIUS_API_KEY + TAVILY_API_KEY):
   2. Nemotron Ultra weighs those against the usage evidence and suggests options.
   3. Code drops any option that doesn't cite one of the pages Tavily returned, so links can't be invented.
 
-MISSING [alternatives]: this path is untested against the live APIs. Without keys, only the code-computed
-hints below are returned.
+Ran live on 2026-10-23 (tests/test_live_findings.py, Hulu from the demo data): Tavily, Super, Ultra; every option
+cited one of the returned pages. Without keys, only the code-computed hints below are returned.
 """
 
 from __future__ import annotations
@@ -135,7 +135,7 @@ def alternatives(user_id: str, sub: Subscription, today: date) -> dict:
     result = {"subscription_id": sub.id, "hints": hints(sub), "options": [], "sources": [], "missing": []}
     if not (llm.available() and tavily.available()):
         result["missing"] = [
-            "MISSING [alternatives]: needs NEBIUS_API_KEY and TAVILY_API_KEY for live plan prices and reasoning."
+            "MISSING: needs NEBIUS_API_KEY and TAVILY_API_KEY for live plan prices and reasoning."
         ]
         record(user_id, "alternatives", "rules", status="missing", note=f"{sub.merchant}: code hints only")
         return result

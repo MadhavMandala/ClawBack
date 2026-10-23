@@ -20,7 +20,8 @@ from .store import store
 SOURCE_ENGINES = ("nylas", "plaid")
 
 # Steps that run when the user clicks something. They survive pipeline re-runs so the dashboard can show them.
-ON_CLICK_STAGES = frozenset({"alternatives", "alternatives_plans", "cancel_lookup", "cancel_email", "bill offers"})
+ON_CLICK_STAGES = frozenset({"alternatives", "alternatives_plans", "cancel_lookup", "cancel_email", "bill offers",
+                             "letter"})
 MAX_ON_CLICK_ROWS = 20
 
 

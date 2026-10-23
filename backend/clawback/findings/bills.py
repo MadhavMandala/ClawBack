@@ -10,7 +10,7 @@ Detector, code only:
     and no increase has shown up yet. Savings = the stated jump, if the email gives both prices.
   - negotiable: an info flag for negotiable providers with nothing else flagged.
   Variable bills (utilities) never get an increase flag from normal month-to-month swings.
-Action: actions.negotiate() writes the script. MISSING [bill-market-rates]: competitor offers need Tavily.
+Action: actions.negotiate() writes the script, with competitor offers from Tavily that code checks (market_offers).
 """
 
 from __future__ import annotations

@@ -42,6 +42,10 @@ class UserData:
     plaid_cursor: str | None = None
     # Extracted facts by email id, so each email goes to a model once. Reset demo clears it.
     facts: dict[str, Fact] = field(default_factory=dict)
+    # What a model read from one email, after code checked it against the email text, keyed "<step>:<email id>"
+    # (purchase, flight, triage, screen, receipt). Plain JSON values only (str, number, bool, list, dict), never
+    # email text. A failed model call isn't saved, so the email is tried again on the next run.
+    model_reads: dict[str, dict] = field(default_factory=dict)
 
 
 class MemoryStore:
