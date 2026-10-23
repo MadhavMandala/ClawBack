@@ -293,11 +293,14 @@ def build(results_dir: Path, doc: Path = DOC) -> Path:
         add("## Cost and latency\n")
         for m in modes:
             c = res[m]["cost"]
-            add(f"**{LABEL[m]}:** {c['model_calls']} model calls, {c['input_tokens']:,} input and "
-                f"{c['output_tokens']:,} output tokens ({c['reasoning_tokens']:,} reasoning), "
-                f"{money(c['cost_usd'], 4)} in total, **{money(c['cost_per_1000_emails_usd'], 3)} per 1,000 "
-                f"emails**. Calls: median {c['call_ms_p50']} ms, p90 {c['call_ms_p90']} ms. "
-                f"Errors {c['errors']}, fallbacks {c['fallbacks']}.\n")
+            if not c["model_calls"]:
+                add(f"**{LABEL[m]}:** no model calls, so no model cost.\n")
+            else:
+                add(f"**{LABEL[m]}:** {c['model_calls']} model calls, {c['input_tokens']:,} input and "
+                    f"{c['output_tokens']:,} output tokens ({c['reasoning_tokens']:,} reasoning), "
+                    f"{money(c['cost_usd'], 4)} in total, **{money(c['cost_per_1000_emails_usd'], 3)} per 1,000 "
+                    f"emails**. Calls: median {c['call_ms_p50']} ms, p90 {c['call_ms_p90']} ms. "
+                    f"Errors {c['errors']}, fallbacks {c['fallbacks']}.\n")
             if c["by_stage"]:
                 add(table(["Stage", "Model", "Calls", "Input tokens", "Output tokens", "Cost", "Median ms", "p90 ms",
                            "Errors", "Fallbacks"],
