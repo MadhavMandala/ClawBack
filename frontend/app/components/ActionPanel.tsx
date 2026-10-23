@@ -3,6 +3,7 @@
 import type { ActionPrep } from "../api";
 import { humanDates, shortDate } from "../format";
 import { CopyButton, Missing } from "./bits";
+import SaveDraft from "./SaveDraft";
 import { Check, External } from "./icons";
 
 const CHANNEL: Record<ActionPrep["channel"], string> = {
@@ -15,7 +16,8 @@ const CHANNEL: Record<ActionPrep["channel"], string> = {
 };
 
 // A prepared request: what to do, where, and the words to use. ClawBack never sends it.
-export default function ActionPanel({ a, onClose }: { a: ActionPrep; onClose: () => void }) {
+// draftPath: the route that saves the message as a draft in the person's mailbox, when it can be emailed.
+export default function ActionPanel({ a, onClose, draftPath }: { a: ActionPrep; onClose: () => void; draftPath?: string }) {
   const by = shortDate(a.deadline);
   const letter = a.message ? [a.message.subject && `Subject: ${a.message.subject}`, a.message.body].filter(Boolean).join("\n\n") : "";
   return (
@@ -54,7 +56,10 @@ export default function ActionPanel({ a, onClose }: { a: ActionPrep; onClose: ()
                 {a.message.subject && <p className="letter-subject">{a.message.subject}</p>}
                 <p className="letter-body">{a.message.body}</p>
               </div>
-              <CopyButton text={letter} label="Copy message" />
+              <div className="pair">
+                <CopyButton text={letter} label="Copy message" />
+                {draftPath && <SaveDraft path={draftPath} subject={a.message.subject} body={a.message.body} to={a.message.to} />}
+              </div>
             </>
           )}
           {a.script && a.script.length > 0 && (

@@ -6,6 +6,7 @@ import { humanDates, isBill, leadFlag, money, planLine, reclaimable, shortDate, 
 import ActionPanel from "./ActionPanel";
 import { Missing } from "./bits";
 import { Check, Chevron, External } from "./icons";
+import SaveDraft from "./SaveDraft";
 
 export type RowPanel =
   | { kind: "cancel"; data: CancelPrep }
@@ -176,11 +177,15 @@ function CancelPanel({ d, onClose }: { d: CancelPrep; onClose: () => void }) {
         <div>
           <h4>Or send this email</h4>
           <div className="letter">
+            {d.email.to && <p className="letter-to">To: {d.email.to}</p>}
             <p className="letter-subject">{d.email.subject}</p>
             <p className="letter-body">{d.email.body}</p>
           </div>
-          <button onClick={copy}>{copied ? "Copied" : "Copy email"}</button>
-          <Missing>{d.email.status}</Missing>
+          <div className="pair">
+            <button onClick={copy}>{copied ? "Copied" : "Copy email"}</button>
+            <SaveDraft path={`/api/subscriptions/${d.subscription_id}/email-draft`} subject={d.email.subject} body={d.email.body} to={d.email.to} />
+          </div>
+          <p className="fine-print after">{d.email.status}</p>
         </div>
       </div>
       {d.missing.map((m, i) => <Missing key={i}>{m}</Missing>)}

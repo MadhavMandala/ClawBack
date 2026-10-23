@@ -100,7 +100,7 @@ export default function FindingRow(p: Props) {
               )}
             </div>
           </div>
-          {p.prep && <ActionPanel a={p.prep} onClose={p.onClosePrep} />}
+          {p.prep && <ActionPanel a={p.prep} onClose={p.onClosePrep} draftPath={`/api/findings/${f.id}/email-draft`} />}
         </div>
       )}
     </li>
