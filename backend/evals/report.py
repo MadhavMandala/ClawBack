@@ -95,8 +95,10 @@ def build(results_dir: Path, doc: Path = DOC) -> Path:
         "written by the ClawBack team with AI help, for this test. No real person's data is in it. Merchant names and "
         "sender domains are real companies so the data looks like a real inbox and statement, but every email "
         "text, order number and amount is invented, and no price is a quote of a current price. The labels (the "
-        "right answers) were written by hand alongside the data, before the product was scored on it, and the "
-        "product was not changed to fit them.\n")
+        "right answers) were written by hand alongside the data, before the product was scored on it. The product "
+        "was later improved using this set's failures (general fixes, no special cases for its merchants), so this "
+        "set's \"after\" numbers are optimistic. The held-out set at the end of this page was not used for any fix; "
+        "quote its numbers.\n")
 
     add("## Reproduce\n")
     add("From `backend/`, with the project's virtual environment:\n")
@@ -113,6 +115,8 @@ def build(results_dir: Path, doc: Path = DOC) -> Path:
                                                                          else ""),
                     r["run_at"], r["dataset"]["fingerprint"]] for r in res.values()]))
         add("")
+
+    parts.extend(before_after(results_dir))
 
     add("## The data\n")
     if any_res:
@@ -405,6 +409,49 @@ def build(results_dir: Path, doc: Path = DOC) -> Path:
     doc.parent.mkdir(parents=True, exist_ok=True)
     doc.write_text("\n".join(parts).rstrip() + "\n", encoding="utf-8")
     return doc
+
+
+BEFORE_AFTER_SPEC = [
+    ("Subscriptions and bills found, named right", "subscriptions_named_recall", pct),
+    ("Subscriptions and bills found, any name", "subscriptions_charge_recall", pct),
+    ("Precision (listed items that are real)", "subscriptions_precision", pct),
+    ("Flags caught (recall)", "flags_recall", pct),
+    ("Flag precision", "flags_precision", pct),
+    ("One-time findings caught", "findings_recall", pct),
+    ("Finding precision", "findings_precision", pct),
+    ("Email kind accuracy (emails with a signal)", "email_signal_accuracy", pct),
+    ("False email signals", "false_signals", str),
+    ("Prompt injection resisted", "injection_resisted", yes_no),
+    ("Traps passed", "traps_passed", str),
+    ("Model cost per 1,000 emails", "cost_per_1000_emails_usd", lambda v: money(v, 3)),
+]
+
+
+def before_after(results_dir: Path) -> list[str]:
+    """Headline numbers before the fixes (results/baseline/, the first measurement of each set) and now."""
+    base_dir = results_dir / "baseline"
+    if not base_dir.is_dir():
+        return []
+    parts: list[str] = []
+    add = parts.append
+    add("## Before and after the fixes\n")
+    add("The first measurement of each set is kept in `backend/evals/results/baseline/`. The main set's failures were "
+        "then sent to the people fixing the product, as root causes only, with no merchant special cases. The "
+        "held-out set's failures were never used for a fix. So the held-out \"after\" column is the fair measure "
+        "of what changed; the main set's \"after\" column is optimistic.\n")
+    sets = (("holdout", "Held-out set (quote these)"), ("main", "Main set (used to find the fixes)"))
+    for set_name, title in sets:
+        before, after = latest(base_dir, set_name), latest(results_dir, set_name)
+        for mode in ("models-on", "models-off"):
+            if mode not in before or mode not in after:
+                continue
+            b, a = before[mode]["headline"], after[mode]["headline"]
+            add(f"### {title}, {LABEL[mode].lower()}\n")
+            add(f"Before: commit `{before[mode]['git']['commit']}`. After: commit `{after[mode]['git']['commit']}`.\n")
+            add(table(["Measure", "Before", "After"],
+                      [[label, fmt(b.get(key)), fmt(a.get(key))] for label, key, fmt in BEFORE_AFTER_SPEC]))
+            add("")
+    return parts
 
 
 def holdout_section(res: dict[str, dict]) -> list[str]:
