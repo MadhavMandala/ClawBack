@@ -26,6 +26,7 @@ const GROUPS: { key: GroupKey; title: string; short: string }[] = [
 ];
 
 const GUIDE_KEY = "clawback.guide.done";
+const MAIN: GroupKey[] = ["decide", "bills", "check"]; // open on the page; the rest fold into "Everything else"
 
 export default function Dashboard() {
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -46,6 +47,19 @@ export default function Dashboard() {
   const [guide, setGuide] = useState(false);
   const [slice, setSlice] = useState<string | null>(null);
   const [connectOpen, setConnectOpen] = useState(false);
+  const [restOpen, setRestOpen] = useState(false);
+  const connectRef = useRef<HTMLDivElement>(null);
+  const connectBtn = useRef<HTMLButtonElement>(null);
+
+  // The Connect menu closes on a click outside it or on Escape (focus goes back to its button).
+  useEffect(() => {
+    if (!connectOpen) return;
+    const away = (e: PointerEvent) => { if (!connectRef.current?.contains(e.target as Node)) setConnectOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { setConnectOpen(false); connectBtn.current?.focus(); } };
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", esc); };
+  }, [connectOpen]);
   const loaded = useRef(false);
 
   // The first-visit guide: three lines, shown once per browser.
@@ -186,7 +200,10 @@ export default function Dashboard() {
 
   function pick(id: string) {
     setOpen(id);
-    requestAnimationFrame(() => document.getElementById(`sub-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    const target = subs.find((x) => x.id === id);
+    // Rows that look fine, cancelled ones and money back live in the "Everything else" fold: open it first.
+    if (target && !MAIN.includes(groupOf(target))) setRestOpen(true);
+    setTimeout(() => document.getElementById(`sub-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 60);
   }
 
   const openFindings = findings.filter((f) => f.status === "open");
@@ -194,7 +211,6 @@ export default function Dashboard() {
   const owed = summary?.owed_total ?? openFindings.reduce((t, f) => t + f.amount, 0);
   const demo = (conns?.mode ?? "demo") === "demo";
   const save = summary?.potential_monthly_savings ?? 0;
-  const MAIN: GroupKey[] = ["decide", "bills", "check"];
   const grouped = GROUPS.map((g) => ({
     ...g,
     rows: subs
@@ -207,22 +223,22 @@ export default function Dashboard() {
     <div className={intro ? "intro" : undefined}>
       <SiteNav current="dashboard">
         {!demo && <button disabled={busy === "sync"} onClick={() => post("sync", "/api/sync")}>{busy === "sync" ? "Syncing" : "Sync now"}</button>}
-        <div className="connect-menu">
-          <button className="solid" aria-expanded={connectOpen} aria-controls="connect-list" onClick={() => setConnectOpen((v) => !v)}>
-            Connect <Chevron className={connectOpen ? "chev up" : "chev"} />
+        <div className="connect-menu" ref={connectRef}>
+          <button ref={connectBtn} className="solid" aria-expanded={connectOpen} aria-controls="connect-list" onClick={() => setConnectOpen((v) => !v)}>
+            Connect
+            {(conns?.email.needs_reconnect || conns?.plaid.needs_reconnect) && <span className="tag missing">Reconnect</span>}
+            <Chevron className={connectOpen ? "chev up" : "chev"} />
           </button>
-          {connectOpen && (
-            <div className="connect-list" id="connect-list">
-              <ConnectButton name="email" c={conns?.email} detail={conns?.email.account} busy={busy === "email"}
-                onConnect={connectEmail} onDisconnect={() => post("email", "/api/connect/email/disconnect")} />
-              <ConnectButton name="bank" c={conns?.plaid} detail={conns?.plaid.institution} busy={busy === "plaid"}
-                onConnect={connectBank} onDisconnect={() => post("plaid", "/api/connect/plaid/disconnect")} />
-              <label className="btn file-btn">
-                Upload a statement
-                <input type="file" accept=".csv,.ofx,.qfx" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
-              </label>
-            </div>
-          )}
+          <div className="connect-list" id="connect-list" hidden={!connectOpen}>
+            <ConnectButton name="email" c={conns?.email} detail={conns?.email.account} busy={busy === "email"}
+              onConnect={() => { setConnectOpen(false); connectEmail(); }} onDisconnect={() => { setConnectOpen(false); post("email", "/api/connect/email/disconnect"); }} />
+            <ConnectButton name="bank" c={conns?.plaid} detail={conns?.plaid.institution} busy={busy === "plaid"}
+              onConnect={() => { setConnectOpen(false); connectBank(); }} onDisconnect={() => { setConnectOpen(false); post("plaid", "/api/connect/plaid/disconnect"); }} />
+            <label className="btn file-btn">
+              Upload a statement
+              <input type="file" accept=".csv,.ofx,.qfx" hidden onChange={(e) => { const f = e.target.files?.[0]; setConnectOpen(false); if (f) upload(f); e.target.value = ""; }} />
+            </label>
+          </div>
         </div>
       </SiteNav>
 
@@ -385,7 +401,7 @@ export default function Dashboard() {
         })}
 
         {(rest.length > 0 || (recovered?.events.length ?? 0) > 0) && (
-          <details className="group rest">
+          <details className="group rest" open={restOpen} onToggle={(e) => setRestOpen(e.currentTarget.open)}>
             <summary>
               <span>Everything else: {restSummary(rest, recovered)}</span>
               <Chevron className="chev" />

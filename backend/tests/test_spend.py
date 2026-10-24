@@ -28,7 +28,7 @@ def sub(id: str, category: str, cost: float, saving: float = 0.0, status: str = 
 
 
 def test_demo_groups_match_month_sentence():
-    s = summary("test")
+    s = summary("test", TODAY)
     groups = s["spend_groups"]
     assert [g["label"] for g in groups][:2] == ["Home and phone", "Insurance"]
     assert round(sum(g["monthly"] for g in groups), 2) == s["monthly_total"]
@@ -36,22 +36,22 @@ def test_demo_groups_match_month_sentence():
 
 
 def test_yellow_plus_trials_equals_potential_savings():
-    s = summary("test")
+    s = summary("test", TODAY)
     cut = sum(g["could_cut"] for g in s["spend_groups"]) + sum(t["amount"] for t in s["trials"])
     assert round(cut, 2) == s["potential_monthly_savings"]
 
 
 def test_trial_note_for_duolingo():
-    [t] = summary("test")["trials"]
+    [t] = summary("test", TODAY)["trials"]
     assert t["merchant"] == "Super Duolingo" and t["amount"] == 12.99
 
 
 def test_kept_item_cuts_nothing(demo):
     hulu = next(s for s in demo.subscriptions.values() if s.merchant == "Hulu")
-    before = next(g for g in summary("test")["spend_groups"] if g["label"] == "Streaming")["could_cut"]
+    before = next(g for g in summary("test", TODAY)["spend_groups"] if g["label"] == "Streaming")["could_cut"]
     demo.kept[hulu.id] = TODAY
     run("test", TODAY)
-    after = next(g for g in summary("test")["spend_groups"] if g["label"] == "Streaming")["could_cut"]
+    after = next(g for g in summary("test", TODAY)["spend_groups"] if g["label"] == "Streaming")["could_cut"]
     assert round(before - after, 2) == 9.99
 
 
@@ -84,3 +84,19 @@ def test_past_or_undated_trial_has_no_note():
     assert trial_notes([t], TODAY) == []
     t.next_expected = date(2026, 10, 1)
     assert trial_notes([t], TODAY) == []
+
+
+def test_sentence_matches_donut_after_a_trial_date_passes():
+    later = date(2026, 10, 25)  # the demo trial ended Oct 23; no bank charge seen yet, so it's still a trial
+    s = summary("test", later)
+    assert s["trials"] == []
+    cut = sum(g["could_cut"] for g in s["spend_groups"]) + sum(t["amount"] for t in s["trials"])
+    assert round(cut, 2) == s["potential_monthly_savings"]
+
+
+def test_sentence_savings_are_capped_like_the_donut(demo):
+    hulu = next(s for s in demo.subscriptions.values() if s.merchant == "Hulu")
+    hulu.flags[0].monthly_savings = 500.0  # a saving bigger than the price
+    s = summary("test", TODAY)
+    cut = sum(g["could_cut"] for g in s["spend_groups"]) + sum(t["amount"] for t in s["trials"])
+    assert round(cut, 2) == s["potential_monthly_savings"]
