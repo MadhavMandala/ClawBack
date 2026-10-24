@@ -210,12 +210,19 @@ def keep(user_id: UserId, sub_id: str):
 
 @app.post("/api/subscriptions/{sub_id}/cancel-prep")
 def prepare_cancel(user_id: UserId, sub_id: str):
-    """Gather the cancel link, steps and email. Never cancels or sends anything."""
-    prep = cancel_prep(user_id, _sub(user_id, sub_id), date.today())
+    """Gather the cancel link, steps and (when the merchant takes one) email. Never cancels or sends anything.
+    Opening the panel doesn't mark it as cancelling: the user says so with POST .../cancelled."""
+    return cancel_prep(user_id, _sub(user_id, sub_id), date.today())
+
+
+@app.post("/api/subscriptions/{sub_id}/cancelled")
+def mark_cancelled(user_id: UserId, sub_id: str):
+    """The user says they cancelled it. ClawBack then watches the bank for the next charge."""
+    _sub(user_id, sub_id)
     store.user(user_id).cancel_pending[sub_id] = date.today()
     store.user(user_id).kept.pop(sub_id, None)
     run(user_id)
-    return prep
+    return _sub(user_id, sub_id)
 
 
 @app.get("/api/subscriptions/{sub_id}/alternatives")
