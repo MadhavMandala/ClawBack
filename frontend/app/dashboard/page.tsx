@@ -11,8 +11,8 @@ import { groupOf, humanDates, money, reclaimable, shortDate, type GroupKey } fro
 import BuildStatus from "../components/BuildStatus";
 import FindingRow from "../components/FindingRow";
 import SiteNav from "../components/SiteNav";
-import Strip from "../components/Strip";
-import SubscriptionRow, { type RowPanel } from "../components/SubscriptionRow";
+import Donut from "../components/Donut";
+import SubscriptionRow, { PrimaryAction, type RowPanel } from "../components/SubscriptionRow";
 import { Check, Chevron, Close } from "../components/icons";
 import "./dashboard.css";
 
@@ -46,6 +46,7 @@ export default function Dashboard() {
   const [alerts, setAlerts] = useState<Alerts | null>(null);
   const [recovered, setRecovered] = useState<Recovered | null>(null);
   const [guide, setGuide] = useState(false);
+  const [slice, setSlice] = useState<string | null>(null);
   const loaded = useRef(false);
 
   // The first-visit guide: three lines, shown once per browser.
@@ -221,10 +222,44 @@ export default function Dashboard() {
                   <HeroSecond save={save} owed={owed} any={summary.subscriptions + (summary.bills ?? 0) > 0} />
                 </span>
               </h1>
-              <Strip subs={subs.filter((x) => x.status !== "cancelled")} onPick={pick} />
+              <Donut groups={summary.spend_groups ?? []} selected={slice} onSelect={setSlice} />
+              {(summary.trials ?? []).map((t) => (
+                <p key={t.id} className="trial-note">
+                  Plus a {money(t.amount)} {t.merchant} trial that starts charging {shortDate(t.starts_on)}.
+                </p>
+              ))}
+              {slice && (() => {
+                const g = (summary.spend_groups ?? []).find((x) => x.label === slice);
+                if (!g) return null;
+                return (
+                  <section className="slice-list" aria-label={`${g.label}: what you pay`}>
+                    <div className="slice-head">
+                      <h2>{g.label} <span className="count">{money(g.monthly)} a month</span></h2>
+                      <button className="quiet" onClick={() => setSlice(null)}>Show all</button>
+                    </div>
+                    <ul>
+                      {g.items.map((it) => {
+                        const s = subs.find((x) => x.id === it.id);
+                        return (
+                          <li key={it.id}>
+                            <button className="svc-link" onClick={() => pick(it.id)}>{it.merchant}</button>
+                            <span className="num">{money(it.monthly)}</span>
+                            <span className="num">{it.could_cut > 0 ? <span className="hl">{money(it.could_cut)}</span> : <span className="nil">None</span>}</span>
+                            <span className="act">
+                              {s && <PrimaryAction s={s} busy={busy === `row-${s.id}`}
+                                onCheckin={() => pick(s.id)}
+                                onCancel={() => { pick(s.id); openPanel(s.id, "cancel"); }}
+                                onCheaper={() => { pick(s.id); openPanel(s.id, "cheaper"); }}
+                                onNegotiate={() => { pick(s.id); negotiate(s.id); }} />}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                );
+              })()}
               <div className="legend">
-                <span><i className="sw mark" /> Could save</span>
-                <span><i className="sw keep" /> Keeping</span>
                 <RecoveredLegend s={summary} />
               </div>
             </>
