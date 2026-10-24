@@ -38,7 +38,7 @@ export default function BuildTeaser() {
         ) : (
           <p>The list loads from the ClawBack server, which isn&apos;t answering right now.</p>
         )}
-        <Link className="btn" href="/dashboard#build-status">See every feature</Link>
+        <Link className="btn" href="/built">See every feature</Link>
       </div>
     </div>
   );
