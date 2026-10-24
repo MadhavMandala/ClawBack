@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { calendarFile, downloadCalendar } from "../ics";
 import { writtenBy, type ActionPrep, type Alternatives, type CancelPrep, type Subscription } from "../api";
-import { humanDates, isBill, leadFlag, money, planLine, reclaimable, shortDate, sources } from "../format";
+import { daysLeft, humanDates, isBill, leadFlag, money, planLine, reclaimable, shortDate, sources } from "../format";
 import ActionPanel from "./ActionPanel";
 import { Missing } from "./bits";
-import { Check, Chevron, External } from "./icons";
+import { Chevron, External } from "./icons";
 import SaveDraft from "./SaveDraft";
 
 export type RowPanel =
@@ -26,6 +27,7 @@ type Props = {
   onCheaper: () => void;
   onNegotiate: () => void;
   onClosePanel: () => void;
+  onCancelled: () => void;
 };
 
 export default function SubscriptionRow(p: Props) {
@@ -54,7 +56,7 @@ export default function SubscriptionRow(p: Props) {
         <span className="c-save num">{save > 0 ? <span className="hl">{money(save)}</span> : <span className="nil">None</span>}</span>
 
         <div className="c-act">
-          <PrimaryAction s={s} busy={p.busy} onCheckin={p.onCheckin} onCancel={p.onCancel} onCheaper={p.onCheaper} onNegotiate={p.onNegotiate} />
+          <PrimaryAction s={s} busy={p.busy} onOpen={open ? () => {} : p.onToggle} onCancel={p.onCancel} onCheaper={p.onCheaper} onNegotiate={p.onNegotiate} />
         </div>
       </div>
 
@@ -105,7 +107,7 @@ export default function SubscriptionRow(p: Props) {
             </div>
           </div>
 
-          {p.panel?.kind === "cancel" && <CancelPanel d={p.panel.data} onClose={p.onClosePanel} />}
+          {p.panel?.kind === "cancel" && <CancelPanel d={p.panel.data} trial={s.status === "trial"} busy={p.busy} onClose={p.onClosePanel} onCancelled={p.onCancelled} />}
           {p.panel?.kind === "cheaper" && <CheaperPanel d={p.panel.data} onClose={p.onClosePanel} />}
           {p.panel?.kind === "negotiate" && <ActionPanel a={p.panel.data} onClose={p.onClosePanel} />}
         </div>
@@ -114,8 +116,9 @@ export default function SubscriptionRow(p: Props) {
   );
 }
 
-export function PrimaryAction({ s, busy, onCheckin, onCancel, onCheaper, onNegotiate }: {
-  s: Subscription; busy: boolean; onCheckin: (u: boolean) => void; onCancel: () => void; onCheaper: () => void; onNegotiate: () => void;
+// The row's one button. Check-ins ("Did you use it?") open the row; the Yes / No buttons live inside it.
+export function PrimaryAction({ s, busy, onOpen, onCancel, onCheaper, onNegotiate }: {
+  s: Subscription; busy: boolean; onOpen: () => void; onCancel: () => void; onCheaper: () => void; onNegotiate: () => void;
 }) {
   const lead = leadFlag(s);
   if (!lead) return null;
@@ -137,66 +140,104 @@ export function PrimaryAction({ s, busy, onCheckin, onCancel, onCheaper, onNegot
     return <button disabled={busy} onClick={onCheaper}>Find a cheaper option</button>;
   }
   if (lead.kind === "unknown_usage" || s.usage.needs_checkin) {
-    return (
-      <div className="ask" role="group" aria-label={`Did you use ${s.merchant} this month?`}>
-        <span>Used it?</span>
-        <button disabled={busy} onClick={() => onCheckin(true)}>Yes</button>
-        <button disabled={busy} onClick={() => onCheckin(false)}>No</button>
-      </div>
-    );
+    return <button disabled={busy} onClick={onOpen}>Did you use it?</button>;
   }
   return null;
 }
 
-function CancelPanel({ d, onClose }: { d: CancelPrep; onClose: () => void }) {
+function CancelPanel({ d, trial, busy, onClose, onCancelled }: {
+  d: CancelPrep; trial: boolean; busy: boolean; onClose: () => void; onCancelled: () => void;
+}) {
   const [copied, setCopied] = useState(false);
-  const by = shortDate(d.next_charge);
+  const next = shortDate(d.next_charge);
+  const remindDay = shortDate(d.reminder_on);
+  const remindToday = d.reminder_on ? daysLeft(d.reminder_on) === 0 : false;
+  const link = d.primary_link;
+
   async function copy() {
+    if (!d.email) return;
     try {
       await navigator.clipboard.writeText(`Subject: ${d.email.subject}\n\n${d.email.body}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch { /* clipboard blocked: the text is still on screen to select */ }
   }
+
+  function remind() {
+    if (!d.reminder_on) return;
+    const steps = d.how_to.map((st, i) => `${i + 1}. ${st}`).join("\n");
+    const text = calendarFile({
+      id: d.subscription_id,
+      title: next ? `Cancel ${d.merchant} before ${next}` : `Cancel ${d.merchant}`,
+      date: d.reminder_on,
+      description: [link ? `${link.label}: ${link.url}` : "", steps].filter(Boolean).join("\n\n"),
+      url: link?.url ?? null,
+    });
+    downloadCalendar(`cancel-${d.subscription_id}.ics`, text);
+  }
+
   return (
-    <section className="panel" aria-label={`Cancel ${d.merchant}`}>
+    <section className="panel cancel" aria-label={`Cancel ${d.merchant}`}>
       <div className="panel-head">
         <h3>Cancel {d.merchant}</h3>
         <button className="quiet" onClick={onClose}>Close</button>
       </div>
-      <p>
-        Cancelling saves <span className="hl">{money(d.you_save_per_month)}</span> a month{by ? `. Do it before ${by}, when the next charge lands.` : "."}{" "}
-        ClawBack never cancels or sends anything for you. You make the final click.
+      <p className="cancel-line">
+        {trial
+          ? <>Ends {next}, then <span className="hl">{money(d.you_save_per_month)}</span>/month.</>
+          : <>Saves <span className="hl">{money(d.you_save_per_month)}</span> a month.{next ? ` Next charge ${next}.` : ""}</>}
       </p>
-      <div className="panel-grid">
-        <div>
-          <h4>Steps</h4>
-          <ol className="steps">{d.steps.map((st, i) => <li key={i}>{st}</li>)}</ol>
-          {d.links.length > 0 && (
-            <ul className="links">
-              {d.links.map((l) => (
-                <li key={l.url}>
-                  <a href={l.url} target="_blank" rel="noreferrer">{l.label}<External className="ext" /></a>
-                  {l.verified ? <span className="tag ok"><Check /> Checked link</span> : <span className="tag missing">Unchecked</span>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        <div>
-          <h4 className="with-tag">Or send this email{writtenBy(d.email.written_by) && <span className="tag">{writtenBy(d.email.written_by)}</span>}</h4>
-          <div className="letter">
-            {d.email.to && <p className="letter-to">To: {d.email.to}</p>}
-            <p className="letter-subject">{d.email.subject}</p>
-            <p className="letter-body">{d.email.body}</p>
-          </div>
-          <div className="pair">
-            <button onClick={copy}>{copied ? "Copied" : "Copy email"}</button>
-            <SaveDraft path={`/api/subscriptions/${d.subscription_id}/email-draft`} subject={d.email.subject} body={d.email.body} to={d.email.to} />
-          </div>
-          <p className="fine-print after">{d.email.status}</p>
-        </div>
+
+      <div className="cancel-actions">
+        {link && (
+          <a className="btn solid big" href={link.url} target="_blank" rel="noreferrer">
+            {link.label}<External className="ext" />
+          </a>
+        )}
+        {d.reminder_on && <button onClick={remind}>{remindToday ? "Remind me today" : `Remind me on ${remindDay}`}</button>}
       </div>
+      {link && <p className="fine-print">Opens {link.host}.</p>}
+
+      {(d.how_to.length > 0 || (d.rights?.length ?? 0) > 0) && (
+        <details className="how-to">
+          <summary>How to cancel on {d.merchant}<Chevron className="chev" /></summary>
+          <ol className="steps">
+            {d.how_to.map((st, i) => <li key={i}>{st}</li>)}
+            {(d.rights ?? []).map((r) => (
+              <li key={r.source_url}>
+                {r.text} <a href={r.source_url} target="_blank" rel="noreferrer">{r.title}<External className="ext" /></a>
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
+
+      {d.email && (
+        <div className="cancel-email">
+          <p>Or email them{d.email.to ? <> at <b>{d.email.to}</b></> : null}. Their help page says they accept it.</p>
+          <details>
+            <summary>Show the email{writtenBy(d.email.written_by) && <span className="tag">{writtenBy(d.email.written_by)}</span>}</summary>
+            <div className="letter">
+              {d.email.to && <p className="letter-to">To: {d.email.to}</p>}
+              <p className="letter-subject">{d.email.subject}</p>
+              <p className="letter-body">{d.email.body}</p>
+            </div>
+            <div className="pair">
+              <button onClick={copy}>{copied ? "Copied" : "Copy email"}</button>
+              <SaveDraft path={`/api/subscriptions/${d.subscription_id}/email-draft`} subject={d.email.subject} body={d.email.body} to={d.email.to} />
+            </div>
+          </details>
+        </div>
+      )}
+
+      <div className="cancel-done">
+        <span>Done it?</span>
+        <button className="solid" disabled={busy} onClick={() => { onCancelled(); onClose(); }}>I cancelled it</button>
+        <button className="quiet" onClick={onClose}>Not yet</button>
+      </div>
+      {d.watch_after && (
+        <p className="fine-print">ClawBack then checks your bank after {shortDate(d.watch_after)} and tells you if {d.merchant} charged anyway.</p>
+      )}
       {d.missing.map((m, i) => <Missing key={i}>{m}</Missing>)}
     </section>
   );

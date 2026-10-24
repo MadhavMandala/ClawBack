@@ -97,3 +97,20 @@ def test_email_when_merchant_takes_one(client, monkeypatch):
     monkeypatch.setattr(cancel_lookup, "lookup", lambda *a, **k: _page("cancel@hulu.com"))
     prep = client.post(f"/api/subscriptions/{_hulu(client)['id']}/cancel-prep").json()
     assert prep["email"]["to"] == "cancel@hulu.com" and prep["email"]["subject"]
+
+
+def test_fallback_steps_dont_mention_an_email_or_a_page_below(client, monkeypatch):
+    page = {**_page(None), "steps": [], "steps_url": None}
+    monkeypatch.setattr(cancel_lookup, "lookup", lambda *a, **k: page)
+    prep = client.post(f"/api/subscriptions/{_hulu(client)['id']}/cancel-prep").json()
+    text = " ".join(prep["how_to"]).lower()
+    assert prep["how_to"] and "email" not in text and "below" not in text
+
+
+def test_watch_after_matches_the_bank_check_grace_period(client):
+    from datetime import timedelta
+
+    hulu = _hulu(client)
+    prep = client.post(f"/api/subscriptions/{hulu['id']}/cancel-prep").json()
+    nxt = date.fromisoformat(hulu["next_expected"])
+    assert prep["watch_after"] == (nxt + timedelta(days=6)).isoformat()  # monthly plans get 6 days' grace

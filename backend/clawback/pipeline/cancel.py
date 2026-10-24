@@ -22,7 +22,7 @@ from ..findings import rulebook
 from ..merchants import APPLE_SUBSCRIPTIONS_URL, GOOGLE_PLAY_SUBSCRIPTIONS_URL, by_name
 from ..models import Subscription
 from ..store import store
-from . import cancel_lookup, rights
+from . import cancel_lookup, confirm, rights
 
 
 PLACEHOLDER = "[your account email]"
@@ -128,6 +128,14 @@ def primary_link(links: list[dict], lookup: dict, merchant: str) -> dict | None:
     return None
 
 
+def _watch_after(sub: Subscription) -> str | None:
+    """When ClawBack starts looking for a charge that shouldn't come: the next charge plus confirm.py's grace."""
+    if not sub.next_expected:
+        return None
+    grace = confirm.GRACE.get(sub.cadence, 6) if sub.cadence else 6
+    return (sub.next_expected + timedelta(days=grace)).isoformat()
+
+
 def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
     m = by_name(sub.merchant)
     billed_by = sub.billed_by or (m.billed_by if m else None)  # e.g. a known app billed as "GOOGLE *<app>"
@@ -151,7 +159,7 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
     elif bill := _bill_rule(sub):
         links.append({"label": f"Cancel or change your {sub.merchant} plan", "url": bill["cancel_or_retention"],
                       "verified": True})
-        steps = [f"Open {sub.merchant}'s page below, or call the number on your bill.",
+        steps = [f"Open {sub.merchant}'s page, or call the number on your bill.",
                  "Ask to cancel. If they offer a lower price instead, get the new price in writing."]
     else:
         found = cancel_lookup.lookup(user_id, sub.merchant, today)
@@ -164,8 +172,8 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
             steps = found["steps"] + [f"These steps are from {host} (checked {checked:%b} {checked.day}, {checked.year}). "
                                       "If the page has changed, follow the page."]
         elif verified:
-            steps = [f"Open {sub.merchant}'s own page below ({cancel_lookup.host_of(verified['url'])}).",
-                     "Follow its cancel steps, or send the email below if it accepts cancellation by email."]
+            steps = [f"Open {sub.merchant}'s own page ({cancel_lookup.host_of(verified['url'])}) and sign in.",
+                     "Follow its cancel steps."]
         elif links:
             steps = [f"We couldn't confirm a cancel page on {sub.merchant}'s own site. The links below are search "
                      "results: check the web address before you sign in anywhere.",
@@ -203,7 +211,7 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
         "how_to": how_to,
         "primary_link": primary_link(links, lookup, sub.merchant),
         "reminder_on": remind.isoformat() if remind else None,
-        "watch_after": sub.next_expected.isoformat() if sub.next_expected else None,
+        "watch_after": _watch_after(sub),
         "email": email,
         "lookup": lookup,
         "rights": law,
