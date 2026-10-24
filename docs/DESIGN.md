@@ -5,8 +5,9 @@ money you can get back, and nothing else. Everything else stays quiet so the yel
 
 Four pages share one system:
 - `/`, the front page. It explains ClawBack through one month of the demo user's statement, with margin notes.
-- `/dashboard`, the app. One sentence about your month, the spend bar, findings grouped by what to do, the build
-  status of every feature, and the model trace.
+- `/dashboard`, the app. One sentence about your month, the spend donut, findings grouped by what to do, and the
+  model trace.
+- `/built`, the build status of every feature (moved off the dashboard on 2026-10-23).
 - `/settings`, "Your data": the session, connections, the state, what's stored, today's model use, and delete.
 - `/privacy`, the prototype privacy policy.
 
@@ -28,7 +29,7 @@ References, picked on 2026-10-23 from [dark.design](https://www.dark.design/) an
 | `--muted` | `#9aaba1` | Secondary text (6.9:1 on `--sheet`) |
 | `--faint` | `#6f8077` | Large or decorative text only |
 | `--mark` | `#ffe14d` | **Highlighter. Only for money you can get back.** Never for buttons, headings or decoration |
-| `--keep` | `#2c5646` | Money you're keeping, in the spend bar |
+| `--keep` | `#2c5646` | Money you're keeping, in the spend donut and the front page's bar |
 
 When only part of a charge is reclaimable (a bill that went up, a price drop), the charge stays plain and the
 reclaimable part is highlighted where it's named.
@@ -53,7 +54,7 @@ that way.
 
 - The front page is set like a ledger: rules between rows, numbered areas, no cards. Each section has a serif
   heading on the left and one plain sentence on the right.
-- The dashboard leads with one plain sentence about your month, then the spend bar. There are no stat tiles.
+- The dashboard leads with one plain sentence about your month, then the spend donut. There are no stat tiles.
 - Findings are grouped by what you need to do. Each group is one table on one sheet, not a pile of cards.
 - Each row gets one main action that matches its problem. In tables it's a quiet filled pill; a column of white
   pills would outshout the yellow. The white pill is for the page's main call to action only.
@@ -65,8 +66,8 @@ that way.
   on the right, one column on small screens. Connections sit on one sheet with a button at the end of each row.
   "Delete all my data" is a red-outlined pill. It confirms in the page with "Yes, delete it" and "Keep it", never a
   browser dialog. The model-use meter is a thin bar in the built-phase green; it isn't money back, so it's never yellow.
-- **First-visit guide** on the dashboard: one quiet band on `--ground-2` with three numbered lines (it's a demo month,
-  open a yellow row, try it on your own) and "Got it". It shows once per browser and only in demo mode.
+- **First-visit guide** on the dashboard: one quiet line on `--ground-2` ("This is a made-up month. Click a slice, or
+  open any row with a yellow amount.") and "Got it". It shows once per browser and only in demo mode.
 - **Alerts band**, "New since you last looked": a `--sheet` band with a 2px ink rule on the left, one line per alert,
   the amount highlighted only when it's money back, and "Mark as seen". Nothing else on the page uses a left rule.
 - **Cancelled group and Money back table:** cancelled subscriptions get their own group at the end, out of the spend
@@ -78,6 +79,26 @@ that way.
   white pill on Android and a plain sentence on iPhone.
 - **Who wrote it:** a letter or cancel email has a small neutral tag after its heading, "Written by Nemotron 3 Ultra"
   or "Template", so people can see which ones a model wrote.
+
+## Pieces added on 2026-10-23, later: the decluttered dashboard
+
+- **Spend donut** (`components/Donut.tsx`): what you pay in at most six groups, ordered largest first from 12
+  o'clock. Each group is a `--keep` arc then a `--mark` arc for the part you could cut, with a 2px `--ground` gap.
+  Groups are told apart by the table beside the ring (group, a month, could cut), never by extra colours. The
+  centre shows the monthly total in Newsreader and "a month"; the cuttable total sits under the ring in a
+  highlighter chip. Clicking a slice or a table row lists that group's services with each one's main action; "Show
+  all" clears it. A trial about to start gets one muted line under the donut, not a slice.
+- **One nav row:** logo, Overview, Dashboard, Your data, and one white "Connect" pill that opens email, bank and
+  statement upload. The in-page jump links are gone. "Reset demo data", "Re-run" and the `/built` link live in the
+  footer.
+- **Everything else:** "Looks fine", "Cancelled" and "Money back" fold into one serif summary line at the bottom,
+  e.g. "Everything else: 2 look fine, 1 cancelled, $32.08 saved so far" (commas, never middle dots).
+- **One button per row.** Check-in rows show "Did you use it?", which opens the row; Yes and No live inside.
+- **Cancel panel:** one big white pill to the deepest verified page ("Cancel on Hulu", or "Open Hulu's help page"),
+  "Opens <host>." under it, and a plain "Remind me on <date>" button that downloads a calendar file. The steps and
+  the rights line fold under "How to cancel on <merchant>". The email shows only when the merchant's page lists a
+  cancellation address. "Done it?" with "I cancelled it" and a quiet "Not yet" close the panel; after "I cancelled
+  it" the row leads with the cancelling state.
 
 ## Motion
 

@@ -42,8 +42,9 @@ round up.
 
 ### 3. A demo month (0:30 to 0:55)
 
-- **Screen:** click **See it on a demo month**. The dashboard opens: the sentence at the top, the spend bar with the
-  yellow "could save" part, then **Owed to you**.
+- **Screen:** click **See it on a demo month**. The dashboard opens on the sentence and the spend donut: $503 a
+  month in six groups, with the yellow part of each group the money that could go. Click the **Streaming** slice to
+  open its list (Netflix, Spotify, Hulu), then **Show all**. Scroll to **Owed to you**.
 - **On-screen text:** "A made-up demo month. Every visitor gets their own."
 - **Voice-over:** "Here's a demo month. You pay `[monthly total]` a month for subscriptions and bills. ClawBack
   found `[could save]` a month you could save, and `[owed]` you're owed right now. Yellow means money you can get
@@ -54,25 +55,28 @@ round up.
 ### 4. One cancel, start to finish (0:55 to 1:35)
 
 - **Screen:** open the Hulu row ("we miss you" email, $9.99 a month). Click **Help me cancel**.
-  - The cancel page appears with a **Checked link** tag. Hover it to show the address is on Hulu's own site.
-  - Scroll to the email Nemotron 3 Ultra wrote.
-  - Click **Save as draft**.
-  - Cut to the test inbox's **Drafts** folder: the email is there, unsent.
+  - The panel shows one button, **Cancel on Hulu**, and "Opens help.hulu.com." Click it: Hulu's own cancel article
+    opens in a new tab. Come back.
+  - Click **Remind me on Nov 17**: a calendar file downloads; open it to show the event with the link and steps.
+  - Click **I cancelled it**. The Hulu row now reads "You started cancelling… ClawBack checks your bank for a new
+    charge after Nov 25."
 - **On-screen text:**
-  - "Cancel page found by Tavily, checked to be on the merchant's own site."
-  - "Email written by NVIDIA Nemotron 3 Ultra."
-  - "Saved as a draft. You press send."
+  - "Cancel page found by Tavily, checked to be on Hulu's own site."
+  - "No email: Hulu doesn't take cancellations by email."
+  - "ClawBack watches your bank to make sure it stuck."
 - **Voice-over:** "Hulu sent me a 'we miss you' email, and I'm still paying $9.99 a month. Help me cancel. Tavily
-  finds the cancel page, and code checks it's on Hulu's own site before it's shown. Nemotron 3 Ultra, running on
-  Nebius Token Factory, writes the email from facts the code worked out. It can't add a link or a number of its
-  own. One click saves it as a draft in my own mailbox. I read it, and I press send."
-- **Depends on the merge:** the checked cancel page (cancel lookup) and **Save as draft** (Nylas drafts). Until they
-  land, the panel shows "Unchecked" links and no draft button; don't record this shot before then.
+  finds Hulu's cancel page, and code checks it's on Hulu's own site before it's the button. Hulu doesn't take
+  cancellations by email, so ClawBack doesn't write one. Not now? A reminder goes in my calendar. Once I say I
+  cancelled, ClawBack watches my bank for the next charge."
+- **Depends on:** the cancel-page lookup (Tavily key set). A merchant whose help page lists a cancellation address
+  shows "Or email them" with Ultra's email and **Save to my Drafts**; Hulu doesn't.
 
 ### 5. Money owed: a refund letter (1:35 to 1:55)
 
 - **Screen:** under **Owed to you**, open the Best Buy row: $129.99 charged twice on one day, and one order email.
-  Click **Dispute it**. The dispute letter appears with its deadline and the **Read the rule** link.
+  Click **Dispute it**. The dispute letter appears with its deadline, the **Read the rule** link and the
+  "Written by Nemotron 3 Ultra" tag. Click **Save to my Drafts**, then cut to the test inbox's **Drafts** folder:
+  the letter is there, unsent. (This is now the shot that shows Ultra's writing and the draft.)
 - **On-screen text:** "Charged twice. One order. A dispute letter with the deadline."
 - **Voice-over:** "Best Buy charged me $129.99 twice, and my email shows one order. ClawBack writes the dispute
   letter, cites the federal rule for card billing errors, and gives the deadline. Code does every date and every
@@ -96,7 +100,7 @@ round up.
 
 ### 7. What's built, and what isn't (2:20 to 2:32)
 
-- **Screen:** **What's built** on the dashboard: the board with its four phases. Pan across, pause on a few rows in
+- **Screen:** **What's built** (the `/built` page, linked from the dashboard footer): the board with its four phases. Pan across, pause on a few rows in
   "Live-tested" and one in "Planned".
 - **On-screen text:** "Every feature, and how far along it is. Gaps included."
 - **Voice-over:** "We publish what isn't done. This board lists every feature, from planned to tested live."
