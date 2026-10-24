@@ -15,9 +15,9 @@ After the user starts cancelling, pipeline/confirm.py checks on each sync that t
 from __future__ import annotations
 
 import re
-from datetime import date
+from datetime import date, timedelta
 
-from .. import llm
+from .. import llm, rules
 from ..findings import rulebook
 from ..merchants import APPLE_SUBSCRIPTIONS_URL, GOOGLE_PLAY_SUBSCRIPTIONS_URL, by_name
 from ..models import Subscription
@@ -105,6 +105,29 @@ def write_email(user_id: str, sub: Subscription) -> dict:
     return {"subject": subject.strip(), "body": body.strip(), "status": DRAFT_STATUS, "written_by": res.model}
 
 
+def reminder_on(next_charge: date | None, trial: bool, today: date) -> date | None:
+    """The day to remind someone to cancel: 2 days before a charge, 1 before a trial converts, never in the past."""
+    if next_charge is None or next_charge < today:
+        return None
+    return max(today, next_charge - timedelta(days=1 if trial else 2))
+
+
+def primary_link(links: list[dict], lookup: dict, merchant: str) -> dict | None:
+    """The panel's one button: the deepest page we've verified, else the merchant's own checked help page."""
+    def make(label: str, url: str) -> dict:
+        return {"label": label, "url": url, "host": cancel_lookup.host_of(url), "verified": True}
+
+    for link in links:
+        if link.get("verified") and not link.get("label", "").startswith("The law:"):
+            return make(f"Cancel on {merchant}", link["url"])
+    if lookup.get("steps_url") and lookup.get("verified"):
+        return make(f"Cancel on {merchant}", lookup["steps_url"])
+    site = rules.merchant_site(merchant)
+    if site and site.help_url:
+        return make(f"Open {merchant}'s help page", str(site.help_url))
+    return None
+
+
 def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
     m = by_name(sub.merchant)
     billed_by = sub.billed_by or (m.billed_by if m else None)  # e.g. a known app billed as "GOOGLE *<app>"
@@ -152,6 +175,8 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
         if found.get("note"):
             missing.append(found["note"])
 
+    how_to = list(steps)  # the merchant's own steps, before the rights line and the bank-check line
+
     # The user's rights in one plain line (their state's law when they told us their state, else federal ROSCA).
     law = rights.rights_for(store.user(user_id).state, sub)
     steps += [r["text"] for r in law]
@@ -161,8 +186,13 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
     if sub.next_expected:
         steps.append(f"After {sub.next_expected:%b} {sub.next_expected.day}, ClawBack checks your bank that the next "
                      "charge didn't come, and tells you if it did.")
-    email = write_email(user_id, sub)
-    email["to"] = lookup.get("support_email")  # only an address found on the merchant's own page
+    # Most merchants don't take cancellations by email, so the email is written only when the merchant's own page
+    # lists an address for it.
+    email = None
+    if lookup.get("support_email"):
+        email = write_email(user_id, sub)
+        email["to"] = lookup["support_email"]
+    remind = reminder_on(sub.next_expected, sub.status == "trial", today)
     return {
         "subscription_id": sub.id,
         "merchant": sub.merchant,
@@ -170,6 +200,10 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
         "next_charge": sub.next_expected.isoformat() if sub.next_expected else None,
         "links": links,
         "steps": steps,
+        "how_to": how_to,
+        "primary_link": primary_link(links, lookup, sub.merchant),
+        "reminder_on": remind.isoformat() if remind else None,
+        "watch_after": sub.next_expected.isoformat() if sub.next_expected else None,
         "email": email,
         "lookup": lookup,
         "rights": law,

@@ -14,7 +14,7 @@ def test_api_smoke(monkeypatch):
         subs = client.get("/api/subscriptions").json()
         hulu = next(s for s in subs if s["merchant"] == "Hulu")
         prep = client.post(f"/api/subscriptions/{hulu['id']}/cancel-prep").json()
-        assert prep["email"]["subject"] and prep["missing"]
+        assert prep["primary_link"] and prep["missing"]
 
         alt = client.get(f"/api/subscriptions/{hulu['id']}/alternatives").json()
         assert alt["hints"] and alt["missing"]
@@ -25,9 +25,17 @@ def test_api_smoke(monkeypatch):
         assert client.get("/api/trace").json()
 
 
-def test_cancel_email_row_survives_rerun(fake_llm):
+def test_cancel_email_row_survives_rerun(fake_llm, monkeypatch):
+    from clawback.pipeline import cancel_lookup
+
+    # A merchant that takes cancellations by email, so Ultra writes one.
+    monkeypatch.setattr(cancel_lookup, "lookup", lambda *a, **k: {
+        "links": [{"label": "Cancel Hulu", "url": "https://help.hulu.com/cancel", "verified": True}],
+        "steps": [], "steps_url": None, "support_email": "cancel@hulu.com", "checked_on": "2026-10-23",
+        "verified": True, "from_cache": True})
     with TestClient(app) as client:
         client.post("/api/demo/seed")
         hulu = next(s for s in client.get("/api/subscriptions").json() if s["merchant"] == "Hulu")
         client.post(f"/api/subscriptions/{hulu['id']}/cancel-prep")
+        client.post(f"/api/subscriptions/{hulu['id']}/cancelled")  # re-runs the pipeline
         assert "cancel_email" in [r["stage"] for r in client.get("/api/trace").json()]
