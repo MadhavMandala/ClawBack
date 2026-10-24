@@ -3,12 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   API, call,
-  type ActionPrep, type Alerts, type Alternatives, type CancelPrep, type Connection, type Connections, type Features,
+  type ActionPrep, type Alerts, type Alternatives, type CancelPrep, type Connection, type Connections,
   type Finding, type Recovered, type Subscription, type Summary, type TraceStep,
 } from "../api";
 import { bankNotice, connectBank as openPlaid, connectEmail as openEmailSignIn } from "../connect";
 import { groupOf, humanDates, money, reclaimable, shortDate, type GroupKey } from "../format";
-import BuildStatus from "../components/BuildStatus";
 import FindingRow from "../components/FindingRow";
 import SiteNav from "../components/SiteNav";
 import Donut from "../components/Donut";
@@ -35,7 +34,6 @@ export default function Dashboard() {
   const [findOpen, setFindOpen] = useState<string | null>(null);
   const [findPrep, setFindPrep] = useState<{ id: string; a: ActionPrep } | null>(null);
   const [trace, setTrace] = useState<TraceStep[]>([]);
-  const [features, setFeatures] = useState<Features | null>(null);
   const [conns, setConns] = useState<Connections | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [panel, setPanel] = useState<{ id: string; p: RowPanel } | null>(null);
@@ -47,6 +45,7 @@ export default function Dashboard() {
   const [recovered, setRecovered] = useState<Recovered | null>(null);
   const [guide, setGuide] = useState(false);
   const [slice, setSlice] = useState<string | null>(null);
+  const [connectOpen, setConnectOpen] = useState(false);
   const loaded = useRef(false);
 
   // The first-visit guide: three lines, shown once per browser.
@@ -77,7 +76,6 @@ export default function Dashboard() {
       setRecovered(await call<Recovered>("/api/recovered").catch(() => null));
       if (!loaded.current) {
         loaded.current = true;
-        setFeatures(await call<Features>("/api/features").catch(() => null));
         setTimeout(() => setIntro(false), 1600); // the highlighter pass runs once, on first load
         setReady(true);
       }
@@ -191,25 +189,36 @@ export default function Dashboard() {
   const owed = summary?.owed_total ?? openFindings.reduce((t, f) => t + f.amount, 0);
   const demo = (conns?.mode ?? "demo") === "demo";
   const save = summary?.potential_monthly_savings ?? 0;
+  const MAIN: GroupKey[] = ["decide", "bills", "check"];
   const grouped = GROUPS.map((g) => ({
     ...g,
     rows: subs
       .filter((s) => groupOf(s) === g.key)
       .sort((a, b) => reclaimable(b) - reclaimable(a) || b.monthly_cost - a.monthly_cost),
   }));
+  const rest = grouped.filter((g) => !MAIN.includes(g.key) && g.rows.length);
 
   return (
     <div className={intro ? "intro" : undefined}>
       <SiteNav current="dashboard">
-        <ConnectButton name="email" c={conns?.email} detail={conns?.email.account} busy={busy === "email"}
-          onConnect={connectEmail} onDisconnect={() => post("email", "/api/connect/email/disconnect")} />
-        <ConnectButton name="bank" c={conns?.plaid} detail={conns?.plaid.institution} busy={busy === "plaid"}
-          onConnect={connectBank} onDisconnect={() => post("plaid", "/api/connect/plaid/disconnect")} />
-        <label className="btn file-btn">
-          Upload a statement
-          <input type="file" accept=".csv,.ofx,.qfx" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
-        </label>
         {!demo && <button disabled={busy === "sync"} onClick={() => post("sync", "/api/sync")}>{busy === "sync" ? "Syncing" : "Sync now"}</button>}
+        <div className="connect-menu">
+          <button className="solid" aria-expanded={connectOpen} aria-controls="connect-list" onClick={() => setConnectOpen((v) => !v)}>
+            Connect <Chevron className={connectOpen ? "chev up" : "chev"} />
+          </button>
+          {connectOpen && (
+            <div className="connect-list" id="connect-list">
+              <ConnectButton name="email" c={conns?.email} detail={conns?.email.account} busy={busy === "email"}
+                onConnect={connectEmail} onDisconnect={() => post("email", "/api/connect/email/disconnect")} />
+              <ConnectButton name="bank" c={conns?.plaid} detail={conns?.plaid.institution} busy={busy === "plaid"}
+                onConnect={connectBank} onDisconnect={() => post("plaid", "/api/connect/plaid/disconnect")} />
+              <label className="btn file-btn">
+                Upload a statement
+                <input type="file" accept=".csv,.ofx,.qfx" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+              </label>
+            </div>
+          )}
+        </div>
       </SiteNav>
 
       <section className="dash-head" aria-label="Your month">
@@ -267,28 +276,6 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <div className="dash-index">
-        <div className="wrap">
-          <nav aria-label="On this page">
-            {alerts && alerts.unseen > 0 && <a href="#h-alerts">New<span className="count">{alerts.unseen}</span></a>}
-            {openFindings.length > 0 && <a href="#owed">Owed to you<span className="count">{openFindings.length}</span></a>}
-            {grouped.filter((g) => g.rows.length).map((g) => (
-              <a key={g.key} href={`#g-${g.key}`}>{g.short}<span className="count">{g.rows.length}</span></a>
-            ))}
-            {recovered && recovered.events.length > 0 && <a href="#money-back">Money back<span className="count">{recovered.events.length}</span></a>}
-            <a href="#build-status">What&apos;s built{features && <span className="count">{features.features.length}</span>}</a>
-            <a href="#trace">How it worked</a>
-          </nav>
-          <div className="demo-actions">
-            <span className="tag">{demo ? "Demo data" : "Your data"}</span>
-            {demo && <button className="quiet" disabled={!!busy} onClick={() => post("sync", "/api/sync")}>Re-run</button>}
-            <button className="quiet" disabled={!!busy} onClick={() => { setPanel(null); setOpen(null); post("seed", "/api/demo/seed"); }}>
-              {demo ? "Reset demo data" : "Switch to demo data"}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <main className="wrap dash-main" id="content">
         {notice && (
           <div className={`notice ${notice.tone}`} role="status">
@@ -299,14 +286,10 @@ export default function Dashboard() {
         )}
 
         {guide && demo && (
-          <section className="guide" aria-label="How to read this page">
-            <ol>
-              <li><b>This is a made-up demo month.</b> The sentence at the top is what ClawBack found in it.</li>
-              <li><b>Open any row with a yellow amount.</b> You&apos;ll see the evidence, and the email or script ClawBack wrote.</li>
-              <li><b>Try it on your own.</b> Connect your email or Plaid&apos;s test bank. Only this browser sees it, and you can <a href="/settings">delete it</a> any time.</li>
-            </ol>
+          <p className="guide-line" role="note">
+            <span>This is a made-up month. Click a slice, or open any row with a yellow amount.</span>
             <button className="quiet" onClick={closeGuide}>Got it</button>
-          </section>
+          </p>
         )}
 
         {alerts && alerts.unseen > 0 && (
@@ -358,7 +341,50 @@ export default function Dashboard() {
           </section>
         )}
 
-        {grouped.map((g) => {
+        {grouped.filter((g) => MAIN.includes(g.key)).map((g) => {
+          if (!g.rows.length) return null;
+          const cost = g.rows.reduce((t, s) => t + s.monthly_cost, 0);
+          const sum = g.key === "cancelled" ? `${money(cost)} a month you no longer pay` : `${money(cost)} a month`;
+          return (
+            <section key={g.key} className={`group ${g.key}`} id={`g-${g.key}`} aria-labelledby={`h-${g.key}`}>
+              <div className="group-head">
+                <h2 id={`h-${g.key}`}>{g.title} <span className="count">{g.rows.length}</span></h2>
+                <span className="group-sum">{sum}</span>
+              </div>
+              <div className="sheet">
+                <div className="row-line cols" aria-hidden>
+                  <span>{g.key === "bills" ? "Bill" : g.key === "fine" ? "Subscription or bill" : "Subscription"}</span><span>What ClawBack found</span><span className="num">Costs</span><span className="num">Could save</span><span />
+                </div>
+                <ol className="rows">
+                  {g.rows.map((s) => (
+                    <SubscriptionRow
+                      key={s.id}
+                      s={s}
+                      open={open === s.id}
+                      panel={panel?.id === s.id ? panel.p : null}
+                      busy={busy === `row-${s.id}`}
+                      onToggle={() => setOpen(open === s.id ? null : s.id)}
+                      onCheckin={(used) => post(`row-${s.id}`, `/api/subscriptions/${s.id}/checkin`, { used })}
+                      onKeep={() => { setPanel(null); post(`row-${s.id}`, `/api/subscriptions/${s.id}/keep`); }}
+                      onCancel={() => openPanel(s.id, "cancel")}
+                      onCheaper={() => openPanel(s.id, "cheaper")}
+                      onNegotiate={() => negotiate(s.id)}
+                      onClosePanel={() => setPanel(null)}
+                    />
+                  ))}
+                </ol>
+              </div>
+            </section>
+          );
+        })}
+
+        {(rest.length > 0 || (recovered?.events.length ?? 0) > 0) && (
+          <details className="group rest">
+            <summary>
+              <span>Everything else: {restSummary(rest, recovered)}</span>
+              <Chevron className="chev" />
+            </summary>
+        {rest.map((g) => {
           if (!g.rows.length) return null;
           const cost = g.rows.reduce((t, s) => t + s.monthly_cost, 0);
           const sum = g.key === "cancelled" ? `${money(cost)} a month you no longer pay` : `${money(cost)} a month`;
@@ -420,7 +446,9 @@ export default function Dashboard() {
           </section>
         )}
 
-        <BuildStatus data={features} />
+          </details>
+        )}
+
 
         <details className="trace" id="trace">
           <summary>
@@ -449,7 +477,14 @@ export default function Dashboard() {
       <footer className="site-foot">
         <div className="wrap">
           <p>ClawBack never cancels, pays, sends or files anything on its own. You make the final click.</p>
-          <p>Prototype. What&apos;s missing is listed under <a href="#build-status">What&apos;s built</a> and in STATUS.md.</p>
+          <p className="foot-demo">
+            <span>{demo ? "Prototype. Made-up demo month." : "Your data, kept on this computer."}</span>{" "}
+            <a href="/built">What&apos;s built</a>
+            {demo && <button className="quiet" disabled={!!busy} onClick={() => post("sync", "/api/sync")}>Re-run</button>}
+            <button className="quiet" disabled={!!busy} onClick={() => { setPanel(null); setOpen(null); setSlice(null); post("seed", "/api/demo/seed"); }}>
+              {demo ? "Reset demo data" : "Switch to demo data"}
+            </button>
+          </p>
         </div>
       </footer>
     </div>
@@ -515,4 +550,15 @@ function RecoveredLegend({ s }: { s: Summary }) {
       </span>
     </span>
   );
+}
+
+function restSummary(rest: { key: GroupKey; rows: Subscription[] }[], recovered: Recovered | null) {
+  const parts: string[] = [];
+  for (const g of rest) {
+    if (g.key === "fine") parts.push(`${g.rows.length} look${g.rows.length === 1 ? "s" : ""} fine`);
+    if (g.key === "cancelled") parts.push(`${g.rows.length} cancelled`);
+  }
+  const back = recovered?.events.reduce((t, e) => t + e.amount, 0) ?? 0;
+  if (recovered && recovered.events.length) parts.push(back > 0 ? `${money(back)} saved so far` : `${recovered.events.length} money back`);
+  return parts.join(", ");
 }

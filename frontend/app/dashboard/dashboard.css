@@ -379,3 +379,30 @@ h4.with-tag .tag { font-weight: 500; }
   .slice-list li { grid-template-columns: minmax(0, 1fr) auto; }
   .slice-list li .num:nth-of-type(2), .slice-list .act { grid-column: 1 / -1; justify-self: start; }
 }
+
+/* ---------- one nav row: the Connect menu ---------- */
+
+.connect-menu { position: relative; }
+.connect-list {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 6;
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 15rem;
+  padding: 12px; background: var(--sheet); border: 1px solid var(--rule-strong); border-radius: 3px;
+}
+.connect-list > * { justify-content: center; }
+
+/* ---------- one-line guide, folded rest, footer demo line ---------- */
+
+.guide-line {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 20px;
+  margin: 0 0 32px; padding: 10px 16px; background: var(--ground-2); border-radius: 3px;
+  font-size: var(--t-sm); color: var(--muted);
+}
+.group.rest { margin-top: 52px; border-top: 1px solid var(--rule); }
+.group.rest > summary {
+  display: flex; align-items: center; gap: 12px; padding: 16px 0; cursor: pointer; list-style: none;
+  font: 400 var(--t-lead)/1.3 var(--serif);
+}
+.group.rest > summary::-webkit-details-marker { display: none; }
+.group.rest[open] > summary .chev { transform: rotate(180deg); }
+.group.rest > .group { margin-top: 28px; }
+.foot-demo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
