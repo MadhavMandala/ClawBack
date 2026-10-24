@@ -17,7 +17,7 @@ from ..merchants import by_name, same_merchant
 from ..models import Cadence, Subscription
 from ..store import store
 from ..trace import record, record_repeat, start_run, timed
-from . import annual, confirm, recovered, store_billing
+from . import annual, confirm, recovered, spend, store_billing
 from .extract import extract_all
 from .flags import cancel_flags, flag_one, flag_overlaps
 from .naming import categorize_apps, name_unknown
@@ -160,5 +160,7 @@ def summary(user_id: str) -> dict:
         "recovered_self_reported": rec["self_reported"],
         "cancelled_monthly_savings": rec["cancelled_monthly"],
         "recovered_note": recovered.note(rec),
+        "spend_groups": spend.spend_groups(subs),
+        "trials": spend.trial_notes(subs, date.today()),
     }
 
