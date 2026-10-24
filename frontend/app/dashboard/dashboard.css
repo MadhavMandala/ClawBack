@@ -425,3 +425,97 @@ h4.with-tag .tag { font-weight: 500; }
 .cancel-email .letter { margin-top: 10px; }
 .cancel-done { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--rule); }
 .cancel-done > span { flex: 1; font-weight: 600; }
+
+/* ---------- three columns: the month on the left, the list in the middle, details on the right ---------- */
+
+.dash-grid {
+  --top: 64px; /* below the sticky site nav */
+  max-width: 1440px;
+  display: grid; grid-template-columns: 300px minmax(0, 1fr) minmax(0, 440px); gap: 0 28px;
+  align-items: start; padding-block: 28px 24px;
+}
+.dash-left, .dash-pane {
+  position: sticky; top: calc(var(--top) + 12px);
+  max-height: calc(100vh - var(--top) - 24px); overflow-y: auto; overscroll-behavior: contain;
+}
+.dash-left h1 {
+  margin: 0 0 18px; font: 400 var(--t-lead)/1.2 var(--serif); letter-spacing: -0.01em; text-wrap: balance;
+}
+.dash-left h1 .second { display: block; margin-top: 4px; font-style: italic; color: var(--muted); }
+.dash-left h1 .second .hl { font-style: normal; }
+.dash-left .donut { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 14px; }
+.dash-left .donut-ring { width: 220px; height: 220px; }
+.dash-left .donut-table { font-size: var(--t-xs); }
+.dash-left .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 14px; font-size: var(--t-xs); color: var(--muted); }
+.dash-left .legend .recovered { margin-left: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+
+.dash-list { min-width: 0; }
+.dash-list .group + .group { margin-top: 28px; }
+.dash-list .group-head h2 { font-size: var(--t-lead); }
+.filter-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 16px; padding: 8px 14px; background: var(--ground-2); border-radius: 3px; font-size: var(--t-sm); }
+
+.lines { list-style: none; margin: 10px 0 0; padding: 0; background: var(--sheet); border-radius: 2px; }
+.line + .line { border-top: 1px solid var(--rule); }
+.line-btn {
+  display: grid; grid-template-columns: minmax(6rem, 0.9fr) minmax(0, 1.3fr) auto; align-items: center; gap: 12px;
+  width: 100%; height: auto; padding: 11px 14px; border: 0; border-radius: 0; background: none; color: var(--ink);
+  font: inherit; text-align: left;
+}
+.line-btn:hover { border: 0; background: var(--sheet-2); }
+.line.on .line-btn { background: var(--sheet-2); box-shadow: inset 2px 0 0 var(--ink); }
+.line-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.line-what { color: var(--muted); font-size: var(--t-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.line-what .soon { color: var(--loss); }
+.line-amt { justify-self: end; white-space: nowrap; }
+.line-amt .nil { color: var(--muted); }
+.dash-list .group.rest { margin-top: 28px; }
+.dash-list .group.rest .table-scroll { margin-top: 10px; }
+
+.dash-pane { min-width: 0; padding: 20px 22px 24px; background: var(--sheet); border-radius: 2px; }
+.pane-back { display: none; }
+.pane-empty { color: var(--muted); }
+.pane-body > .panel { margin: 0 0 22px; padding: 0 0 20px; background: none; border-bottom: 1px solid var(--rule); }
+.pane-body > .panel .panel-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.pane-head h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font: 400 var(--t-h3)/1.2 var(--serif); }
+.pane-head h2 .tag { font: 500 var(--t-xs) var(--font); }
+.pane-sub { margin: 4px 0 0; color: var(--muted); font-size: var(--t-sm); }
+.pane-sub.soon { color: var(--loss); }
+.pane-save { margin: 8px 0 0; font-size: var(--t-body); }
+.pane-find { margin: 14px 0 0; text-wrap: pretty; }
+.pane-find.high { color: var(--ink); }
+.pane-acts { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.pane-acts .ask { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pane-acts .ask span { color: var(--muted); font-size: var(--t-sm); }
+.pane-evidence { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.pane-evidence h3, .pane-done h3 { font-size: var(--t-sm); font-weight: 650; margin-bottom: 8px; }
+.pane-evidence .more { margin-top: 8px; }
+.pane-evidence .more > summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; font-size: var(--t-sm); text-decoration: underline; text-underline-offset: 0.2em; }
+.pane-evidence .more > summary::-webkit-details-marker { display: none; }
+.pane-evidence .more[open] > summary .chev { transform: rotate(180deg); }
+.pane-done { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--rule); }
+
+/* In between: the month goes on top, the list and the pane sit side by side. */
+@media (max-width: 1180px) {
+  .dash-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 420px); }
+  .dash-left { grid-column: 1 / -1; position: static; max-height: none; overflow: visible; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 8px 32px; align-items: center; margin-bottom: 24px; }
+  .dash-left h1 { font-size: var(--t-head); }
+  .dash-left .donut { grid-template-columns: 220px minmax(0, 1fr); justify-items: stretch; }
+}
+
+/* Phone: one column; tapping a row slides the pane over the list. */
+@media (max-width: 760px) {
+  .dash-grid { grid-template-columns: minmax(0, 1fr); }
+  .dash-left { grid-template-columns: minmax(0, 1fr); }
+  .dash-left .donut { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .dash-pane { display: none; }
+  .dash-pane.has-sel {
+    display: block; position: fixed; inset: 0; z-index: 20; max-height: none; border-radius: 0;
+    padding-top: calc(16px + env(safe-area-inset-top)); padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+  .pane-back { display: inline-flex; margin-bottom: 12px; }
+  .line-btn { grid-template-columns: minmax(0, 1fr) auto; }
+  .line-what { grid-column: 1; grid-row: 2; }
+  .line-amt { grid-row: 1 / span 2; grid-column: 2; }
+}
+/* In the pane the message ClawBack wrote comes before the steps: it's what you clicked for. */
+.pane-body > .panel .panel-grid > div:last-child { order: -1; }

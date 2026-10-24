@@ -15,12 +15,49 @@ export type RowPanel =
   | { kind: "negotiate"; data: ActionPrep }
   | null;
 
-type Props = {
+// A short label for the list: what ClawBack found, in a few words (the pane has the full sentence).
+const SHORT: Record<string, string> = {
+  unused: "Looks unused",
+  membership_losing_money: "Costs more than it saves",
+  paid_twice: "Paying twice",
+  included_elsewhere: "Included elsewhere",
+  overlap: "Two plans, one job",
+  price_increase: "Price went up",
+  bill_increase: "Went up",
+  promo_ending: "Promo rate ending",
+  negotiable: "Could be lower",
+  unknown_usage: "Used it this month?",
+  cancel_pending: "Cancelling",
+  cancel_confirmed: "Cancelled",
+  charged_after_cancel: "Charged after you cancelled",
+};
+
+export function shortFinding(s: Subscription): string {
+  const lead = leadFlag(s);
+  if (s.status === "cancelled") return "Cancelled";
+  if (lead?.kind === "trial_ending") return s.next_expected ? `Trial ends ${shortDate(s.next_expected)}` : "Trial ending";
+  if (lead && SHORT[lead.kind]) return SHORT[lead.kind];
+  return "Looks fine";
+}
+
+// One line in the middle list. Selecting it fills the detail pane.
+export function SubscriptionLine({ s, selected, onSelect }: { s: Subscription; selected: boolean; onSelect: () => void }) {
+  const save = reclaimable(s);
+  return (
+    <li className={`line${selected ? " on" : ""}`} id={`sub-${s.id}`}>
+      <button className="line-btn" aria-current={selected ? "true" : undefined} aria-controls="pane" onClick={onSelect}>
+        <span className="line-name">{s.merchant}</span>
+        <span className="line-what">{shortFinding(s)}</span>
+        <span className="line-amt num">{save > 0 ? <span className="hl">{money(save)}</span> : <span className="nil">{money(s.monthly_cost)}</span>}</span>
+      </button>
+    </li>
+  );
+}
+
+type DetailProps = {
   s: Subscription;
-  open: boolean;
   panel: RowPanel;
   busy: boolean;
-  onToggle: () => void;
   onCheckin: (used: boolean) => void;
   onKeep: () => void;
   onCancel: () => void;
@@ -30,89 +67,77 @@ type Props = {
   onCancelled: () => void;
 };
 
-export default function SubscriptionRow(p: Props) {
-  const { s, open } = p;
+// The detail pane for a subscription or bill. Anything ClawBack writes (the cancel panel, cheaper options, a
+// negotiation script) sits at the top, so it's in view the moment it arrives.
+export function SubscriptionDetail(p: DetailProps) {
+  const { s } = p;
   const lead = leadFlag(s);
   const save = reclaimable(s);
-  const detailId = `detail-${s.id}`;
   const others = s.flags.filter((f) => f !== lead);
 
   return (
-    <li className={`row${open ? " open" : ""}`} id={`sub-${s.id}`}>
-      <div className="row-line">
-        <div className="c-svc">
-          <button className="svc-toggle" aria-expanded={open} aria-controls={detailId} onClick={p.onToggle}>
-            <span className="svc-name">{s.merchant}</span>
-            <Chevron className="chev" />
-          </button>
+    <article className="pane-body" aria-label={s.merchant}>
+      {p.panel?.kind === "cancel" && <CancelPanel d={p.panel.data} trial={s.status === "trial"} busy={p.busy} onClose={p.onClosePanel} onCancelled={p.onCancelled} />}
+      {p.panel?.kind === "cheaper" && <CheaperPanel d={p.panel.data} onClose={p.onClosePanel} />}
+      {p.panel?.kind === "negotiate" && <ActionPanel a={p.panel.data} onClose={p.onClosePanel} />}
+
+      <header className="pane-head">
+        <h2>
+          {s.merchant}
           {s.status === "trial" && <span className="tag">Free trial</span>}
-          <span className="svc-plan">{planLine(s)}</span>
-        </div>
+        </h2>
+        <p className="pane-sub">{money(s.monthly_cost)} a month{planLine(s) ? `. ${planLine(s)}` : ""}.</p>
+        {save > 0 && <p className="pane-save">Could save <span className="hl">{money(save)}</span> a month</p>}
+      </header>
 
-        <p className={`c-find ${lead?.severity ?? "none"}`}>{lead ? humanDates(lead.message) : "Nothing to flag. You seem to use it."}</p>
+      <p className={`pane-find ${lead?.severity ?? "none"}`}>{lead ? humanDates(lead.message) : "Nothing to flag. You seem to use it."}</p>
 
-        <span className="c-cost num">{money(s.monthly_cost)}</span>
-
-        <span className="c-save num">{save > 0 ? <span className="hl">{money(save)}</span> : <span className="nil">None</span>}</span>
-
-        <div className="c-act">
-          <PrimaryAction s={s} busy={p.busy} onOpen={open ? () => {} : p.onToggle} onCancel={p.onCancel} onCheaper={p.onCheaper} onNegotiate={p.onNegotiate} />
-        </div>
-      </div>
-
-      {open && (
-        <div className="detail" id={detailId}>
-          <div className="detail-grid">
-            <div>
-              <h3>What ClawBack saw</h3>
-              <ul className="evidence">
-                {others.map((f, i) => <li key={`f${i}`} className={f.severity}>{humanDates(f.message)}</li>)}
-                {s.usage.evidence.map((e, i) => <li key={i}>{humanDates(e)}</li>)}
-                {!others.length && !s.usage.evidence.length && <li>No usage signals yet.</li>}
-              </ul>
-              <p className="fine-print">
-                Found in {sources(s)}. Charged {s.charge_count} time{s.charge_count === 1 ? "" : "s"}
-                {s.last_charged ? `, last on ${shortDate(s.last_charged)}` : ""}.
-              </p>
+      {!p.panel && (
+        <div className="pane-acts">
+          {s.status === "cancelled" ? (
+            <p className="fine-print">ClawBack keeps watching your bank and tells you if {s.merchant} charges you again.</p>
+          ) : isBill(s) ? (
+            <div className="pair">
+              <button disabled={p.busy} className="solid" onClick={p.onNegotiate}>Get a negotiation script</button>
+              <button disabled={p.busy} onClick={p.onCheaper}>Find a cheaper plan</button>
+              <button disabled={p.busy} className="quiet" onClick={p.onKeep}>Keep it</button>
             </div>
-            <div className="detail-actions">
-              {s.status === "cancelled" ? (
-                <>
-                  <h3>Cancelled</h3>
-                  <p className="fine-print">ClawBack keeps watching your bank and tells you if {s.merchant} charges you again.</p>
-                </>
-              ) : isBill(s) ? (
-                <>
-                  <h3>Pay less for {s.merchant}</h3>
-                  <div className="pair">
-                    <button disabled={p.busy} className="solid" onClick={p.onNegotiate}>Get a negotiation script</button>
-                    <button disabled={p.busy} onClick={p.onCheaper}>Find a cheaper plan</button>
-                    <button disabled={p.busy} onClick={p.onKeep}>Keep it</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h3>Did you use {s.merchant} this month?</h3>
-                  <div className="pair">
-                    <button disabled={p.busy} onClick={() => p.onCheckin(true)}>Yes, I used it</button>
-                    <button disabled={p.busy} onClick={() => p.onCheckin(false)}>No</button>
-                  </div>
-                  <div className="pair">
-                    <button disabled={p.busy} onClick={p.onKeep}>Keep it</button>
-                    <button disabled={p.busy} onClick={p.onCheaper}>Find a cheaper option</button>
-                    <button disabled={p.busy} className="solid" onClick={p.onCancel}>Help me cancel</button>
-                  </div>
-                </>
+          ) : (
+            <>
+              {(lead?.kind === "unknown_usage" || s.usage.needs_checkin) && (
+                <div className="ask" role="group" aria-label={`Did you use ${s.merchant} this month?`}>
+                  <span>Did you use it this month?</span>
+                  <button disabled={p.busy} onClick={() => p.onCheckin(true)}>Yes</button>
+                  <button disabled={p.busy} onClick={() => p.onCheckin(false)}>No</button>
+                </div>
               )}
-            </div>
-          </div>
-
-          {p.panel?.kind === "cancel" && <CancelPanel d={p.panel.data} trial={s.status === "trial"} busy={p.busy} onClose={p.onClosePanel} onCancelled={p.onCancelled} />}
-          {p.panel?.kind === "cheaper" && <CheaperPanel d={p.panel.data} onClose={p.onClosePanel} />}
-          {p.panel?.kind === "negotiate" && <ActionPanel a={p.panel.data} onClose={p.onClosePanel} />}
+              <div className="pair">
+                {lead?.kind !== "cancel_pending" && lead?.kind !== "cancel_confirmed" && (
+                  <button disabled={p.busy} className="solid" onClick={p.onCancel}>
+                    {lead?.kind === "trial_ending" && s.next_expected ? `Cancel before ${shortDate(s.next_expected)}` : "Help me cancel"}
+                  </button>
+                )}
+                <button disabled={p.busy} onClick={p.onCheaper}>Find a cheaper option</button>
+                <button disabled={p.busy} className="quiet" onClick={p.onKeep}>Keep it</button>
+              </div>
+            </>
+          )}
         </div>
       )}
-    </li>
+
+      <section className="pane-evidence">
+        <h3>What ClawBack saw</h3>
+        <ul className="evidence">
+          {others.map((f, i) => <li key={`f${i}`} className={f.severity}>{humanDates(f.message)}</li>)}
+          {s.usage.evidence.map((e, i) => <li key={i}>{humanDates(e)}</li>)}
+          {!others.length && !s.usage.evidence.length && <li>No usage signals yet.</li>}
+        </ul>
+        <p className="fine-print">
+          Found in {sources(s)}. Charged {s.charge_count} time{s.charge_count === 1 ? "" : "s"}
+          {s.last_charged ? `, last on ${shortDate(s.last_charged)}` : ""}.
+        </p>
+      </section>
+    </article>
   );
 }
 
