@@ -184,7 +184,7 @@ A model never computes a date, a total or a deadline.
 | 7 | Flags | code | each subscription | [built] |
 | 7b | Confirmation | code: a cancelled charge that stops, a charge after cancelling, a refund credit for a finding marked done | each sync | [built] |
 | 8 | Find cheaper | **Tavily** search, **Nemotron 3 Super** reads the plans, **Nemotron 3 Ultra** (thinking on) fits them to usage, then a code citation check | on request | [live] |
-| 9 | Prepare cancel | **Tavily** for the merchant's own cancel page (domain-checked, steps quoted from the page), the state rule, **Ultra** writes the email (template fallback), a Nylas draft | on request | [live]; draft [built] |
+| 9 | Prepare cancel | **Tavily** for the merchant's own cancel page (domain-checked, steps quoted from the page), the state rule, one checked link and a calendar reminder; **Ultra** writes an email only when the merchant's page lists an address (template fallback), a Nylas draft | on request | [live]; draft [built] |
 | 10 | Bills: classify + flag | code + `rules/bills.json` | recurring charges | [built] |
 | 11 | Purchases and flight details from email | **Lightning** in strict JSON, Nano backup, regex rules; grounded in the email | receipt / order / airline emails | [live] |
 | 12 | Findings: duplicates, fees, price drops, flights, settlements | code + `rules/*.json`; price checks with Tavily + Lightning | all transactions and emails | [built]; price checks [live] |
@@ -452,14 +452,17 @@ header (`frontend/app/api.ts`, `apiFetch`); an expired session is replaced once,
 - `/`, the front page: what ClawBack does, shown on one demo month of statement lines, the five areas, how it works,
   which model does what, the trust rules, and a pointer to the build status.
 - `/dashboard`:
-  - connect buttons and a CSV / OFX upload; one sentence about the month and the spend bar;
-  - a three-line guide on the first visit;
+  - one nav row with a Connect menu (email, bank, CSV / OFX upload); one sentence about the month and the spend
+    donut (`pipeline/spend.py`, `components/Donut.tsx`);
+  - a one-line guide on the first visit;
   - alerts new since the last visit;
   - money owed to you, and subscriptions and bills grouped by what to do. Each row has evidence, a Yes/No check-in,
-    Keep, Find cheaper, Prepare cancel and Negotiate;
-  - panels with checked links, the letter (tagged with who wrote it) and "Save to my Drafts";
-  - a Cancelled group, and a Money back table (confirmed or self-reported);
-  - the build status of every planned feature (`GET /api/features`), and the model trace.
+    Keep, Find cheaper, Prepare cancel and Negotiate, with one button showing per row;
+  - panels with checked links, the letter (tagged with who wrote it) and "Save to my Drafts"; the cancel panel has
+    one button to the checked page, "Remind me" (a calendar file, `ics.ts`) and "I cancelled it";
+  - "Everything else", folding Looks fine, a Cancelled group and a Money back table (confirmed or self-reported);
+  - the model trace.
+- `/built`: the build status of every planned feature (`GET /api/features`), linked from the dashboard footer.
 - `/settings`, "Your data": this browser's session, connections, the state for auto-renewal rules, what's stored,
   today's model use against the limit, and "Delete all my data" with an in-page confirm.
 - `/privacy`: the prototype privacy policy (`docs/PRIVACY.md`).

@@ -19,7 +19,7 @@
 
   --mark: #ffe14d;         /* highlighter: money you can get back, and nothing else */
   --mark-ink: #11170c;     /* text on the highlighter */
-  --keep: #2c5646;         /* money you're keeping, in the spend bar */
+  --keep: #2c5646;         /* money you're keeping, in the spend donut */
 
   --loss: #ff8f80;
   --check: #f2b866;
