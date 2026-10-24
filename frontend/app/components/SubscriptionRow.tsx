@@ -114,7 +114,7 @@ export default function SubscriptionRow(p: Props) {
   );
 }
 
-function PrimaryAction({ s, busy, onCheckin, onCancel, onCheaper, onNegotiate }: {
+export function PrimaryAction({ s, busy, onCheckin, onCancel, onCheaper, onNegotiate }: {
   s: Subscription; busy: boolean; onCheckin: (u: boolean) => void; onCancel: () => void; onCheaper: () => void; onNegotiate: () => void;
 }) {
   const lead = leadFlag(s);

@@ -39,7 +39,18 @@ export type Summary = {
   cancelled?: number; // subscriptions confirmed cancelled
   cancelled_monthly_savings?: number;
   recovered_note: string;
+  spend_groups?: SpendGroup[]; // the dashboard donut: paying items in at most six groups
+  trials?: TrialNote[]; // trials about to start charging, shown as a note under the donut
 };
+
+export type SpendGroup = {
+  label: string;
+  monthly: number;
+  could_cut: number;
+  items: { id: string; merchant: string; monthly: number; could_cut: number }[];
+};
+
+export type TrialNote = { id: string; merchant: string; amount: number; starts_on: string };
 
 // GET /api/recovered: money back, confirmed from bank data or self-reported, newest first.
 export type RecoveryEvent = {

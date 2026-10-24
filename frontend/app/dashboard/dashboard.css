@@ -334,3 +334,48 @@ h4.with-tag .tag { font-weight: 500; }
   .guide { flex-direction: column; }
   .guide ol { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ---------- donut ---------- */
+
+.donut { display: grid; grid-template-columns: 260px minmax(0, 26rem); align-items: center; gap: 20px 48px; }
+.donut-left { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.donut-ring { width: 260px; height: 260px; display: block; }
+.donut-ring .arc { stroke: var(--ground); stroke-width: 2; cursor: pointer; transition: opacity 0.15s; }
+.donut-ring .arc.keep { fill: var(--keep); }
+.donut-ring .arc.mark { fill: var(--mark); }
+.donut-ring .arc.dim { opacity: 0.45; }
+.donut-total { fill: var(--ink); font: 400 34px var(--serif); font-feature-settings: "tnum", "lnum"; }
+.donut-sub { fill: var(--muted); font: 400 13px var(--font); }
+.donut-cut { margin: 0; font-size: var(--t-sm); color: var(--muted); }
+.donut-table { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
+.donut-table th { font-weight: 500; color: var(--muted); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+.donut-table td { padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+.donut-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.donut-table tr.on td { background: var(--sheet-2); }
+.donut-table .nil { color: var(--muted); }
+.donut-pick {
+  height: auto; padding: 0; border: 0; border-radius: 2px; background: none; color: var(--ink);
+  font: inherit; font-weight: 600; text-align: left;
+}
+.donut-pick:hover { border: 0; text-decoration: underline; text-underline-offset: 0.2em; }
+.donut-pick[aria-pressed="true"] { text-decoration: underline; text-decoration-thickness: 0.12em; text-underline-offset: 0.2em; }
+.trial-note { margin: 16px 0 0; color: var(--muted); font-size: var(--t-sm); }
+
+.slice-list { margin-top: 20px; padding: 16px 20px; background: var(--sheet); border-radius: 2px; }
+.slice-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.slice-head h2 { font: 400 var(--t-lead)/1.2 var(--serif); }
+.slice-head .count { margin-left: 6px; font: 400 var(--t-sm) var(--font); color: var(--muted); }
+.slice-list ul { list-style: none; margin: 10px 0 0; padding: 0; }
+.slice-list li { display: grid; grid-template-columns: minmax(0, 1fr) 6rem 6rem 12rem; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--rule); }
+.slice-list .num { text-align: right; font-variant-numeric: tabular-nums; }
+.slice-list .nil { color: var(--muted); }
+.slice-list .act { justify-self: end; }
+.svc-link { height: auto; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 600; text-align: left; }
+.svc-link:hover { border: 0; text-decoration: underline; text-underline-offset: 0.2em; }
+
+@media (max-width: 760px) {
+  .donut { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .donut-table { max-width: 26rem; }
+  .slice-list li { grid-template-columns: minmax(0, 1fr) auto; }
+  .slice-list li .num:nth-of-type(2), .slice-list .act { grid-column: 1 / -1; justify-self: start; }
+}
