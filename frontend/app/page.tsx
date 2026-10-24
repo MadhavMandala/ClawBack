@@ -10,7 +10,7 @@ const AREAS = [
   {
     name: "Subscriptions",
     finds: "Services you've stopped using, two plans doing one job, free trials about to convert, and prices that crept up.",
-    prepares: "The cancel page and a cancellation email, or a cheaper plan that fits how you use it.",
+    prepares: "The cancel page and a reminder before the next charge, or a cheaper plan that fits how you use it.",
     ex: "HULU 877-8244858 CA  9.99",
   },
   {
@@ -43,7 +43,7 @@ const MODELS = [
   { name: "Nemotron 3.5 Lightning", id: "nvidia/Nemotron-3_5-Lightning", job: "Reads each email that passes the rules into plain facts, once.", when: "Every new email" },
   { name: "Nemotron 3 Nano", id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B", job: "Takes over when Lightning fails.", when: "Only on failure" },
   { name: "Nemotron 3 Super", id: "nvidia/nemotron-3-super-120b-a12b", job: "Reads plan and pricing pages into a list of plans.", when: "“Find cheaper”" },
-  { name: "Nemotron 3 Ultra", id: "nvidia/Nemotron-3-Ultra-550b-a55b", job: "Fits those plans to how you use the service, and writes the cancellation email.", when: "When you click" },
+  { name: "Nemotron 3 Ultra", id: "nvidia/Nemotron-3-Ultra-550b-a55b", job: "Fits those plans to how you use the service, and writes the letters, scripts and emails.", when: "When you click" },
   { name: "Nemotron 3.5 Super-VL", id: "nvidia/Nemotron-3.5-Super-VL", job: "Will read receipts sent as images and PDFs.", when: "Planned", planned: true },
 ];
 

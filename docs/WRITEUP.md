@@ -12,7 +12,7 @@ before submitting, and cut it if the work didn't land:
 - SQLite storage and encrypted tokens;
 - the injection screen on email text;
 - the cancel page checked to be on the merchant's own site, and cached per merchant;
-- cancellation emails saved as Nylas drafts;
+- letters and emails saved as Nylas drafts;
 - the nightly job;
 - the backend running on Nebius AI Cloud.
 
@@ -46,15 +46,15 @@ five places:
 
 | Area | What ClawBack finds | What it prepares |
 |---|---|---|
-| Subscriptions | Services you've stopped using, memberships that lose money, two plans doing one job, trials about to convert, prices that crept up | The cancel page and a cancellation email, or a cheaper plan that fits how you use it |
+| Subscriptions | Services you've stopped using, memberships that lose money, two plans doing one job, trials about to convert, prices that crept up | The merchant's own cancel page and a reminder before the next charge, or a cheaper plan that fits how you use it |
 | Bills | Internet, phone and insurance that went up, often when a promotion ended | A negotiation script with what you paid before |
 | Bank charges | The same charge twice; overdraft, ATM and foreign transaction fees | A dispute letter with its deadline, or a polite request to reverse the fee |
 | Refunds owed | Price drops inside a store's adjustment window; cancelled or heavily changed flights | A claim citing the store's policy, or the US Department of Transportation refund rule, or EU261 / UK261 |
 | Settlements | Open class-action settlements that match your purchases | The official claim link and the proof it asks for |
 
 **ClawBack never sends, cancels, pays, disputes or files anything itself.** It prepares the request. The person
-reads it and makes the final click. Cancellation emails and letters can be saved as drafts in the person's own
-mailbox, ready to send.
+reads it and makes the final click. Letters, and cancellation emails for merchants that take them, can be saved as
+drafts in the person's own mailbox, ready to send.
 
 Every finding shows its working: the charges and emails it relied on, the rule behind it, and a link to that rule's
 official source. Every step the agent takes is logged with the model it used, the time, the tokens and the cost, and
@@ -62,9 +62,11 @@ the dashboard shows that log.
 
 An example, from the demo month:
 - "DashPass cost $9.99 this month. One order saved you $2.99. Net, it cost you $7.00."
-- "Hulu sent a 'we miss you' email. It still costs $9.99 a month." Help me cancel: the cancel page on Hulu's own
-  site, and an email written by Nemotron 3 Ultra, saved as a draft.
-- "Best Buy charged $129.99 twice. Your email shows one order." A dispute letter with the deadline.
+- "Hulu sent a 'we miss you' email. It still costs $9.99 a month." Help me cancel: one button to the cancel page on
+  Hulu's own site, a calendar reminder before the next charge, and a bank check afterwards that the charge stopped.
+  Hulu doesn't take cancellations by email, so ClawBack doesn't write one.
+- "Best Buy charged $129.99 twice. Your email shows one order." A dispute letter with the deadline, written by
+  Nemotron 3 Ultra and saved as a draft.
 
 ## How we built it
 
@@ -77,7 +79,7 @@ email (Nylas) ┘                   reads each email once
 
 on a click:  Tavily ─> Nemotron 3 Super ─> Nemotron 3 Ultra ─> code checks ─> a prepared action
              finds     reads plan pages    fits plans to usage,   links and     the person sends it
-             pages                         writes the email       numbers
+             pages                         writes letters         numbers
 ```
 
 1. **Data in.** Plaid Link and `/transactions/sync` pull 180 days of bank transactions. Nylas Hosted OAuth connects
@@ -93,10 +95,12 @@ on a click:  Tavily ─> Nemotron 3 Super ─> Nemotron 3 Ultra ─> code checks
    dispute deadlines, flight rules, fees, settlements).
 5. **Super and Ultra judge, on request.** "Find a cheaper option": Tavily searches current plans, Nemotron 3 Super
    reads the pages into a list of plans, and Nemotron 3 Ultra, with thinking on, picks the ones that fit how the
-   person uses the service. "Help me cancel": Tavily finds the cancel page, and Nemotron 3 Ultra writes the email.
+   person uses the service. "Help me cancel": Tavily finds the cancel page, and once code has checked it, it
+   becomes the panel's one button. Nemotron 3 Ultra writes the dispute and refund letters, the bill negotiation
+   script, and a cancellation email when the merchant's own page says it takes one.
 6. **Code checks the output.** Options that don't cite a page Tavily returned are dropped. A cancel page is shown
-   only if it is on the merchant's own site. An email is used only if it has no links and no numbers that aren't in
-   the facts.
+   only if it is on the merchant's own site. A letter or email is used only if it has no links and no numbers that
+   aren't in the facts.
 7. **The person acts.** The prepared action is a link, steps, a letter, a script or a draft in the person's
    mailbox. The person sends it.
 8. **Every night,** a job syncs each connection, checks the email connection still works, and re-checks prices for
@@ -112,7 +116,7 @@ has one job, and the big models run only when a person asks for something.
 | fast | `nvidia/Nemotron-3_5-Lightning`, thinking off | Email to facts, strict JSON | Every email that passes the rules, once | 0.06 / 0.24 |
 | fast fallback | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | The same, when Lightning fails | Only on failure | 0.06 / 0.24 |
 | mid | `nvidia/nemotron-3-super-120b-a12b` | Reads plan and pricing pages into a plan list | "Find a cheaper option" | 0.30 / 0.90 |
-| reason | `nvidia/Nemotron-3-Ultra-550b-a55b` | Fits plans to usage (thinking on); writes the cancellation email | When the person clicks | 1.00 / 3.00 |
+| reason | `nvidia/Nemotron-3-Ultra-550b-a55b` | Fits plans to usage (thinking on); writes letters, scripts and cancellation emails | When the person clicks | 1.00 / 3.00 |
 | vision | `nvidia/Nemotron-3.5-Super-VL` | Receipts sent as images and PDFs | Planned | 0.30 / 0.90 |
 
 Why this split:
@@ -122,9 +126,9 @@ Why this split:
   strict JSON. The code refuses to turn it on for that tier.
 - **Super for long pages.** Plan and pricing pages are long and messy. Super reads them cheaply.
 - **Ultra for judgement, on demand.** Matching plans to how someone actually uses a service, and writing a careful
-  email, are where reasoning pays off. Ultra runs only after a click, never on the whole inbox.
-- **Every call has a way down.** Lightning falls back to Nano, then to regex rules. Ultra's email falls back to a
-  template. With no key at all, the app still runs on rules.
+  letter, are where reasoning pays off. Ultra runs only after a click, never on the whole inbox.
+- **Every call has a way down.** Lightning falls back to Nano, then to regex rules. Ultra's letters and emails fall
+  back to a template. With no key at all, the app still runs on rules.
 
 Prices are from the public Token Factory catalog, checked on 2026-10-22, and live in `backend/clawback/llm.py`. All
 five models were called live on 2026-10-22, and every one answered in strict JSON.
@@ -140,8 +144,8 @@ list of checked pages, never from a model.
 
 - **Code does the dates and the dollars.** A model reports what an email says ("ends in 3 days"); code turns it into
   a date. Deadlines, totals and savings are never model output.
-- **Models can't add links or numbers.** Recommendations must cite a page Tavily returned. A cancellation email
-  with a link, or with a number that isn't in the facts, is replaced by the template.
+- **Models can't add links or numbers.** Recommendations must cite a page Tavily returned. A letter or email with
+  a link, or with a number that isn't in the facts, is replaced by the template.
 - **Email is untrusted.** Email text is wrapped in tags, the model is told to ignore instructions inside it, and an
   injection screen checks it before a model reads it.
 - **Zero Data Retention** is on for the team's Token Factory organization, so prompts and answers aren't kept.

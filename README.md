@@ -133,7 +133,7 @@ money arithmetic. Every step is logged with its engine, time and cost, and the d
 | fast | `nvidia/Nemotron-3_5-Lightning` (thinking off) | Email to facts, receipts and flights, unknown senders and charges, the injection check, store prices | Every email that passes triage, once (cached) |
 | fast_fallback | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | Same, when Lightning fails | Only on failure |
 | mid | `nvidia/nemotron-3-super-120b-a12b` | Reads plan pages, bill offers and settlement pages into lists | "Find cheaper", "Negotiate", the settlements refresh |
-| reason | `nvidia/Nemotron-3-Ultra-550b-a55b` | Fits plans to usage (thinking on); writes the cancel email, letters and scripts | When you click |
+| reason | `nvidia/Nemotron-3-Ultra-550b-a55b` | Fits plans to usage (thinking on); writes letters, scripts and cancel emails when a merchant takes them | When you click |
 | vision | `nvidia/Nemotron-3.5-Super-VL` | Receipt images and scanned PDFs | Attachments on receipt emails |
 
 If a model call fails, the next tier takes over, then the code fallback, so the app never breaks. Models never
@@ -181,7 +181,7 @@ backend/clawback/
   missing.py         the list of everything not built yet; features.py the build-status board
 backend/evals/       the labelled eval set and its scorer
 deploy/vm/           Nebius VM setup, update script, systemd units and Caddy config
-frontend/app/        front page (page.tsx), dashboard/, settings/, privacy/
+frontend/app/        front page (page.tsx), dashboard/, built/, settings/, privacy/
 docs/                architecture, design, eval, deploy, privacy, write-up, video, feedback
 STATUS.md            what works / what's MISSING
 ```

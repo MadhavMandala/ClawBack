@@ -501,7 +501,7 @@ export default function Dashboard() {
         <div className="wrap">
           <p>ClawBack never cancels, pays, sends or files anything on its own. You make the final click.</p>
           <p className="foot-demo">
-            <span>{demo ? "Prototype. Made-up demo month." : "Your data, kept on this computer."}</span>{" "}
+            <span>{demo ? "Prototype. Made-up demo month." : "Your own data, from your connections."}</span>{" "}
             <a href="/built">What&apos;s built</a>
             {demo && <button className="quiet" disabled={!!busy} onClick={() => post("sync", "/api/sync")}>Re-run</button>}
             <button className="quiet" disabled={!!busy} onClick={() => { setPanel(null); setOpen(null); setSlice(null); post("seed", "/api/demo/seed"); }}>

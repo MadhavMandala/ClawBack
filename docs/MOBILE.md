@@ -43,7 +43,7 @@ nothing in the pipeline changes.
 
 ### Screens
 
-1. **Your month:** the sentence, the spend bar and the totals (`/api/summary`, `/api/subscriptions`).
+1. **Your month:** the sentence, the spend donut and the totals (`/api/summary`, `/api/subscriptions`).
 2. **To do:** owed money first, then subscriptions to decide on, each with its main action (`/api/findings`, flags).
 3. **One subscription or finding:** the evidence, then the cancel steps, the letter and "Save to my Drafts".
 4. **Money back:** the confirmed and self-reported history (`/api/recovered`).
