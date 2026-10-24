@@ -175,9 +175,8 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
             steps = [f"Open {sub.merchant}'s own page ({cancel_lookup.host_of(verified['url'])}) and sign in.",
                      "Follow its cancel steps."]
         elif links:
-            steps = [f"We couldn't confirm a cancel page on {sub.merchant}'s own site. The links below are search "
-                     "results: check the web address before you sign in anywhere.",
-                     "Or sign in on the merchant's website and look for Account > Subscription or Membership."]
+            steps = [f"We couldn't confirm a cancel page on {sub.merchant}'s own site.",
+                     f"Sign in on {sub.merchant}'s website and look for Account > Subscription or Membership."]
         else:
             steps = ["Sign in on the merchant's website and look for Account > Subscription or Membership."]
         if found.get("note"):

@@ -389,6 +389,7 @@ h4.with-tag .tag { font-weight: 500; }
   padding: 12px; background: var(--sheet); border: 1px solid var(--rule-strong); border-radius: 3px;
 }
 .connect-list > * { justify-content: center; }
+.connect-list[hidden] { display: none; }
 
 /* ---------- one-line guide, folded rest, footer demo line ---------- */
 

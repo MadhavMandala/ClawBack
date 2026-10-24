@@ -34,7 +34,7 @@ def run(user_id: str, today: date | None = None) -> dict:
         # Real mail isn't back in memory yet (store.py, connect.ensure_fresh): a run now would drop every email
         # finding, so the saved results stay until the mail is read again.
         record_repeat(user_id, "pipeline", "code", "skipped", "kept the saved results until the mail is read again")
-        return summary(user_id)
+        return summary(user_id, today)
     start_run(user_id)  # Nylas / Plaid sync rows and the newest on-click rows stay visible
     rules = rulebook.current()
     bill_for = rules.bill_provider_for if rules else None
@@ -129,14 +129,15 @@ def run(user_id: str, today: date | None = None) -> dict:
         record(user_id, "refund check", "code",
                note=f"{len(u.refund_watch)} findings marked done: {confirmed} refunds confirmed by a bank credit, "
                     f"{waiting} still waiting")
-    return summary(user_id)
+    return summary(user_id, today)
 
 
 def best_saving(s: Subscription) -> float:
     return max((f.monthly_savings for f in s.flags), default=0.0)
 
 
-def summary(user_id: str) -> dict:
+def summary(user_id: str, today: date | None = None) -> dict:
+    today = today or date.today()
     u = store.user(user_id)
     subs = list(u.subscriptions.values())
     paying = [s for s in subs if s.status not in ("trial", "cancelled")]
@@ -144,13 +145,17 @@ def summary(user_id: str) -> dict:
     bills_total = round(sum(s.monthly_cost for s in paying if s.kind == "bill"), 2)
     open_findings = [f for f in u.findings.values() if f.status == "open"]
     rec = recovered.totals(u)
+    groups = spend.spend_groups(subs)
+    trials = spend.trial_notes(subs, today)
     return {
         "subscriptions": sum(1 for s in subs if s.kind != "bill" and s.status != "cancelled"),
         "subscriptions_total": subs_total,
         "bills": sum(1 for s in subs if s.kind == "bill" and s.status != "cancelled"),
         "bills_total": bills_total,
         "monthly_total": round(subs_total + bills_total, 2),
-        "potential_monthly_savings": round(sum(best_saving(s) for s in subs if s.status not in ("kept", "cancelled")), 2),
+        # The same rule as the donut: each paying item's saving capped at its cost, plus trials about to start.
+        # So the sentence, the donut's yellow and the trial note always agree.
+        "potential_monthly_savings": round(sum(g["could_cut"] for g in groups) + sum(t["amount"] for t in trials), 2),
         "flagged": sum(1 for s in subs if any(f.severity != "info" for f in s.flags)),
         "owed_total": round(sum(f.amount for f in open_findings if f.currency == "USD"), 2),
         "owed_count": len(open_findings),
@@ -160,7 +165,7 @@ def summary(user_id: str) -> dict:
         "recovered_self_reported": rec["self_reported"],
         "cancelled_monthly_savings": rec["cancelled_monthly"],
         "recovered_note": recovered.note(rec),
-        "spend_groups": spend.spend_groups(subs),
-        "trials": spend.trial_notes(subs, date.today()),
+        "spend_groups": groups,
+        "trials": trials,
     }
 

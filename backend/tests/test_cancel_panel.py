@@ -114,3 +114,11 @@ def test_watch_after_matches_the_bank_check_grace_period(client):
     prep = client.post(f"/api/subscriptions/{hulu['id']}/cancel-prep").json()
     nxt = date.fromisoformat(hulu["next_expected"])
     assert prep["watch_after"] == (nxt + timedelta(days=6)).isoformat()  # monthly plans get 6 days' grace
+
+
+def test_unverified_only_steps_dont_point_to_links_below(client, monkeypatch):
+    page = {**_page(None), "links": [{"label": "How to cancel", "url": "https://blog.example/cancel-hulu", "verified": False}],
+            "steps": [], "steps_url": None, "verified": False}
+    monkeypatch.setattr(cancel_lookup, "lookup", lambda *a, **k: page)
+    prep = client.post(f"/api/subscriptions/{_hulu(client)['id']}/cancel-prep").json()
+    assert "below" not in " ".join(prep["how_to"]).lower()

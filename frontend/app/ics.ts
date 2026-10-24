@@ -35,6 +35,7 @@ export function calendarFile(p: { id: string; title: string; date: string; descr
     "VERSION:2.0",
     "PRODID:-//ClawBack//Cancel reminder//EN",
     "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH", // Outlook opens it as an event to add
     "BEGIN:VEVENT",
     `UID:clawback-${p.id}-${day}@clawback`,
     `DTSTAMP:${stamp(new Date())}`,
@@ -43,6 +44,12 @@ export function calendarFile(p: { id: string; title: string; date: string; descr
     `SUMMARY:${esc(p.title)}`,
     `DESCRIPTION:${esc(p.description)}`,
     ...(p.url ? [`URL:${p.url}`] : []),
+    // An alert at the event's start, so Apple Calendar and Outlook actually notify (imports don't add one).
+    "BEGIN:VALARM",
+    "ACTION:DISPLAY",
+    "TRIGGER:-PT0M",
+    `DESCRIPTION:${esc(p.title)}`,
+    "END:VALARM",
     "END:VEVENT",
     "END:VCALENDAR",
   ];
