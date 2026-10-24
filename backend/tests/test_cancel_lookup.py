@@ -285,7 +285,7 @@ def test_too_few_grounded_steps_means_generic_steps(fake_tavily, fake_llm):
     out = cancel_lookup.lookup("t", "Netflix", TODAY)
     assert out["steps"] == [] and out["verified"] is True
     prep = cancel_prep("t", NETFLIX, TODAY)
-    assert prep["steps"][0] == "Open Netflix's own page below (help.netflix.com)."
+    assert prep["steps"][0] == "Open Netflix's own page (help.netflix.com) and sign in."
 
 
 def test_steps_must_be_about_cancelling(fake_tavily, fake_llm):

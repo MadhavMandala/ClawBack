@@ -126,8 +126,12 @@ export type CancelPrep = {
   next_charge: string | null;
   links: { label: string; url: string; verified: boolean }[];
   steps: string[];
-  // `to` is set only when a support address was found on the merchant's own page.
-  email: { subject: string; body: string; status: string; to?: string | null; written_by?: string | null };
+  how_to: string[]; // the merchant's own steps only
+  primary_link: { label: string; url: string; host: string; verified: boolean } | null;
+  reminder_on: string | null; // the day to remind them, picked in code
+  watch_after: string | null; // ClawBack checks the bank for a charge after this date
+  // Only when the merchant's own page lists a cancellation address; most don't take email.
+  email: { subject: string; body: string; status: string; to?: string | null; written_by?: string | null } | null;
   // The user's rights line(s): their state's auto-renewal law when it applies, else federal ROSCA.
   rights?: { scope: "state" | "federal"; state: string | null; text: string; law: string; title: string; source_url: string; checked_on: string }[];
   missing: string[];

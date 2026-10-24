@@ -406,3 +406,21 @@ h4.with-tag .tag { font-weight: 500; }
 .group.rest[open] > summary .chev { transform: rotate(180deg); }
 .group.rest > .group { margin-top: 28px; }
 .foot-demo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+
+/* ---------- cancel panel: one big button ---------- */
+
+.panel.cancel .cancel-line { margin: 4px 0 0; color: var(--muted); }
+.cancel-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
+.btn.big { height: 44px; padding: 0 22px; font-size: var(--t-body); font-weight: 600; gap: 6px; text-decoration: none; }
+.panel.cancel .fine-print { margin-top: 6px; }
+.how-to { margin-top: 14px; }
+.how-to > summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; font-size: var(--t-sm); font-weight: 600; }
+.how-to > summary::-webkit-details-marker { display: none; }
+.how-to[open] > summary .chev { transform: rotate(180deg); }
+.how-to .steps { margin-top: 8px; }
+.cancel-email { margin-top: 16px; padding: 12px 14px; background: var(--sheet-3); border-radius: 2px; font-size: var(--t-sm); }
+.cancel-email p { margin: 0 0 6px; }
+.cancel-email summary { cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: underline; text-underline-offset: 0.2em; }
+.cancel-email .letter { margin-top: 10px; }
+.cancel-done { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.cancel-done > span { flex: 1; font-weight: 600; }

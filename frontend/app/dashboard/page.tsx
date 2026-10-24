@@ -157,6 +157,11 @@ export default function Dashboard() {
     if (data) setPanel({ id, p: kind === "cancel" ? { kind, data: data as CancelPrep } : { kind, data: data as Alternatives } });
   }
 
+  async function markCancelled(id: string) {
+    const out = await post<Subscription>(`row-${id}`, `/api/subscriptions/${id}/cancelled`);
+    if (out) setNotice({ tone: "info", text: `Marked ${out.merchant} as cancelled. ClawBack will check your bank for the next charge.` });
+  }
+
   async function negotiate(id: string) {
     setOpen(id);
     const data = await post<ActionPrep>(`row-${id}`, `/api/subscriptions/${id}/negotiate`);
@@ -256,7 +261,7 @@ export default function Dashboard() {
                             <span className="num">{it.could_cut > 0 ? <span className="hl">{money(it.could_cut)}</span> : <span className="nil">None</span>}</span>
                             <span className="act">
                               {s && <PrimaryAction s={s} busy={busy === `row-${s.id}`}
-                                onCheckin={() => pick(s.id)}
+                                onOpen={() => pick(s.id)}
                                 onCancel={() => { pick(s.id); openPanel(s.id, "cancel"); }}
                                 onCheaper={() => { pick(s.id); openPanel(s.id, "cheaper"); }}
                                 onNegotiate={() => { pick(s.id); negotiate(s.id); }} />}
@@ -370,6 +375,7 @@ export default function Dashboard() {
                       onCheaper={() => openPanel(s.id, "cheaper")}
                       onNegotiate={() => negotiate(s.id)}
                       onClosePanel={() => setPanel(null)}
+                      onCancelled={() => markCancelled(s.id)}
                     />
                   ))}
                 </ol>
@@ -413,6 +419,7 @@ export default function Dashboard() {
                       onCheaper={() => openPanel(s.id, "cheaper")}
                       onNegotiate={() => negotiate(s.id)}
                       onClosePanel={() => setPanel(null)}
+                      onCancelled={() => markCancelled(s.id)}
                     />
                   ))}
                 </ol>

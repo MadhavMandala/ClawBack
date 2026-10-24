@@ -18,8 +18,15 @@ export function reclaimable(s: Subscription): number {
 
 const RANK: Record<string, number> = { high: 0, medium: 1, info: 2 };
 
+// Once you've said you cancelled it, the cancellation's own state leads the row ("charged anyway" first).
+const CANCEL_STATES = ["charged_after_cancel", "cancel_pending", "cancel_confirmed"];
+
 export function leadFlag(s: Subscription): Flag | null {
   if (!s.flags.length) return null;
+  for (const kind of CANCEL_STATES) {
+    const f = s.flags.find((x) => x.kind === kind);
+    if (f) return f;
+  }
   return [...s.flags].sort((a, b) => RANK[a.severity] - RANK[b.severity] || b.monthly_savings - a.monthly_savings)[0];
 }
 
