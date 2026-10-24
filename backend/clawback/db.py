@@ -48,6 +48,13 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE INDEX IF NOT EXISTS sessions_user ON sessions (user_id);
 
+-- The Gmail add-on's read-only token (sessions.py): one per user, stored only as a SHA-256 hash.
+CREATE TABLE IF NOT EXISTS addon_tokens (
+    token_hash TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS session_log (
     ip_hash TEXT NOT NULL,
     at TEXT NOT NULL

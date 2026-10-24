@@ -12,7 +12,7 @@ import contextlib
 import json
 import logging
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import date, datetime, timezone
 
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,7 +33,7 @@ from .pipeline.confirm import mark_done
 from .pipeline.recommend import alternatives
 from .pipeline.recovered import history
 from .pipeline.run import best_saving, run, summary
-from .sessions import UserId, user_scope
+from .sessions import AddonUserId, UserId, user_scope
 from .sources import nylas, plaid
 from .sources.net import SourceError
 from .sources.statements import parse_upload
@@ -142,6 +142,28 @@ def me(user_id: UserId):
 def delete_me(user_id: UserId):
     """Delete everything ClawBack holds for this session, and end its email and bank connections."""
     return sessions.delete(user_id)
+
+
+# --- Gmail add-on -----------------------------------------------------------------------------------------
+
+@app.post("/api/addon-token")
+def addon_token(user_id: UserId):
+    """A read-only token for the Gmail add-on (settings hands it to the extension). It opens /api/email-flags only.
+    Asking again replaces the old one."""
+    return {"token": sessions.create_addon_token(user_id)}
+
+
+@app.delete("/api/addon-token")
+def addon_token_revoke(user_id: UserId):
+    sessions.revoke_addon(user_id)
+    return {"ok": True}
+
+
+@app.get("/api/email-flags")
+def email_flags(user_id: AddonUserId):
+    """Flags for Gmail rows, keyed by Gmail ids. MISSING [gmail-addon]: the flags themselves come in the next step
+    (docs/superpowers/plans/2026-10-23-gmail-extension.md, Task 1); for now the list is empty."""
+    return {"flags": [], "generated_at": datetime.now(timezone.utc).isoformat()}
 
 
 @app.get("/api/alerts")
