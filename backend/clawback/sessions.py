@@ -42,6 +42,7 @@ from .sources import nylas, plaid
 from .store import store
 
 HEADER = "X-ClawBack-Session"
+ADDON_HEADER = "X-ClawBack-Addon"  # the Gmail add-on's read-only token: opens GET /api/email-flags only
 SINGLE_USER = "demo"
 EXPIRED = "session expired"
 TOUCH_EVERY = timedelta(minutes=5)  # last_seen is written at most this often per user
@@ -159,6 +160,48 @@ async def current_user(request: Request) -> AsyncIterator[str]:
 UserId = Annotated[str, Depends(current_user)]
 
 
+# --- The Gmail add-on's read-only token -------------------------------------------------------------------
+#
+# The extension never gets the session id. Settings asks for a separate token that only GET /api/email-flags
+# accepts (through addon_user). It lives in its own table, so the session check never finds it, and the session
+# id is never found here. One token per user: asking again replaces it. Only the SHA-256 is stored.
+
+def create_addon_token(user_id: str) -> str:
+    token = secrets.token_urlsafe(32)
+    with db.tx() as t:
+        t.execute("DELETE FROM addon_tokens WHERE user_id = ?", (user_id,))
+        t.execute("INSERT INTO addon_tokens (token_hash, user_id, created_at) VALUES (?, ?, ?)",
+                  (_hash(token), user_id, db.iso(db.now())))
+    return token
+
+
+def revoke_addon(user_id: str) -> None:
+    db.execute("DELETE FROM addon_tokens WHERE user_id = ?", (user_id,))
+
+
+def resolve_addon(token: str | None) -> str:
+    """The user id for an add-on token, or HTTPException 401. Single-user mode needs no token."""
+    if config.settings.single_user:
+        return ensure_single()
+    token = (token or "").strip()
+    if not 20 <= len(token) <= 200:
+        raise HTTPException(401, EXPIRED)
+    row = db.one("SELECT user_id FROM addon_tokens WHERE token_hash = ?", (_hash(token),))
+    if row is None:
+        raise HTTPException(401, EXPIRED)
+    return row["user_id"]
+
+
+async def addon_user(request: Request) -> AsyncIterator[str]:
+    """FastAPI dependency for the add-on's routes: the user behind X-ClawBack-Addon."""
+    user_id = await run_in_threadpool(resolve_addon, request.headers.get(ADDON_HEADER))
+    async with user_scope(user_id):
+        yield user_id
+
+
+AddonUserId = Annotated[str, Depends(addon_user)]
+
+
 # --- Settings page, delete, prune -----------------------------------------------------------------------
 
 def info(user_id: str) -> dict:
@@ -211,6 +254,7 @@ def delete(user_id: str) -> dict:
                 "transactions": len(u.transactions), "alerts": alerts.count(user_id)}
     with db.tx() as t:
         t.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
+        t.execute("DELETE FROM addon_tokens WHERE user_id = ?", (user_id,))
         t.execute("DELETE FROM connections WHERE user_id = ?", (user_id,))
         t.execute("DELETE FROM alerts WHERE user_id = ?", (user_id,))
         t.execute("DELETE FROM users WHERE id = ?", (user_id,))
@@ -239,6 +283,7 @@ def prune(now: datetime | None = None) -> dict:
         delete(user_id)
     with db.tx() as t:
         orphans = t.execute("DELETE FROM sessions WHERE user_id NOT IN (SELECT id FROM users)").rowcount
+        t.execute("DELETE FROM addon_tokens WHERE user_id NOT IN (SELECT id FROM users)")
         t.execute("DELETE FROM session_log WHERE at < ?", (db.iso(now - timedelta(days=1)),))
     budget.prune()
     return {"sessions": len(idle), "with_connections": connected, "orphan_sessions": orphans}
