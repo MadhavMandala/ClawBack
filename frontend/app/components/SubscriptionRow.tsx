@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { calendarFile, downloadCalendar } from "../ics";
-import { writtenBy, type ActionPrep, type Alternatives, type CancelPrep, type Subscription } from "../api";
+import { call, writtenBy, type ActionPrep, type Alternatives, type CancelPrep, type Subscription } from "../api";
+import { connectEmail } from "../connect";
 import { daysLeft, humanDates, isBill, leadFlag, money, planLine, reclaimable, shortDate, sources } from "../format";
 import ActionPanel from "./ActionPanel";
 import { Missing } from "./bits";
@@ -65,6 +66,7 @@ type DetailProps = {
   onNegotiate: () => void;
   onClosePanel: () => void;
   onCancelled: () => void;
+  onSent: () => void; // the gym email went out: reload (it's now cancelling)
 };
 
 // The detail pane for a subscription or bill. Anything ClawBack writes (the cancel panel, cheaper options, a
@@ -77,7 +79,7 @@ export function SubscriptionDetail(p: DetailProps) {
 
   return (
     <article className="pane-body" aria-label={s.merchant}>
-      {p.panel?.kind === "cancel" && <CancelPanel d={p.panel.data} trial={s.status === "trial"} busy={p.busy} onClose={p.onClosePanel} onCancelled={p.onCancelled} />}
+      {p.panel?.kind === "cancel" && <CancelPanel d={p.panel.data} trial={s.status === "trial"} busy={p.busy} onClose={p.onClosePanel} onCancelled={p.onCancelled} onSent={p.onSent} />}
       {p.panel?.kind === "cheaper" && <CheaperPanel d={p.panel.data} onClose={p.onClosePanel} />}
       {p.panel?.kind === "negotiate" && <ActionPanel a={p.panel.data} onClose={p.onClosePanel} />}
 
@@ -170,8 +172,67 @@ export function PrimaryAction({ s, busy, onOpen, onCancel, onCheaper, onNegotiat
   return null;
 }
 
-function CancelPanel({ d, trial, busy, onClose, onCancelled }: {
-  d: CancelPrep; trial: boolean; busy: boolean; onClose: () => void; onCancelled: () => void;
+// The gym email: always shown (it's the point of this workflow), then Send with a confirm step. The server decides
+// where it goes; in the demo that's your own inbox, and the panel says so before you click.
+function SendEmail({ d, busy, onSent }: { d: CancelPrep; busy: boolean; onSent: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const [state, setState] = useState<{ sending?: boolean; sent?: string; error?: string }>({});
+  const email = d.email!;
+  const send = d.send!;
+
+  async function doSend() {
+    setState({ sending: true });
+    try {
+      const out = await call<{ sent_to: string; test: boolean }>(`/api/subscriptions/${d.subscription_id}/send-email`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: email.subject, body: email.body }),
+      });
+      setState({ sent: out.sent_to });
+      setConfirming(false);
+      onSent();
+    } catch (e) {
+      setState({ error: (e as Error).message });
+    }
+  }
+
+  return (
+    <div className="send-email">
+      <h4 className="with-tag">The email{writtenBy(email.written_by) && <span className="tag">{writtenBy(email.written_by)}</span>}</h4>
+      <div className="letter">
+        <p className="letter-to">To: {send.to_shown}</p>
+        <p className="letter-subject">{email.subject}</p>
+        <p className="letter-body">{email.body}</p>
+      </div>
+      {send.test && (
+        <p className="fine-print">Demo: Send delivers this to your own inbox{send.from ? ` (${send.from})` : ""}, not to the studio.</p>
+      )}
+      {state.sent ? (
+        <p className="sent-line">Sent to {state.sent}. ClawBack now watches your bank for the next charge.</p>
+      ) : !send.connected ? (
+        <div className="pair">
+          <button className="solid" onClick={() => connectEmail("send")}>Connect email to send</button>
+          <span className="fine-print">Only to send this email. Your demo month stays.</span>
+        </div>
+      ) : confirming ? (
+        <div className="confirm">
+          <p>Send this email from <b>{send.from}</b> to <b>{send.goes_to}</b>? It can&apos;t be unsent.</p>
+          <div className="pair">
+            <button className="solid" disabled={busy || state.sending} onClick={doSend}>{state.sending ? "Sending" : "Yes, send it"}</button>
+            <button className="quiet" disabled={state.sending} onClick={() => setConfirming(false)}>Not yet</button>
+          </div>
+        </div>
+      ) : (
+        <div className="pair">
+          <button className="solid big" disabled={busy} onClick={() => setConfirming(true)}>Send</button>
+        </div>
+      )}
+      {state.error && <p className="send-error" role="alert">{state.error}</p>}
+    </div>
+  );
+}
+
+function CancelPanel({ d, trial, busy, onClose, onCancelled, onSent }: {
+  d: CancelPrep; trial: boolean; busy: boolean; onClose: () => void; onCancelled: () => void; onSent: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const next = shortDate(d.next_charge);
@@ -237,7 +298,9 @@ function CancelPanel({ d, trial, busy, onClose, onCancelled }: {
         </details>
       )}
 
-      {d.email && (
+      {d.email && d.send && <SendEmail d={d} busy={busy} onSent={onSent} />}
+
+      {d.email && !d.send && (
         <div className="cancel-email">
           <p>Or email them{d.email.to ? <> at <b>{d.email.to}</b></> : null}. Their help page says they accept it.</p>
           <details>
@@ -255,11 +318,13 @@ function CancelPanel({ d, trial, busy, onClose, onCancelled }: {
         </div>
       )}
 
-      <div className="cancel-done">
-        <span>Done it?</span>
-        <button className="solid" disabled={busy} onClick={() => { onCancelled(); onClose(); }}>I cancelled it</button>
-        <button className="quiet" onClick={onClose}>Not yet</button>
-      </div>
+      {!d.send && (
+        <div className="cancel-done">
+          <span>Done it?</span>
+          <button className="solid" disabled={busy} onClick={() => { onCancelled(); onClose(); }}>I cancelled it</button>
+          <button className="quiet" onClick={onClose}>Not yet</button>
+        </div>
+      )}
       {d.watch_after && (
         <p className="fine-print">ClawBack then checks your bank after {shortDate(d.watch_after)} and tells you if {d.merchant} charged anyway.</p>
       )}

@@ -23,6 +23,7 @@ GROUP_OF: dict[str, str] = {
     "video_streaming": "Streaming", "music": "Streaming",
     "cloud_storage": "Cloud storage",
     "delivery_membership": "Food delivery", "meal_kit": "Food delivery",
+    "fitness": "Gym and fitness",
 }
 
 

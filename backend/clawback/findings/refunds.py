@@ -145,6 +145,8 @@ def _price_finding(p: Purchase, item: Item, r: dict, pc: PriceCheck, drop: float
                      summary=f"{r['window_days']} days from {start}. {r.get('conditions') or ''}".strip(),
                      source_url=r["source_url"]) if r.get("source_url") else None,
         found_on=today,
+        price_check={"store": store, "item": item.name, "paid": item.price, "paid_on": p.order_date.isoformat(),
+                     "now": pc.price, "url": pc.url, "how": pc.how, "checked_on": today.isoformat()},
         details={"store": store, "item": item.name, "paid": item.price, "now": pc.price, "price_url": pc.url,
                  "how": pc.how, "checked_on": today.isoformat(), "order_number": p.order_number, "order_date": p.order_date.isoformat(),
                  "how_to_claim": r.get("how_to_claim"), "claim_url": r.get("claim_url"),

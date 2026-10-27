@@ -58,3 +58,11 @@ def test_live_price_not_below_paid_is_watched_not_dropped(monkeypatch):
 ])
 def test_open_box_and_marketplace_listings_are_not_the_price(url):
     assert prices.other_condition("Sony WH-1000XM5 Headphones", {"title": "Headphones", "url": url})
+
+
+def test_api_shows_the_price_check_but_not_the_private_details(client):
+    client.post("/api/demo/seed")
+    [drop] = [f for f in client.get("/api/findings").json() if f["kind"] == "price_drop"]
+    pc = drop["price_check"]
+    assert (pc["store"], pc["paid"], pc["how"]) == ("Best Buy", 249.0, "simulated") and pc["item"] == "Apple AirPods Pro 2"
+    assert "details" not in drop and "order_number" not in pc

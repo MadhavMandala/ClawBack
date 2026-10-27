@@ -19,8 +19,9 @@ function loadPlaid(): Promise<PlaidLink> {
 }
 
 /** Send the browser to the email provider's own sign-in page. It comes back to /dashboard?connected=email. */
-export async function connectEmail(): Promise<void> {
-  const out = await call<{ auth_url: string }>("/api/connect/email");
+export async function connectEmail(purpose: "connect" | "send" = "connect"): Promise<void> {
+  // purpose "send" (the gym's Send button): the inbox is used only to send, and the demo month stays.
+  const out = await call<{ auth_url: string }>(`/api/connect/email${purpose === "send" ? "?purpose=send" : ""}`);
   if (out?.auth_url) window.location.assign(out.auth_url);
 }
 

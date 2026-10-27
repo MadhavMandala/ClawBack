@@ -36,7 +36,8 @@ EMAIL_SCHEMA = {
 EMAIL_PROMPT = """Write a short, polite email asking {merchant} to cancel a subscription.
 Facts (use only these; do not invent account numbers, dates, prices or links):
 {facts}
-Rules: keep the exact text {placeholder} where the account email goes; no links; under 120 words;
+Rules: keep the exact text {placeholder} where the account email goes; no other placeholders or brackets (sign off
+with just "Thank you."); no links; under 120 words;
 ask them to confirm the cancellation in writing and make sure it does not renew."""
 
 
@@ -83,6 +84,7 @@ def _acceptable(subject: str, body: str, facts: str) -> bool:
     text = f"{subject}\n{body}"
     return (
         PLACEHOLDER in body
+        and "[" not in text.replace(PLACEHOLDER, "")  # no other placeholder, e.g. "[Your Name]": Send can't fill it
         and not LINK.search(text)
         and _numbers(text) <= _numbers(facts)
         and len(body) < 1500
