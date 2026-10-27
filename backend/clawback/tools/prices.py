@@ -92,7 +92,8 @@ def item_on_page(item: str, text: str) -> bool:
     return bool(plain) and sum(w in page for w in plain) / len(plain) >= 0.6
 
 
-_CONDITION = re.compile(r"refurbished|renewed|pre-?owned|\bused\b|open[- ]box|\bparts\b|replacement", re.I)
+# Also Marketplace listings: a third-party seller's price on the store's site isn't the store's own price.
+_CONDITION = re.compile(r"refurbished|renewed|pre-?owned|\bused\b|open[- ]?box|\bparts\b|replacement|marketplace", re.I)
 
 
 def other_condition(item: str, result: dict) -> bool:

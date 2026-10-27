@@ -63,8 +63,9 @@ def _short(name: str) -> str:
 
 
 def price_drops(purchases: list[Purchase], check: Callable[[Purchase, Item, bool], PriceCheck | None], today: date,
-                notes: list[str]) -> list[Finding]:
-    """`check(purchase, item, adjusts)` returns the current price or None. `notes` collects trace notes."""
+                notes: list[str], watch: list[dict] | None = None) -> list[Finding]:
+    """`check(purchase, item, adjusts)` returns the current price or None. `notes` collects trace notes. `watch`
+    collects items checked inside their window whose price hasn't dropped, so the app can say "no drop today"."""
     out: list[Finding] = []
     for p in purchases:
         r = p.retailer
@@ -92,6 +93,10 @@ def price_drops(purchases: list[Purchase], check: Callable[[Purchase, Item, bool
             drop = round(item.price - pc.price, 2)
             if drop < MIN_DROP:
                 notes.append(f"{r['store']}: {_short(item.name)} is {money(pc.price)} now, no drop worth claiming")
+                if watch is not None:
+                    watch.append({"store": r["store"], "item": item.name, "paid": item.price, "paid_on":
+                                  p.order_date.isoformat(), "price_now": pc.price, "url": pc.url, "how": pc.how,
+                                  "checked_on": today.isoformat(), "deadline": deadline.isoformat()})
                 continue
             out.append(_price_finding(p, item, r, pc, drop, deadline, today))
     return out
@@ -128,7 +133,8 @@ def _price_finding(p: Purchase, item: Item, r: dict, pc: PriceCheck, drop: float
         id=finding_id("price_drop", store, p.order_number or p.email_id, item.name),
         category="refunds", kind="price_drop", merchant=store,
         title=(f"Reminder: ask {store} yourself about your {_short(item.name)}" if self_file
-               else f"{store} dropped the price of your {_short(item.name)}"),
+               else f"{store} dropped the price of your {_short(item.name)}")
+              + (" (simulated price)" if pc.how == "simulated" else ""),
         message=(f"You paid {money(item.price)} for {item.name}. It's {money(pc.price)} now, so you can ask {store} "
                  f"for {money(drop)} back by {day(deadline)}."
                  + (f" {store} only takes this request from you directly." if self_file else "")),
@@ -140,7 +146,7 @@ def _price_finding(p: Purchase, item: Item, r: dict, pc: PriceCheck, drop: float
                      source_url=r["source_url"]) if r.get("source_url") else None,
         found_on=today,
         details={"store": store, "item": item.name, "paid": item.price, "now": pc.price, "price_url": pc.url,
-                 "how": pc.how, "order_number": p.order_number, "order_date": p.order_date.isoformat(),
+                 "how": pc.how, "checked_on": today.isoformat(), "order_number": p.order_number, "order_date": p.order_date.isoformat(),
                  "how_to_claim": r.get("how_to_claim"), "claim_url": r.get("claim_url"),
                  "self_file": self_file},
     )
