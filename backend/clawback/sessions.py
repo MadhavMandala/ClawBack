@@ -229,6 +229,7 @@ def info(user_id: str) -> dict:
             "findings": len(u.findings),
             "emails": len(u.emails),
             "transactions": len(u.transactions),
+            "gym_visits": sum(len(v) for v in u.gym_visits.values()),
             "alerts": alerts.count(user_id),
         },
         "model_spend_today_usd": round(budget.spent(user_id), 4),

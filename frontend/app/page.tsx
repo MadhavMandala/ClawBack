@@ -8,34 +8,22 @@ import "./landing.css";
 
 const AREAS = [
   {
-    name: "Subscriptions",
-    finds: "Services you've stopped using, two plans doing one job, free trials about to convert, and prices that crept up.",
-    prepares: "The cancel page and a reminder before the next charge, or a cheaper plan that fits how you use it.",
-    ex: "HULU 877-8244858 CA  9.99",
+    name: "A gym you stopped going to",
+    finds: "Your Google Maps Timeline shows when you last went. No visit in 30 days, and fewer than two in 60, means you've stopped.",
+    prepares: "The cancellation email with the notice your gym asks for. It goes from your own inbox when you click Send.",
+    ex: "ORANGETHEORY FITNESS  169.00, last visit Aug 25",
   },
   {
-    name: "Bills",
-    finds: "Internet, phone and insurance that jumped when a promotional rate ended.",
-    prepares: "A negotiation script with what you paid before and what others charge now.",
-    ex: "COMCAST XFINITY  85.00, was 55.00",
+    name: "Streaming you don't watch",
+    finds: "The service emailed “we miss you,” and the price went up anyway.",
+    prepares: "The service's own cancel page, one click away, and a check that the next charge doesn't come.",
+    ex: "NETFLIX.COM  17.99, was 15.49",
   },
   {
-    name: "Bank charges",
-    finds: "The same charge twice, and fees a bank will often reverse if you ask.",
-    prepares: "A dispute letter with its deadline, or a polite request to reverse the fee.",
-    ex: "BEST BUY 00012345  129.99, twice",
-  },
-  {
-    name: "Refunds owed",
-    finds: "Price drops inside a store's adjustment window, and flights that were cancelled or moved.",
-    prepares: "The claim, citing the store's policy or the US Department of Transportation refund rule.",
-    ex: "UNITED UA 1532  cancelled, 412.40",
-  },
-  {
-    name: "Settlements",
-    finds: "Open class-action settlements that match things you bought.",
-    prepares: "The official claim link and the proof it asks for. You file it yourself.",
-    ex: "APPLE.COM/BILL  Landsheft v. Apple",
+    name: "A purchase that got cheaper",
+    finds: "What you paid, from your bank and the order email, against today's price on the store's own site.",
+    prepares: "The message to send the store, with its price adjustment policy and the deadline.",
+    ex: "BEST BUY  249.00, now 164.99",
   },
 ];
 
@@ -43,13 +31,13 @@ const MODELS = [
   { name: "Nemotron 3.5 Lightning", id: "nvidia/Nemotron-3_5-Lightning", job: "Reads each email that passes the rules into plain facts, once.", when: "Every new email" },
   { name: "Nemotron 3 Nano", id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B", job: "Takes over when Lightning fails.", when: "Only on failure" },
   { name: "Nemotron 3 Super", id: "nvidia/nemotron-3-super-120b-a12b", job: "Reads plan and pricing pages into a list of plans.", when: "“Find cheaper”" },
-  { name: "Nemotron 3 Ultra", id: "nvidia/Nemotron-3-Ultra-550b-a55b", job: "Fits those plans to how you use the service, and writes the letters, scripts and emails.", when: "When you click" },
+  { name: "Nemotron 3 Ultra", id: "nvidia/Nemotron-3-Ultra-550b-a55b", job: "Writes the gym cancellation email and the price-drop request, and fits plans to how you use a service.", when: "When you click" },
   { name: "Nemotron 3.5 Super-VL", id: "nvidia/Nemotron-3.5-Super-VL", job: "Will read receipts sent as images and PDFs.", when: "Planned", planned: true },
 ];
 
 const RULES = [
   { b: "Nothing happens without you.", p: "ClawBack never cancels, pays or files anything. It sends one email, a gym cancellation, only when you click Send. Everything else it prepares, and you send it." },
-  { b: "It only reads.", p: "Email access is read-only. Your bank sign-in happens on Plaid's page, so ClawBack never sees your bank password." },
+  { b: "It keeps only what it needs.", p: "From your email, the billing facts. From your Timeline, the days you went to a gym. Your bank sign-in happens on Plaid's page, so ClawBack never sees your bank password." },
   { b: "Every find shows its working.", p: "The charges and emails it relied on, the rule behind the claim, and a link to that rule's official source." },
   { b: "Models don't make up links or numbers.", p: "Code does every date and every dollar. Links come from search results or checked pages, never from a model." },
 ];
@@ -68,10 +56,10 @@ export default function Home() {
             <div className="lp-hero-grid">
               <div>
                 <p className="lp-lead">
-                  ClawBack reads your bank and email the way a careful friend would. It finds <b>subscriptions you&apos;ve
-                  stopped using</b>, <b>bills that crept up</b>, <b>fees you can get reversed</b>, <b>refunds you&apos;re
-                  owed</b> and <b>settlements you qualify for</b>. Then it writes the email, the script or the claim.
-                  You make the final click.
+                  ClawBack reads your bank, your email and your Google Maps Timeline the way a careful friend would.
+                  It finds <b>the gym you stopped going to</b>, <b>the streaming service you don&apos;t watch</b> and{" "}
+                  <b>the purchase that got cheaper</b>. Then it writes the email or the request. You make the final
+                  click.
                 </p>
                 <div className="lp-ctas">
                   <Link className="btn solid big" href="/dashboard">See it on a demo month</Link>
@@ -89,8 +77,8 @@ export default function Home() {
         <section className="lp-sec" id="finds" aria-labelledby="h-finds">
           <div className="wrap">
             <div className="lp-sec-head">
-              <h2 id="h-finds">Five places money slips away.</h2>
-              <p>One bank feed and one inbox cover all five. Each find comes with the request that gets the money back.</p>
+              <h2 id="h-finds">Three jobs, done start to finish.</h2>
+              <p>Each one shows its evidence, then does the next step for you: the email, the cancel page or the request.</p>
             </div>
             <ol className="ledger">
               {AREAS.map((a, k) => (
@@ -117,8 +105,8 @@ export default function Home() {
             <ol className="flow">
               <li>
                 <h3>Connect</h3>
-                <p>Sign in to your email on your provider&apos;s own page: Gmail, Outlook, Yahoo, iCloud and others. Link your bank through Plaid, or upload a statement.</p>
-                <div className="uses"><span className="tag">Nylas</span><span className="tag">Plaid</span><span className="tag">CSV upload</span></div>
+                <p>Sign in to your email on your provider&apos;s own page. Link your bank through Plaid, or upload a statement. Upload your Google Maps Timeline export.</p>
+                <div className="uses"><span className="tag">Nylas</span><span className="tag">Plaid</span><span className="tag">Google Maps Timeline</span></div>
               </li>
               <li>
                 <h3>Read</h3>
@@ -127,7 +115,7 @@ export default function Home() {
               </li>
               <li>
                 <h3>Prepare</h3>
-                <p>Each find gets its evidence and the rule behind it. Nemotron 3 Ultra writes the request, Tavily finds the right page, and you read it and send it.</p>
+                <p>Each find gets its evidence and the rule behind it. Tavily checks today&apos;s price on the store&apos;s own site, Nemotron 3 Ultra writes the email, and you decide whether it goes.</p>
                 <div className="uses"><span className="tag">Nemotron 3 Ultra</span><span className="tag">Tavily</span><span className="tag">You</span></div>
               </li>
             </ol>

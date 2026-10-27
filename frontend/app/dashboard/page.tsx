@@ -98,7 +98,7 @@ export default function Dashboard() {
         setReady(true);
       }
     } catch {
-      setNotice({ tone: "error", text: `Can't reach the ClawBack server at ${API}. Start it from the backend folder with: .venv\\Scripts\\python -m uvicorn clawback.main:app --port 8000` });
+      setNotice({ tone: "error", text: `Can't reach the ClawBack server (${API}). It may be starting up: reload the page in a minute.` });
     }
   }, []);
 
@@ -324,6 +324,8 @@ export default function Dashboard() {
           </div>
         )}
 
+        {!ready && !notice && <p className="guide-line" role="status">Loading your month. The first visit of the day takes a few seconds.</p>}
+
         {guide && demo && (
           <p className="guide-line" role="note">
             <span>This is a made-up month. Click a slice to filter the list, or pick any row to see what ClawBack can do.</span>
@@ -545,11 +547,13 @@ function RecoveredLegend({ s }: { s: Summary }) {
   return (
     <span className="recovered" title={s.recovered_note}>
       {monthly > 0 && <span>Cancelled <b>{money(monthly)}</b> a month</span>}
-      <span>
-        Got back <b>{money(s.recovered_total)}</b>
-        {confirmed > 0 && told === 0 && <span className="tag ok">In your bank data</span>}
-        {told > 0 && <span className="tag">{confirmed > 0 ? `${money(told)} you told us` : "You told us"}</span>}
-      </span>
+      {s.recovered_total > 0 && (
+        <span>
+          Got back <b>{money(s.recovered_total)}</b>
+          {confirmed > 0 && told === 0 && <span className="tag ok">In your bank data</span>}
+          {told > 0 && <span className="tag">{confirmed > 0 ? `${money(told)} you told us` : "You told us"}</span>}
+        </span>
+      )}
     </span>
   );
 }

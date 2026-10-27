@@ -47,12 +47,12 @@ def test_trial_note_for_duolingo():
 
 
 def test_kept_item_cuts_nothing(demo):
-    hulu = next(s for s in demo.subscriptions.values() if s.merchant == "Hulu")
+    netflix = next(s for s in demo.subscriptions.values() if s.merchant == "Netflix")
     before = next(g for g in summary("test", TODAY)["spend_groups"] if g["label"] == "Streaming")["could_cut"]
-    demo.kept[hulu.id] = TODAY
+    demo.kept[netflix.id] = TODAY
     run("test", TODAY)
     after = next(g for g in summary("test", TODAY)["spend_groups"] if g["label"] == "Streaming")["could_cut"]
-    assert round(before - after, 2) == 9.99
+    assert round(before - after, 2) == 17.99
 
 
 def test_could_cut_capped_at_cost():
@@ -95,8 +95,8 @@ def test_sentence_matches_donut_after_a_trial_date_passes():
 
 
 def test_sentence_savings_are_capped_like_the_donut(demo):
-    hulu = next(s for s in demo.subscriptions.values() if s.merchant == "Hulu")
-    hulu.flags[0].monthly_savings = 500.0  # a saving bigger than the price
+    netflix = next(s for s in demo.subscriptions.values() if s.merchant == "Netflix")
+    netflix.flags[0].monthly_savings = 500.0  # a saving bigger than the price
     s = summary("test", TODAY)
     cut = sum(g["could_cut"] for g in s["spend_groups"]) + sum(t["amount"] for t in s["trials"])
     assert round(cut, 2) == s["potential_monthly_savings"]

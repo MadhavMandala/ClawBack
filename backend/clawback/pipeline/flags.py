@@ -86,8 +86,8 @@ def flag_one(sub: Subscription, kept_on: date | None, today: date) -> list[Flag]
         pc = sub.price_change
         flags.append(Flag(
             kind="price_increase", severity="medium",
-            message=(f"Price went from ${pc.old_amount:.2f} to ${pc.new_amount:.2f} on {pc.changed_on:%b %d} "
-                     f"(+${pc.new_amount - pc.old_amount:.2f}/month). MISSING: state-law refund check."),
+            message=(f"Price went from ${pc.old_amount:.2f} to ${pc.new_amount:.2f} on {pc.changed_on:%b} "
+                     f"{pc.changed_on.day} (+${pc.new_amount - pc.old_amount:.2f} a month)."),
             monthly_savings=0.0,
         ))
     return flags

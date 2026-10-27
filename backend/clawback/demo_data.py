@@ -3,8 +3,9 @@
 All data is made up. Prices are illustrative, not quotes of any company's current price.
 Each subscription is there to exercise one flag:
 
-- Netflix: price went up (price_increase)
-- Hulu: a "we miss you" email (unused)
+- Netflix: price went up (price_increase) and a "we miss you" email (unused): the streaming workflow, since Netflix
+  has a direct cancel page (netflix.com/cancelplan)
+- Hulu: an ordinary subscription with no signal either way
 - DoorDash DashPass: one order a month, saving less than the fee (membership_losing_money)
 - iCloud+ and Google One: two cloud storage plans (overlap); iCloud+ appears only as APPLE.COM/BILL and is named
   from an Apple receipt with no tax ($2.99)
@@ -233,7 +234,7 @@ def emails(today: date) -> list[Email]:
             f"Thanks for your order! Subtotal ${20.10 + k * 2.15:.2f}. Delivery fee $0.00. "
             "DashPass saved you $2.99 on this order.",
         )
-    add(today - timedelta(days=18), "hello@hulumail.com", "We miss you! See what's new on Hulu",
+    add(today - timedelta(days=18), "info@mailer.netflix.com", "We miss you! See what's new on Netflix",
         "It's been a while since you watched. Come back and catch up on what's new.")
     for k in range(4):
         add(today - timedelta(days=4 + 7 * k), "no-reply@spotify.com", "Your top songs this week",

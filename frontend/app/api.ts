@@ -204,7 +204,7 @@ export type Me = {
     email: { connected: boolean; account?: string | null; provider?: string | null; needs_reconnect?: boolean };
     plaid: { connected: boolean; institution?: string | null; needs_reconnect?: boolean };
   };
-  counts: Record<"subscriptions" | "bills" | "findings" | "emails" | "transactions" | "alerts", number>;
+  counts: Record<"subscriptions" | "bills" | "findings" | "emails" | "transactions" | "gym_visits" | "alerts", number>;
   model_spend_today_usd: number;
   model_daily_limit_usd: number;
 };
