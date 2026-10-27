@@ -100,6 +100,20 @@ that way.
   cancellation address. "Done it?" with "I cancelled it" and a quiet "Not yet" close the panel; after "I cancelled
   it" the row leads with the cancelling state.
 
+## Pieces added on 2026-10-27: three workflows
+
+- **Workflow cards** (`components/Showcase.tsx` on Aceternity's 3D card, `components/ui/3d-card.tsx`): three cards in
+  the middle column, each a serif title ("Stop paying for a gym you don't go to"), the merchant, one plain line of
+  proof, the money (yellow only on the amount you get back) and one button. The card tilts toward the pointer.
+  **Exception:** these cards get a soft shadow on hover, the only shadow in the app. No images.
+- **Tailwind** is used only for the cards: theme and utilities, no preflight (`app/tailwind.css`), so the rest of the
+  app's CSS is unchanged.
+- **Gym email:** the email is shown in full (it's the point), "Written by Nemotron 3 Ultra", then one white "Send"
+  pill. Send opens an inline confirm ("Send this email from you@... to ...? It can't be unsent.") with "Yes, send it"
+  and a quiet "Not yet". The demo note sits under the email in fine print.
+- **Price compare:** three equal tiles on `--sheet-2`: You paid, Today (with the store's link and check date), and the
+  Difference, highlighted.
+
 ## Motion
 
 One moment per page:

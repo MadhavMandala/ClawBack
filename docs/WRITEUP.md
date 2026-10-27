@@ -52,8 +52,8 @@ five places:
 | Refunds owed | Price drops inside a store's adjustment window; cancelled or heavily changed flights | A claim citing the store's policy, or the US Department of Transportation refund rule, or EU261 / UK261 |
 | Settlements | Open class-action settlements that match your purchases | The official claim link and the proof it asks for |
 
-**ClawBack never sends, cancels, pays, disputes or files anything itself.** It prepares the request. The person
-reads it and makes the final click. Letters, and cancellation emails for merchants that take them, can be saved as
+**ClawBack never cancels, pays, disputes or files anything itself, and it sends only one thing: a gym cancellation
+email, when you click Send.** Everything else it prepares, and the person makes the final click. Letters, and cancellation emails for merchants that take them, can be saved as
 drafts in the person's own mailbox, ready to send.
 
 Every finding shows its working: the charges and emails it relied on, the rule behind it, and a link to that rule's
@@ -149,7 +149,8 @@ list of checked pages, never from a model.
 - **Email is untrusted.** Email text is wrapped in tags, the model is told to ignore instructions inside it, and an
   injection screen checks it before a model reads it.
 - **Zero Data Retention** is on for the team's Token Factory organization, so prompts and answers aren't kept.
-- **The person makes the final click.** ClawBack never sends, cancels, pays or files anything.
+- **The person makes the final click.** ClawBack sends one email (a gym cancellation) only after a click and a
+  confirm, and in the demo only to the person's own address. It never cancels, pays or files anything.
 - **Facts, not email.** The database keeps facts pulled out of email, never email text. Saved bank and email tokens
   are encrypted.
 - **Rules with sources.** Only rules rows marked verified can raise a finding, and each finding links to the rule's
