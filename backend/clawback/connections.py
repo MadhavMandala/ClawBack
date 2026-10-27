@@ -40,6 +40,8 @@ class EmailConnection(BaseModel):
     # again with the drafts permission clears it; sync keeps working meanwhile.
     needs_reconsent: bool = False
     reconsent_reason: str | None = None
+    # Connected from a Send button: used only to send (the gym email), never read, and the demo month stays.
+    send_only: bool = False
 
 
 class PlaidConnection(BaseModel):

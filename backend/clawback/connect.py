@@ -70,6 +70,7 @@ def finish_email(state: str | None, code: str | None, error: str | None, error_d
     """Handle the redirect back from Nylas. Returns where to send the browser: the dashboard, with a short result."""
     origin = config.settings.return_origin
     user_id = None
+    purpose = nylas.state_purpose(state)  # read before check_state uses the state up
     try:
         user_id = nylas.check_state(state)  # CSRF check first, even when an error came back
         if error:
@@ -82,6 +83,11 @@ def finish_email(state: str | None, code: str | None, error: str | None, error_d
         old = connections.get(user_id).email
         if old and old.grant_id != new.grant_id:
             release_grant(user_id, old.grant_id)  # one inbox at a time; the Sandbox counts every grant
+        if purpose == "send" and store.user(user_id).mode != "real":
+            # From a Send button in the demo: keep the demo month, read nothing, use the inbox only to send.
+            new.send_only = True
+            connections.set_email(user_id, new)
+            return f"{origin}/dashboard?connected=email-send"
         connections.set_email(user_id, new)
         was_demo = _enter_real_mode(user_id)
         _pull_email(user_id)
@@ -116,6 +122,8 @@ def _pull_email(user_id: str) -> int:
     conn = connections.get(user_id).email
     if conn is None:
         raise EmailError("No email account is connected.", status=400)
+    if conn.send_only:
+        return 0  # connected only to send: its mail is never read
     try:
         emails = nylas.fetch_emails(user_id, conn)
     except SourceError as exc:
@@ -247,7 +255,8 @@ def restore(user_id: str) -> bool:
     Returns True when the user ended up in real mode (so the demo shouldn't be seeded).
     """
     try:
-        if not connections.get(user_id).any():
+        c = connections.get(user_id)
+        if not (c.plaid or (c.email and not c.email.send_only)):  # a send-only inbox never leaves the demo
             return False
         store.use_real_data(user_id)
         sync_sources(user_id, wait_for_plaid=False)  # reads the mail again; if it can't, the saved results stay

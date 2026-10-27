@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from .. import llm, rules
+from .. import gyms, llm, rules
 from ..findings import rulebook
 from ..merchants import APPLE_SUBSCRIPTIONS_URL, GOOGLE_PLAY_SUBSCRIPTIONS_URL, by_name
 from ..models import Subscription
@@ -89,11 +89,11 @@ def _acceptable(subject: str, body: str, facts: str) -> bool:
     )
 
 
-def write_email(user_id: str, sub: Subscription) -> dict:
+def write_email(user_id: str, sub: Subscription, extra_facts: list[str] | None = None) -> dict:
     """Ultra writes the cancellation email from code-computed facts; the template is the fallback."""
     if not llm.available():
         return _template(sub)
-    facts = _facts(sub)
+    facts = "\n".join([_facts(sub), *(extra_facts or [])])
     data, res = llm.chat_json(
         user_id, "cancel_email", "reason",
         [{"role": "user", "content": EMAIL_PROMPT.format(merchant=sub.merchant, facts=facts, placeholder=PLACEHOLDER)}],
@@ -143,8 +143,16 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
     steps: list[str] = []
     missing: list[str] = []
     lookup: dict = {}  # how the cancel page was found (search date, cache), when it was searched for
+    gym = gyms.for_subscription(sub, demo=store.user(user_id).mode != "real")
+    gym_email = gym and gym["cancel"].get("method") == "email"
 
-    if billed_by == "apple":
+    if gym_email:
+        # A gym that takes written notice by email (rules/gyms.json): ClawBack writes it and sends it on your click.
+        steps = [gym["cancel"]["how"],
+                 "ClawBack sends the email below from your own inbox when you click Send. Keep the reply as proof."]
+        links.append({"label": f"How {gym['chain']} cancellations work", "url": gym["cancel"]["source_url"],
+                      "verified": False})
+    elif billed_by == "apple":
         links.append({"label": "Apple subscriptions page", "url": APPLE_SUBSCRIPTIONS_URL, "verified": True})
         steps = [
             "Open the link on a device signed in to your Apple Account.",
@@ -196,7 +204,19 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
     # Most merchants don't take cancellations by email, so the email is written only when the merchant's own page
     # lists an address for it.
     email = None
-    if lookup.get("support_email"):
+    send = None
+    if gym_email:
+        notice = gym["cancel"].get("notice_days")
+        extra = [f"- Studio: {gym['studio']}", f"- Today's date: {_day(today)}"]
+        if notice:
+            extra.append(f"- They ask for {notice} days' written notice; this email is that notice, given today")
+        email = write_email(user_id, sub, extra)
+        email["to"] = gym["cancel"]["email"]
+        email["status"] = "ClawBack sends this only when you click Send."
+        from .. import sending  # late import: sending imports this module
+
+        send = sending.plan(user_id, gym)
+    elif lookup.get("support_email"):
         email = write_email(user_id, sub)
         email["to"] = lookup["support_email"]
     remind = reminder_on(sub.next_expected, sub.status == "trial", today)
@@ -212,6 +232,7 @@ def cancel_prep(user_id: str, sub: Subscription, today: date) -> dict:
         "reminder_on": remind.isoformat() if remind else None,
         "watch_after": _watch_after(sub),
         "email": email,
+        "send": send,
         "lookup": lookup,
         "rights": law,
         "missing": missing,
