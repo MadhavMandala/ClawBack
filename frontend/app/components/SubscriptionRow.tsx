@@ -177,8 +177,25 @@ export function PrimaryAction({ s, busy, onOpen, onCancel, onCheaper, onNegotiat
 function SendEmail({ d, busy, onSent }: { d: CancelPrep; busy: boolean; onSent: () => void }) {
   const [confirming, setConfirming] = useState(false);
   const [state, setState] = useState<{ sending?: boolean; sent?: string; error?: string }>({});
+  const [copied, setCopied] = useState(false);
   const email = d.email!;
   const send = d.send!;
+
+  async function connect() {
+    try {
+      await connectEmail("send");
+    } catch (e) {
+      setState({ error: (e as Error).message });
+    }
+  }
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(`To: ${send.to_shown}\nSubject: ${email.subject}\n\n${email.body}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard blocked: the text is still on screen to select */ }
+  }
 
   async function doSend() {
     setState({ sending: true });
@@ -210,7 +227,8 @@ function SendEmail({ d, busy, onSent }: { d: CancelPrep; busy: boolean; onSent: 
         <p className="sent-line">Sent to {state.sent}. ClawBack now watches your bank for the next charge.</p>
       ) : !send.connected ? (
         <div className="pair">
-          <button className="solid" onClick={() => connectEmail("send")}>Connect email to send</button>
+          <button className="solid" onClick={connect}>Connect email to send</button>
+          <button className="quiet" onClick={copy}>{copied ? "Copied" : "Copy"}</button>
           <span className="fine-print">Only to send this email. Your demo month stays.</span>
         </div>
       ) : confirming ? (
@@ -224,9 +242,15 @@ function SendEmail({ d, busy, onSent }: { d: CancelPrep; busy: boolean; onSent: 
       ) : (
         <div className="pair">
           <button className="solid big" disabled={busy} onClick={() => setConfirming(true)}>Send</button>
+          <button className="quiet" onClick={copy}>{copied ? "Copied" : "Copy"}</button>
         </div>
       )}
-      {state.error && <p className="send-error" role="alert">{state.error}</p>}
+      {state.error && (
+        <div className="send-error" role="alert">
+          <p>{state.error}</p>
+          {send.connected && !state.sending && <button className="quiet" onClick={connect}>Reconnect email</button>}
+        </div>
+      )}
     </div>
   );
 }
@@ -318,7 +342,7 @@ function CancelPanel({ d, trial, busy, onClose, onCancelled, onSent }: {
         </div>
       )}
 
-      {!d.send && (
+      {(!d.send || !d.send.connected) && (
         <div className="cancel-done">
           <span>Done it?</span>
           <button className="solid" disabled={busy} onClick={() => { onCancelled(); onClose(); }}>I cancelled it</button>

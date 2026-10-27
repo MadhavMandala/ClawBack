@@ -83,3 +83,30 @@ def test_restore_ignores_a_send_only_connection(demo_client):
     _sign_in(demo_client, "send")
     assert connect.restore("demo") is False
     assert store.user("demo").mode == "demo"
+
+
+def _send_only_in_real_mode(client):
+    _sign_in(client, "send")
+    store.use_real_data("demo")  # e.g. a bank or a Timeline upload later moved them to real data
+
+
+def test_webhook_never_reads_a_send_only_inbox(demo_client, fake):
+    _send_only_in_real_mode(demo_client)
+    assert connect.on_new_message("demo", fake.nylas.grant_id, "m1") == "ignored"
+    assert not [c for c in fake.nylas.calls if "/messages" in c[1] and c[0] == "GET"]
+
+
+def test_send_only_inbox_doesnt_leave_a_user_cold(demo_client, fake):
+    _send_only_in_real_mode(demo_client)
+    store._users["demo"].cold = True  # as after a restart
+    connect.ensure_fresh("demo")
+    assert not store.is_cold("demo")
+
+
+def test_send_with_an_expired_grant_marks_reconnect(demo_client, fake):
+    _sign_in(demo_client, "send")
+    fake.nylas.send_status = 404  # the grant is gone (a 401 with "scopes" in it reads as a permission problem)
+    gym = _gym(demo_client)
+    r = demo_client.post(f"/api/subscriptions/{gym['id']}/send-email", json={"subject": "s", "body": "b"})
+    assert r.status_code in (401, 409) and fake.nylas.sent == []
+    assert connections.get("demo").email.needs_reconnect is True

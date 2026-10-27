@@ -242,6 +242,8 @@ export default function Dashboard() {
     .map((g) => ({ ...g, rows: g.rows.filter((s) => !onCards.has(s.id)) }))
     .filter((g) => g.rows.length);
   const otherCount = others.reduce((t, g) => t + g.rows.length, 0);
+  // A donut slice filters every service in it, including the ones that have a workflow card (the cards hide then).
+  const listed = filter ? grouped.filter((g) => g.rows.length) : others;
   const inFilter = filter ? new Set((summary?.spend_groups ?? []).find((g) => g.label === filter)?.items.map((i) => i.id) ?? []) : null;
   const shown = (rows: Subscription[]) => (inFilter ? rows.filter((s) => inFilter.has(s.id)) : rows);
   const selSub = sel?.kind === "sub" ? subs.find((x) => x.id === sel.id) ?? null : null;
@@ -362,7 +364,7 @@ export default function Dashboard() {
               }} />
           )}
 
-          {(others.length > 0 || (recovered?.events.length ?? 0) > 0) && (
+          {(listed.length > 0 || (recovered?.events.length ?? 0) > 0) && (
             <details className="group rest" open={restOpen || !!filter} onToggle={(e) => setRestOpen(e.currentTarget.open)}>
               <summary>
                 <span>
@@ -371,7 +373,7 @@ export default function Dashboard() {
                 </span>
                 <Chevron className="chev" />
               </summary>
-              {others.map((g) => {
+              {listed.map((g) => {
                 const rows = shown(g.rows);
                 if (!rows.length) return null;
                 return (

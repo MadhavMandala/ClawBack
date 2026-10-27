@@ -20,6 +20,7 @@ live price. A store's own product API or a rendering fetch would be needed; unti
 from __future__ import annotations
 
 import re
+import time
 from datetime import date
 from urllib.parse import urlparse
 
@@ -102,17 +103,21 @@ def other_condition(item: str, result: dict) -> bool:
     return bool(_CONDITION.search(listing)) and not _CONDITION.search(item)
 
 
-# The pipeline re-runs on every check-in, so a live check is done at most once per item per day.
-_checked: dict[tuple[str, str, date], PriceCheck | None] = {}
+# The pipeline re-runs on every check-in, so a live check is done at most once per item per day. A check that found
+# no price (a search hiccup) is retried after RETRY_FAILED seconds instead of hiding the live price all day.
+RETRY_FAILED = 10 * 60
+_checked: dict[tuple[str, str, date], tuple[PriceCheck | None, float]] = {}
 
 
 def live_price(user_id: str, store: str, item: str, domain: str | None, paid: float | None = None) -> PriceCheck | None:
     if not live_available():
         return None
     key = (store.lower(), item.lower(), date.today())
-    if key not in _checked:
-        _checked[key] = _live_price(user_id, store, item, domain, paid)
-    return _checked[key]
+    now = time.monotonic()
+    hit = _checked.get(key)
+    if hit is None or (hit[0] is None and now - hit[1] >= RETRY_FAILED):
+        _checked[key] = (_live_price(user_id, store, item, domain, paid), now)
+    return _checked[key][0]
 
 
 def _reject(user_id: str, store: str, why: str) -> None:
