@@ -31,5 +31,7 @@ def test_demo_holds_up(today):
     assert not any("unmatched" in m for m in subs)
     assert "overlap" in {f.kind for f in subs["iCloud+"].flags}
     assert "unused" in {f.kind for f in subs["Hulu"].flags}
+    gym = subs["Orangetheory Fitness"]
+    assert "unused" in {f.kind for f in gym.flags} and gym.usage.evidence[0].endswith("(Google Maps)")
     assert "membership_losing_money" in {f.kind for f in subs["DoorDash DashPass"].flags}
     assert any(s.kind == "bill" for s in subs.values())

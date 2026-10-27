@@ -31,6 +31,7 @@ def _build(today: date) -> UserData:
     if book:
         u.emails += demo_data.settlement_story(today, u.transactions, u.emails, book)
     demo_data.decisions(u, today)  # what the demo user already did: one cancellation, started weeks ago
+    u.gym_visits = demo_data.gym_visits(today)  # the preloaded Google Maps Timeline, reduced to gym visits
     run(TEMPLATE_USER, today)
     data = store.user(TEMPLATE_USER)
     store.forget(TEMPLATE_USER)

@@ -34,7 +34,8 @@ from .pipeline.recommend import alternatives
 from .pipeline.recovered import history
 from .pipeline.run import best_saving, run, summary
 from .sessions import AddonUserId, UserId, user_scope
-from .sources import nylas, plaid
+from . import gyms
+from .sources import nylas, plaid, timeline
 from .sources.net import SourceError
 from .sources.statements import parse_upload
 from .store import store
@@ -311,6 +312,21 @@ def recovered_history(user_id: UserId):
 
 
 # --- Data in --------------------------------------------------------------------------------------
+
+@app.post("/api/ingest/timeline")
+async def upload_timeline(user_id: UserId, file: UploadFile = File(...)):
+    """A Google Maps Timeline export. Only visits near a gym in rules/gyms.json are kept, as dates; the file itself
+    and every other place in it are dropped here. Your own data replaces the demo month."""
+    try:
+        visits = timeline.parse(await file.read())
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    u = store.use_real_data(user_id)
+    found = {g["id"]: days for g in gyms.all_gyms() if (days := gyms.visits_near(visits, g))}
+    u.gym_visits = found
+    result = await run_in_threadpool(run, user_id)
+    return {"visits": sum(len(d) for d in found.values()), "gyms": [gyms.by_id(k)["studio"] for k in found], **result}
+
 
 @app.post("/api/ingest/statement")
 async def upload_statement(user_id: UserId, file: UploadFile = File(...)):

@@ -89,6 +89,9 @@ class UserData:
     merchant_names: dict[str, dict] = field(default_factory=dict)
     # Per bill: its rules/bills.json entry and its charge amounts (oldest first), for the negotiation script.
     bill_info: dict[str, dict] = field(default_factory=dict)
+    # Gym visits from a Google Maps Timeline export: gym id (rules/gyms.json) -> visit dates. Nothing else from the
+    # file is kept: no coordinates, no other places.
+    gym_visits: dict[str, list[date]] = field(default_factory=dict)
     # Plaid /transactions/sync position of the transactions held in memory. None = pull from the start.
     plaid_cursor: str | None = None
     # Extracted facts by email id, so each email goes to a model once. Reset demo clears it.
@@ -247,6 +250,7 @@ class Store:
             u.done_on, u.refund_watch, u.recovered = {}, {}, {}
             # store_receipts and merchant_names stay, like facts: keyed by email id or by descriptor alone.
             u.plaid_cursor = None
+            u.gym_visits = {}  # the demo's made-up visits; a real Timeline upload sets them again
             u.trace = [t for t in u.trace if t.engine in ("nylas", "plaid")]  # trace.SOURCE_ENGINES (no import: cycle)
         return u
 

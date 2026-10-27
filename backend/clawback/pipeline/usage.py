@@ -144,6 +144,27 @@ def signals_for(sub: Subscription, facts: list[Fact], checkins, today: date,
     return out
 
 
+GYM_RECENT = timedelta(days=30)
+GYM_WINDOW = timedelta(days=60)
+
+
+def gym_usage(sub: Subscription, gym: dict, visits: list[date], today: date) -> UsageSummary:
+    """Usage of a gym from Google Maps Timeline visits (counted in code). No visit in 30 days and fewer than 2 in 60:
+    unused. Evidence leads with the last visit, so the flag reads "no visits to <studio> since <date>"."""
+    past = sorted(d for d in visits if d <= today)
+    recent = [d for d in past if today - d <= GYM_RECENT]
+    window = [d for d in past if today - d <= GYM_WINDOW]
+    studio = gym["studio"]
+    last = past[-1] if past else None
+    if not recent and len(window) < 2:
+        since = f"since {last:%b} {last.day}" if last else "in your Google Maps Timeline"
+        lead = f"{(last or today).isoformat()}: no visits to {studio} {since} (Google Maps)"
+        evidence = [lead] + [f"{d.isoformat()}: visit to {studio} (Google Maps)" for d in reversed(past[-3:])]
+        return UsageSummary(level="none", strength="strong", evidence=evidence)
+    evidence = [f"{d.isoformat()}: visit to {studio} (Google Maps)" for d in reversed(window[-5:] or past[-3:])]
+    return UsageSummary(level="normal", evidence=evidence)
+
+
 def summarize(signals: list[UsageSignal], checkins=None, today: date | None = None) -> UsageSummary:
     answers = history(checkins)
     next_checkin = answers[-1][0] + checkin_window(answers) if answers else None

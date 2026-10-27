@@ -78,6 +78,7 @@
     {"name": "GitHub Copilot", "category": "ai_assistant", "match": ["GITHUB COPILOT", "GITHUB *COPILOT", "GITHUB*COPILOT"], "domains": ["github.com"], "evidence": "guess"},
     {"name": "Google AI Pro / Gemini", "category": "ai_assistant", "match": ["GOOGLE *GEMINI", "GOOGLE*GEMINI", "GOOGLE *GOOGLE AI", "GOOGLE*GOOGLE AI", "GOOGLE AI PRO", "GOOGLE AI ULTRA", "GOOGLE ONE AI PREMIUM"], "domains": ["google.com"], "aliases": ["Google AI Pro", "Gemini Advanced"], "evidence": "guess"},
     {"name": "Microsoft Copilot Pro", "category": "ai_assistant", "match": ["MICROSOFT*COPILOT", "MICROSOFT *COPILOT", "MSFT *COPILOT", "MSFT*COPILOT", "COPILOT PRO"], "domains": ["microsoft.com"], "evidence": "guess"},
+    {"name": "Orangetheory Fitness", "category": "fitness", "match": ["ORANGETHEORY", "ORANGE THEORY", "OTF "], "domains": ["orangetheory.com"], "evidence": "common"},
     {"name": "Peloton", "category": "fitness", "match": ["PELOTON", "PELOTON MEMBERSHIP", "PELOTON INTERACTIVE"], "domains": ["onepeloton.com"], "evidence": "common"},
     {"name": "Strava", "category": "fitness", "match": ["STRAVA", "STRAVA.COM", "STRAVA INC", "GOOGLE *STRAVA", "GOOGLE*STRAVA"], "domains": ["strava.com"], "evidence": "common"},
     {"name": "Noom", "category": "wellness", "match": ["NOOM", "NOOM INC", "NOOM.COM", "GOOGLE *NOOM", "GOOGLE*NOOM"], "domains": ["noom.com"], "evidence": "common"},

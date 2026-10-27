@@ -129,7 +129,30 @@ def transactions(today: date) -> list[Transaction]:
     for d in calm_dates(today):
         add(d, "APPLE.COM/BILL 866-712-7753 CA", 16.04)
 
+    # Orangetheory: $169.00 on the 4th, every month. The Google Maps visits (gym_visits) stop eight weeks ago.
+    for d in _monthly_dates(today, 4):
+        add(d, "ORANGETHEORY FITNESS EDISON NJ", 169.00)
+
     return sorted(tx, key=lambda t: t.date)
+
+
+GYM_STOPPED_DAYS = 63  # the demo user's last gym visit, nine weeks before today (outside the 60-day window)
+
+
+def gym_visits(today: date) -> dict[str, list[date]]:
+    """The demo's made-up Google Maps Timeline, already reduced to gym visits (as an upload would be): two or three a
+    week for four months, then none for the last nine weeks."""
+    from .gyms import demo_gym
+
+    last = today - timedelta(days=GYM_STOPPED_DAYS)
+    days, d = [], last - timedelta(days=120)
+    while d <= last:
+        if d.weekday() in (0, 2, 4) and (d.toordinal() % 7 != 4):  # Mon/Wed/Fri, skipping some weeks' Friday
+            days.append(d)
+        d += timedelta(days=1)
+    if days[-1] != last:
+        days.append(last)
+    return {demo_gym()["id"]: days}
 
 
 def calm_dates(today: date) -> list[date]:
