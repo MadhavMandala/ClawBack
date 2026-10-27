@@ -3,7 +3,8 @@
 **This is a hackathon prototype, updated 2026-10-23.** It looks for money in a person's bank and email data in
 five areas: subscriptions, bills, bank charge problems (duplicate charges, fees), refunds owed (store price drops,
 flight refunds) and class-action settlements. It prepares the email, letter, script or claim, and the person makes
-the final click. It never cancels, pays, sends or files anything itself.
+the final click. It sends one thing, a gym cancellation email, only when the person clicks Send; it never cancels,
+pays or files anything itself.
 
 - **Sessions:** each browser gets its own private session (no login) with its own copy of the made-up demo month.
   A visitor can connect their own email (any provider, through Nylas) or Plaid's test bank, or upload a CSV or
@@ -56,7 +57,9 @@ The table below is generated from `backend/clawback/missing.py`, the single sour
 | Settlements | Open, verified settlements matched only when a purchase is in the class period, names the product and fits any state limit. `python -m clawback.findings.settlements_refresh` finds candidates for a person to review | `findings/settlements.py`, `findings/settlements_refresh.py` |
 | Letters | Nemotron 3 Ultra writes the dispute, fee, price-adjustment and flight letters. Code rejects any number, date or link not in the facts and falls back to the template; each letter says who wrote it | `findings/letters.py` |
 | Cancel prep | Finds the merchant's own cancel page with Tavily (code checks the domain; steps must be quoted from the page). Adds the person's state auto-renewal rule or the federal one. The panel has one checked link, a calendar reminder and "I cancelled it"; Ultra writes an email only when the merchant takes one | `pipeline/cancel.py`, `pipeline/cancel_lookup.py`, `pipeline/rights.py` |
-| Drafts | Saves the cancel email or a letter as a draft in the connected mailbox. Never sends | `drafts.py`, `sources/nylas.py` |
+| Drafts | Saves the cancel email or a letter as a draft in the connected mailbox | `drafts.py`, `sources/nylas.py` |
+| Gym workflow | Google Maps Timeline upload (only gym visit dates kept) flags an unused gym; Ultra writes the cancellation; Send sends it from your inbox after a confirm (demo: to yourself) | `sources/timeline.py`, `gyms.py`, `sending.py` |
+| Price-drop workflow | The demo's Best Buy purchase against today's live bestbuy.com price (simulated, and labelled, when the check can't run) | `findings/detect.py`, `tools/prices.py` |
 | Find cheaper | Tavily finds plans, Nemotron 3 Super lists them, Nemotron 3 Ultra fits them to usage; every option cites a returned page | `pipeline/recommend.py` |
 | Email extraction and triage | Lightning reads each email once (cached) into facts. Code keeps a value only if the email writes it. Unknown senders get a Lightning yes or no | `pipeline/extract.py`, `pipeline/triage.py` |
 | Prompt-injection guard | A rule screen (plus a Lightning check for borderline mail) before any model reads email. A flagged email goes to the rules only | `pipeline/guard.py`, `pipeline/grounded.py` |

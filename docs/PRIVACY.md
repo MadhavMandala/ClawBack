@@ -11,8 +11,10 @@ Before publishing, fill in the two placeholders: `[contact email]` and `[server 
 ## The short version
 
 - ClawBack reads your email and bank transactions to find money you are losing or owed.
-- Email access is read-only. If you allow drafts, ClawBack can also save a draft in your mailbox. It never sends,
-  cancels, pays or files anything.
+- Email access is read-only. If you allow drafts, ClawBack can also save a draft in your mailbox. It sends one thing,
+  a gym cancellation email, and only when you click Send. It never cancels, pays or files anything.
+- If you upload a Google Maps Timeline file, ClawBack keeps only the dates you visited a gym it knows. The file, its
+  coordinates and every other place in it are discarded as it's read.
 - You sign in to your email and your bank on their own pages. ClawBack never sees those passwords.
 - ClawBack stores the facts it pulls out of your email, never the email text itself.
 - The AI models run on Nebius Token Factory with Zero Data Retention on, so prompts are not kept.
@@ -50,7 +52,17 @@ third-party email service. Nylas processes your mail on ClawBack's behalf.
   or travel notices. For each one it uses the sender, subject, date and text.
 - **Drafts, if you allow them.** The sign-in page then also asks for permission to write drafts. ClawBack uses it only
   to save a draft you asked for, such as a cancellation email or a refund letter. For Gmail, Google's draft
-  permission also allows sending mail. ClawBack never sends; you press send in your own mail app.
+  permission also allows sending mail. ClawBack uses it only for the gym email below.
+- **Sending, only when you click Send.** For a gym that takes cancellation by email, ClawBack shows the finished
+  email and sends it from your own inbox when you click Send and confirm. In the demo it goes to your own address,
+  never to the gym. Connecting email just to send keeps the demo month and reads nothing from your inbox. Gmail asks
+  for the send permission (gmail.send), which can only send, not read.
+
+### Google Maps Timeline, if you upload it
+- Google offers no way for apps to read location history, so you choose to upload the Timeline file from the
+  Google Maps app. ClawBack reads it once, keeps only the dates of visits near a gym on its list (within about
+  150 m), and discards the rest of the file: coordinates, other places, travel. Deleting your data deletes those
+  dates too.
 
 ### Bank transactions, through Plaid
 
@@ -121,7 +133,8 @@ the pages you load. It doesn't receive your email or bank data.
 - It never uses your data to train or improve an AI model, ours or anyone else's.
 - No person reads your email or transactions, unless you ask us to look at a problem with your session, or it is
   needed for security or the law.
-- It never sends, cancels, pays, disputes or files anything. It prepares the request, and you make the final click.
+- It never cancels, pays, disputes or files anything. It sends one thing, a gym cancellation email, and only when you
+  click Send. Everything else it prepares, and you make the final click.
 
 ## Google user data
 

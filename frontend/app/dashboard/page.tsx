@@ -476,7 +476,7 @@ export default function Dashboard() {
 
       <footer className="site-foot">
         <div className="wrap">
-          <p>ClawBack never cancels, pays, sends or files anything on its own. You make the final click.</p>
+          <p>ClawBack never cancels, pays or files anything. It sends one email, a gym cancellation, only when you click Send.</p>
           <p className="foot-demo">
             <span>{demo ? "Prototype. Made-up demo month." : "Your own data, from your connections."}</span>{" "}
             <a href="/built">What&apos;s built</a>

@@ -38,50 +38,48 @@ round up.
 - **On-screen text:** "ClawBack reads your bank and your email. It finds the money. You make the final click."
 - **Voice-over:** "This is ClawBack. Connect your bank and your email, and it looks for money in five places:
   subscriptions you don't use, bills that crept up, bank fees, refunds you're owed, and class-action settlements.
-  Then it writes the email, the letter or the script. It never sends anything itself."
+  Then it writes the email, the letter or the script, and sends only when you click Send."
 
-### 3. A demo month (0:30 to 0:55)
+### 3. A demo month (0:30 to 0:45)
 
-- **Screen:** click **See it on a demo month**. The dashboard opens on the sentence and the spend donut: $503 a
-  month in six groups, with the yellow part of each group the money that could go. Click the **Streaming** slice to
-  open its list (Netflix, Spotify, Hulu), then **Show all**. Scroll to **Owed to you**.
+- **Screen:** click **See it on a demo month**. The dashboard opens on the sentence and the spend donut: $672 a month
+  in six groups, yellow for what could go. Beside it, three cards that tilt toward the pointer: a gym you don't go
+  to, a streaming service you don't watch, and a price drop.
 - **On-screen text:** "A made-up demo month. Every visitor gets their own."
-- **Voice-over:** "Here's a demo month. You pay `[monthly total]` a month for subscriptions and bills. ClawBack
-  found `[could save]` a month you could save, and `[owed]` you're owed right now. Yellow means money you can get
-  back, and nothing else. Every row shows the charges and emails it relied on."
-- **Depends on the merge:** "Every visitor gets their own" needs per-visitor sessions. Without them, drop that
-  caption.
+- **Voice-over:** "Here's a demo month: $672 a month, and $251 of it could go. ClawBack doesn't show you a list of
+  everything. It shows the three things worth doing, and does each one all the way."
 
-### 4. One cancel, start to finish (0:55 to 1:35)
+### 4. The gym: proof, then the email, sent (0:45 to 1:20)
 
-- **Screen:** open the Hulu row ("we miss you" email, $9.99 a month). Click **Help me cancel**.
-  - The panel shows one button, **Cancel on Hulu**, and "Opens help.hulu.com." Click it: Hulu's own cancel article
-    opens in a new tab. Come back.
-  - Click **Remind me on Nov 17**: a calendar file downloads; open it to show the event with the link and steps.
-  - Click **I cancelled it**. The Hulu row now reads "You started cancelling… ClawBack checks your bank for a new
-    charge after Nov 25."
-- **On-screen text:**
-  - "Cancel page found by Tavily, checked to be on Hulu's own site."
-  - "No email: Hulu doesn't take cancellations by email."
-  - "ClawBack watches your bank to make sure it stuck."
-- **Voice-over:** "Hulu sent me a 'we miss you' email, and I'm still paying $9.99 a month. Help me cancel. Tavily
-  finds Hulu's cancel page, and code checks it's on Hulu's own site before it's the button. Hulu doesn't take
-  cancellations by email, so ClawBack doesn't write one. Not now? A reminder goes in my calendar. Once I say I
-  cancelled, ClawBack watches my bank for the next charge."
-- **Depends on:** the cancel-page lookup (Tavily key set). A merchant whose help page lists a cancellation address
-  shows "Or email them" with Ultra's email and **Save to my Drafts**; Hulu doesn't.
+- **Screen:** the Orangetheory card: "no visits to Orangetheory Edison since Aug 25 (Google Maps)", $169.00 a month.
+  Click **Write and send the email**.
+  - The pane shows the visits from Google Maps, then the email Nemotron 3 Ultra wrote: 30 days' written notice,
+    the price, the next charge date, "Written by Nemotron 3 Ultra".
+  - The note: "Demo: Send delivers this to your own inbox, not to the studio." Click **Send**, then **Yes, send it**.
+  - Cut to the inbox: the email arrived, subject starting "[ClawBack test]". Back in ClawBack: "Sent ... ClawBack
+    now watches your bank for the next charge."
+- **On-screen text:** "Proof from your Google Maps Timeline: only gym visit dates are kept." / "Sent from your own
+  inbox, only when you click Send."
+- **Voice-over:** "I pay Orangetheory $169 a month. My Google Maps Timeline says I haven't been since August.
+  ClawBack keeps only those visit dates, nothing else from the file. Orangetheory takes 30 days' written notice by
+  email, so Nemotron 3 Ultra writes it from facts the code worked out, and when I click Send, it goes from my own
+  inbox. Then ClawBack watches my bank to make sure the charges stop."
+- **Before recording:** in the Nylas dashboard, add the `gmail.send` scope to the Google connector; click **Connect
+  email to send** once (the demo month stays).
 
-### 5. Money owed: a refund letter (1:35 to 1:55)
+### 5. Hulu, then the price drop (1:20 to 1:55)
 
-- **Screen:** under **Owed to you**, open the Best Buy row: $129.99 charged twice on one day, and one order email.
-  Click **Dispute it**. The dispute letter appears with its deadline, the **Read the rule** link and the
-  "Written by Nemotron 3 Ultra" tag. Click **Save to my Drafts**, then cut to the test inbox's **Drafts** folder:
-  the letter is there, unsent. (This is now the shot that shows Ultra's writing and the draft.)
-- **On-screen text:** "Charged twice. One order. A dispute letter with the deadline."
-- **Voice-over:** "Best Buy charged me $129.99 twice, and my email shows one order. ClawBack writes the dispute
-  letter, cites the federal rule for card billing errors, and gives the deadline. Code does every date and every
-  dollar. The model never does."
-- **Alternative:** the overdraft fee row ($35.00), **Ask for it back**, and its reversal request. Same length.
+- **Screen, Hulu (15 s):** the Hulu card, **Cancel on Hulu**: the panel's one button opens Hulu's own cancel article;
+  **Remind me on Nov 17** downloads a calendar event; **I cancelled it**.
+- **Screen, Best Buy (20 s):** the price-drop card, **See the purchase and ask**: "You paid $249.00, Oct 21" next to
+  "Today $164.99 on bestbuy.com, checked Oct 27", difference $84.01 by Nov 5. Click **Claim the difference**:
+  Ultra's chat message appears at the top of the pane.
+- **On-screen text:** "Hulu's own cancel page, found and checked." / "Today's price, checked live on bestbuy.com."
+- **Voice-over:** "Hulu doesn't take email, so ClawBack takes me to Hulu's own cancel page and reminds me. And these
+  AirPods: I paid $249, and Best Buy's own site says $164.99 today. Best Buy matches its own price for 15 days, so
+  ClawBack writes the request. Code does every date and dollar; the model writes the words."
+- **Note:** the AirPods price is live. If Best Buy's price isn't lower on the day, the card says "No drop today";
+  film the day the drop shows, or say the price is simulated (the card labels it).
 
 ### 6. Which model does what, and what it cost (1:55 to 2:20)
 
@@ -136,9 +134,9 @@ Shots 1, 2, 5 and 7 work on today's build.
 |---|---|
 | 1. The hook | 0:12 |
 | 2. What ClawBack is | 0:18 |
-| 3. A demo month | 0:25 |
-| 4. One cancel | 0:40 |
-| 5. A refund letter | 0:20 |
+| 3. A demo month | 0:15 |
+| 4. The gym: proof, email, sent | 0:35 |
+| 5. Hulu, then the price drop | 0:35 |
 | 6. Models and cost | 0:25 |
 | 7. What's built | 0:12 |
 | 8. The close | 0:13 |

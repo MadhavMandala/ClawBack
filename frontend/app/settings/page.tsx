@@ -251,7 +251,7 @@ export default function Settings() {
 
       <footer className="site-foot">
         <div className="wrap">
-          <p>ClawBack never cancels, pays, sends or files anything on its own. You make the final click.</p>
+          <p>ClawBack never cancels, pays or files anything. It sends one email, a gym cancellation, only when you click Send.</p>
           <p><Link href="/privacy">Privacy policy</Link></p>
         </div>
       </footer>

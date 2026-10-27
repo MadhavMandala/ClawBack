@@ -48,7 +48,7 @@ const MODELS = [
 ];
 
 const RULES = [
-  { b: "Nothing happens without you.", p: "ClawBack never cancels, pays, sends or files anything. It prepares the request, and you send it." },
+  { b: "Nothing happens without you.", p: "ClawBack never cancels, pays or files anything. It sends one email, a gym cancellation, only when you click Send. Everything else it prepares, and you send it." },
   { b: "It only reads.", p: "Email access is read-only. Your bank sign-in happens on Plaid's page, so ClawBack never sees your bank password." },
   { b: "Every find shows its working.", p: "The charges and emails it relied on, the rule behind the claim, and a link to that rule's official source." },
   { b: "Models don't make up links or numbers.", p: "Code does every date and every dollar. Links come from search results or checked pages, never from a model." },
