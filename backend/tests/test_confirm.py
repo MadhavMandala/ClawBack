@@ -261,7 +261,7 @@ def test_demo_numbers_stay_and_calm_is_a_confirmed_cancellation(client):
         pytest.skip("rules data not available")
     s = client.post("/api/demo/seed").json()
     assert (s["monthly_total"], s["potential_monthly_savings"], s["owed_total"], s["owed_count"]) == (
-        503.23, 81.97, 615.06, 7)
+        672.23, 250.97, 615.06, 7)  # includes the unused $169.00 Orangetheory membership
     assert s["recovered_total"] == 0 and s["cancelled_monthly_savings"] == 16.04
     subs = {x["merchant"]: x for x in client.get("/api/subscriptions").json()}
     calm = subs["Calm"]

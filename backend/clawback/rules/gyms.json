@@ -1,0 +1,22 @@
+{
+  "note": "Gyms ClawBack can check visits for and help cancel. Only studios listed here get a cancellation email sent to the studio; any other gym gets Copy and send-to-yourself. The demo studio's email is a test address, never a real studio.",
+  "checked_on": "2026-10-27",
+  "gyms": [
+    {
+      "id": "otf-edison-demo",
+      "chain": "Orangetheory Fitness",
+      "studio": "Orangetheory Edison",
+      "address": "Edison, NJ (demo studio)",
+      "lat": 40.5187,
+      "lng": -74.4121,
+      "demo": true,
+      "cancel": {
+        "method": "email",
+        "notice_days": 30,
+        "email": "edison-studio@clawback.test",
+        "how": "Orangetheory studios ask for 30 days' written notice to cancel. Email to your home studio is the usual way to give it; check your membership agreement.",
+        "source_url": "https://www.rocketmoney.com/learn/personal-finance/cancel-orangetheory-membership"
+      }
+    }
+  ]
+}

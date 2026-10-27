@@ -23,7 +23,8 @@ from .flags import cancel_flags, flag_one, flag_overlaps
 from .naming import categorize_apps, name_unknown
 from .recurring import detect_series, set_aside_count
 from .triage import triage
-from .usage import keep_holds, reraised_by, signal_trust, signals_for, summarize
+from .. import gyms
+from .usage import gym_usage, keep_holds, reraised_by, signal_trust, signals_for, summarize
 from .value import included_elsewhere, membership_value
 
 
@@ -104,7 +105,11 @@ def run(user_id: str, today: date | None = None) -> dict:
                 s.flags = cancel_flags(s) + ([] if s.status == "cancelled" else bill_flags(s, amounts, rule, mine, today))
                 u.bill_info[s.id] = {"rule": rule, "amounts": amounts}
                 continue
-            s.usage = summarize(signals_for(s, facts, checkins, today, trust), checkins, today)
+            gym = gyms.for_subscription(s)
+            if gym and gym["id"] in u.gym_visits:  # Google Maps visits beat email signals for a gym
+                s.usage = gym_usage(s, gym, u.gym_visits[gym["id"]], today)
+            else:
+                s.usage = summarize(signals_for(s, facts, checkins, today, trust), checkins, today)
             if no_on := reraised_by(kept_on, checkins):
                 s.usage.evidence.insert(0, f"{no_on.isoformat()}: you kept it on {kept_on:%b} {kept_on.day}, "
                                            "then said you didn't use it")
