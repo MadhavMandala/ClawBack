@@ -73,4 +73,5 @@ Submissions close **Fri Oct 30, 10:00 am PT**. Most urgent first.
   - nothing on the server stops a gym email from being sent twice;
   - the fallback email (when the model is unavailable) doesn't mention the 30-day notice;
   - the price card disappears after you mark it done;
-  - the Settings page still says "read-only".
+  - the Settings page (connected email) and the privacy page still call email access "read-only", though a
+    send-only connection can send the gym email.
