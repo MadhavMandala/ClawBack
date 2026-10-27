@@ -210,6 +210,25 @@ def subscriptions(user_id: UserId):
     return sorted(subs, key=lambda s: (-best_saving(s), -s.monthly_cost))
 
 
+@app.get("/api/showcase")
+def showcase(user_id: UserId):
+    """The three workflows the dashboard leads with: a gym you stopped going to (cancel by email), a streaming
+    service you don't use (its own cancel page), and a price drop (or the item being watched when it hasn't dropped).
+    Each is null when this user has none."""
+    u = store.user(user_id)
+    live = [s for s in u.subscriptions.values() if s.status != "cancelled"]
+    demo_ok = u.mode != "real"
+    gym = next((s for s in sorted(live, key=lambda s: -best_saving(s)) if gyms.for_subscription(s, demo=demo_ok)), None)
+    streaming = next((s for s in sorted(live, key=lambda s: -best_saving(s))
+                      if s.category == "video_streaming" and any(f.kind in ("unused", "cancel_pending") for f in s.flags)),
+                     None)
+    drop = next((f for f in u.findings.values() if f.kind == "price_drop" and f.status == "open"), None)
+    price = {"finding_id": drop.id} if drop else ({"watch": u.price_watch[0]} if u.price_watch else None)
+    return {"gym": {"sub_id": gym.id} if gym else None,
+            "streaming": {"sub_id": streaming.id} if streaming else None,
+            "price": price}
+
+
 class Checkin(BaseModel):
     used: bool
 
