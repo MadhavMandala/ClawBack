@@ -214,8 +214,11 @@ def emails(today: date) -> list[Email]:
     netflix_change = _monthly_dates(today, 5)[4] - timedelta(days=30)
     add(netflix_change, "info@account.netflix.com", "We're updating your Netflix price",
         "Starting with your next billing date, your monthly price will change from $15.49 to $17.99.")
-    add(today - timedelta(days=10), "no_reply@email.apple.com", "Your receipt from Apple.",
-        apple_receipt(today - timedelta(days=10), "MT8Q2KX7LD", "iCloud", "iCloud+", "iCloud+ with 200 GB (Monthly)",
+    # Apple emails the receipt the day before the charge lands, like Calm's below. Tied to the latest iCloud+ charge
+    # (the 15th), so the receipt and the charge always match, whatever day the demo is built.
+    icloud_receipt = _monthly_dates(today, 15)[-1] - timedelta(days=1)
+    add(icloud_receipt, "no_reply@email.apple.com", "Your receipt from Apple.",
+        apple_receipt(icloud_receipt, "MT8Q2KX7LD", "iCloud", "iCloud+", "iCloud+ with 200 GB (Monthly)",
                       2.99, 0.00))
     for k, d in enumerate(calm_dates(today)):
         receipt_day = d - timedelta(days=1)
@@ -262,6 +265,11 @@ def emails(today: date) -> list[Email]:
     return sorted(out, key=lambda e: e.received_at)
 
 
+# The demo's settlement must still be open on the last day of judging (Dec 15). The latest suitable settlements close
+# Dec 21, so the story needs only a few days of headroom, not a month.
+STORY_MIN_DAYS = 5
+
+
 def settlement_story(today: date, transactions: list[Transaction], emails: list[Email], book) -> list[Email]:
     """One dated return email for a featured settlement, so the demo shows a match that fits who qualifies.
 
@@ -280,7 +288,7 @@ def settlement_story(today: date, transactions: list[Transaction], emails: list[
         return s["class_start"] <= d <= s["class_end"]
 
     pool = [s for s in book.settlements
-            if not limited(s) and s["claim_deadline"] and s["claim_deadline"] >= today + timedelta(days=30)
+            if not limited(s) and s["claim_deadline"] and s["claim_deadline"] >= today + timedelta(days=STORY_MIN_DAYS)
             and s["class_start"] and s["class_end"] and s["class_start"] < today
             and any(m == m.lower() and "." in m for m in s["match"])]
     pool.sort(key=lambda s: (not touches(s), any(inside(s, d) for d in touches(s)), s["claim_deadline"]))
@@ -289,6 +297,12 @@ def settlement_story(today: date, transactions: list[Transaction], emails: list[
     s = pool[0]
     domain = next(m for m in s["match"] if m == m.lower() and "." in m)
     on = max(s["class_start"], min(s["class_end"], today) - timedelta(days=120))
-    return [Email(id="e-settlement", received_at=_dt(on), sender=f"return@{domain}",
-                  subject="Your return request for order 112-4839201",
-                  body_text="We've received your return request. Your refund will be issued when we receive the item.")]
+    words = [w.lower() for w in s.get("evidence_words") or []]
+    if "return" in words:  # Amazon's return-policy class: the purchase shows up as a return request
+        subject = "Your return request for order 112-4839201"
+        body = "We've received your return request. Your refund will be issued when we receive the item."
+    else:  # an order receipt that names the product or service the class covers, when the row lists one
+        what = f"{words[0]} " if words else ""
+        subject = f"Your {what}order receipt 112-4839201"
+        body = f"Thanks for your {what}order. This email is your receipt."
+    return [Email(id="e-settlement", received_at=_dt(on), sender=f"orders@{domain}", subject=subject, body_text=body)]

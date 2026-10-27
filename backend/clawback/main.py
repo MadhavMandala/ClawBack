@@ -297,10 +297,11 @@ async def upload_statement(user_id: UserId, file: UploadFile = File(...)):
         kind, txs = parse_upload(await file.read(), file.filename)
     except ValueError as exc:
         raise HTTPException(400, str(exc))
-    u = store.user(user_id)
-    if kind == "ofx":  # OFX ids come from FITID, so the same file uploaded twice adds nothing new
-        held = {t.id for t in u.transactions}
-        txs = [t for t in txs if t.id not in held]
+    # Your own statement replaces the made-up demo month (uploaded statements already held stay).
+    u = store.use_real_data(user_id)
+    # Ids come from FITID (OFX) or the row's content (CSV), so the same file uploaded twice adds nothing new.
+    held = {t.id for t in u.transactions}
+    txs = [t for t in txs if t.id not in held]
     u.transactions.extend(txs)
     result = await run_in_threadpool(run, user_id)
     return {"added_transactions": len(txs), "format": kind, **result}
