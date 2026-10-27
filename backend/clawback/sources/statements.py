@@ -66,7 +66,8 @@ def parse_csv(content: str, id_prefix: str = "s") -> list[Transaction]:
     charges_negative = sum(1 for v in single if v is not None and v < 0) >= len(single) / 2 if single else True
 
     out: list[Transaction] = []
-    for i, r in enumerate(body):
+    seen: dict[str, int] = {}
+    for r in body:
         if len(r) <= max(di, de):
             continue
         if ai is not None:
@@ -78,7 +79,13 @@ def parse_csv(content: str, id_prefix: str = "s") -> list[Transaction]:
             debit = _money(r[dbi]) if len(r) > dbi else None
             credit = _money(r[cri]) if cri is not None and len(r) > cri else None
             amount = (debit or 0.0) - (credit or 0.0)
-        out.append(Transaction(id=f"{id_prefix}{i:05d}", date=_date(r[di]), description=r[de].strip(), amount=round(amount, 2), source="statement"))
+        when, desc, amount = _date(r[di]), r[de].strip(), round(amount, 2)
+        # The id comes from the row's content, so the same file uploaded again matches what's already held. Identical
+        # rows in one file (two same coffees on one day) are real and stay apart through their count.
+        key = f"{when.isoformat()}|{desc.upper()}|{amount:.2f}"
+        seen[key] = seen.get(key, 0) + 1
+        tx_id = f"{id_prefix}-" + hashlib.sha1(f"{key}|{seen[key]}".encode()).hexdigest()[:12]
+        out.append(Transaction(id=tx_id, date=when, description=desc, amount=amount, source="statement"))
     return out
 
 
