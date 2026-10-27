@@ -407,13 +407,14 @@ def test_demo_story(client):
         by_kind.setdefault(f["kind"], []).append(f)
 
     [drop] = by_kind["price_drop"]
-    target = rulebook.current().retailer_for("target.com")
-    assert (drop["merchant"], drop["amount"]) == ("Target", 30.0)
-    assert drop["deadline"] == (today - timedelta(days=6) + timedelta(days=target["window_days"])).isoformat()
+    best_buy = rulebook.current().retailer_for("bestbuy.com")
+    assert (drop["merchant"], drop["amount"]) == ("Best Buy", 59.01)  # $249.00 paid, $189.99 simulated (no keys)
+    assert drop["deadline"] == (today - timedelta(days=6) + timedelta(days=best_buy["window_days"])).isoformat()
     assert any("simulated price check (demo data)" in e for e in drop["evidence"])
+    assert "simulated" in drop["title"]
 
     [dup] = by_kind["duplicate_charge"]
-    assert (dup["merchant"], dup["amount"], dup["confidence"]) == ("Best Buy", 129.99, "high")
+    assert (dup["merchant"], dup["amount"], dup["confidence"]) == ("Staples", 129.99, "high")
     assert dup["deadline"] == (end_of_month(today - timedelta(days=9)) + timedelta(days=60)).isoformat()
 
     assert sorted(f["amount"] for f in by_kind["bank_fee"]) == [3.5, 4.17, 35.0]

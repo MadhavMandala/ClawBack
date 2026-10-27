@@ -23,9 +23,12 @@ Bills (matched to providers in rules/bills.json):
 - PG&E electric: swings between $60 and $140 (a variable bill: no flag, "looks fine")
 
 One-time money (findings):
-- Best Buy: the same $129.99 charged twice on one day, one order email (duplicate_charge, high)
+- Staples: the same $129.99 charged twice on one day, one order email (duplicate_charge, high)
 - Bank fees: overdraft $35.00, foreign transaction $4.17, out-of-network ATM $3.50 (bank_fee)
-- Target: Sony headphones bought 6 days ago at $199.99, simulated price check $169.99 (price_drop, $30)
+- Best Buy: AirPods Pro 2 bought 6 days ago at $249.00 (its regular price). With keys, today's price comes from a
+  live bestbuy.com check (price_drop when lower; a price_watch entry when not); without, a simulated $189.99 that
+  the finding's title calls simulated
+- Orangetheory: $169.00 a month, and a preloaded Google Maps Timeline whose gym visits stop nine weeks ago (unused)
 - Walmart: an air fryer whose price also dropped, NOT flagged because Walmart doesn't price-adjust
 - United: a booking ($412.40) and then a cancellation offering a travel credit (flight_refund, $412.40)
 - Settlements: the Kroger, Amazon and Apple charges / emails above match open settlements in
@@ -46,7 +49,8 @@ from .models import Email, Finding, Transaction
 
 # Simulated "current price" checks for demo mode: (store, words in the item name) -> price now.
 PRICE_CHECKS: dict[tuple[str, str], float] = {
-    ("target", "sony wh-1000xm5"): 169.99,
+    # Used only when the live bestbuy.com check can't run; the finding then says "simulated" in its title.
+    ("best buy", "airpods pro 2"): 189.99,
     ("walmart", "ninja air fryer"): 69.00,
 }
 
@@ -105,12 +109,12 @@ def transactions(today: date) -> list[Transaction]:
         add(d, "PGANDE WEB ONLINE", amount)
 
     # One-time money.
-    add(today - timedelta(days=9), "BEST BUY 00012345 ATLANTA", 129.99)
-    add(today - timedelta(days=9), "BEST BUY 00012345 ATLANTA", 129.99)  # charged twice for one order
+    add(today - timedelta(days=9), "STAPLES 00123 ATLANTA", 129.99)
+    add(today - timedelta(days=9), "STAPLES 00123 ATLANTA", 129.99)  # charged twice for one order
     add(today - timedelta(days=17), "OVERDRAFT ITEM FEE", 35.00)
     add(today - timedelta(days=23), "FOREIGN TRANSACTION FEE", 4.17)
     add(today - timedelta(days=11), "NON-NETWORK ATM FEE", 3.50)
-    add(today - timedelta(days=6), "TARGET 00011111 ATLANTA", 199.99)
+    add(today - timedelta(days=6), "BEST BUY 00012345 ATLANTA", 249.00)  # AirPods Pro 2: the price-drop workflow
     add(today - timedelta(days=8), "WALMART.COM 8009256278", 89.00)
     add(today - timedelta(days=40), "UNITED 0162345678901", 412.40)
 
@@ -121,7 +125,7 @@ def transactions(today: date) -> list[Transaction]:
         add(today - timedelta(days=15 * k + 4), "SHELL OIL 57444 ATLANTA", round(31 + (k * 7.3) % 22, 2))
     for k, d in enumerate(_monthly_dates(today, 17)):
         add(d, "DOORDASH*CHIPOTLE SAN FRANCISCO", round(22.4 + k * 2.15, 2))
-    add(today - timedelta(days=40), "BEST BUY 00012345 ATLANTA", 179.99)
+    add(today - timedelta(days=40), "HOME DEPOT 0456 ATLANTA", 179.99)
     add(today - timedelta(days=95), "AMAZON MKTPL*2K4LP0", 34.18)
     add(today - timedelta(days=12), "AMAZON MKTPL*9Q1ZZ3", 12.49)
 
@@ -262,12 +266,12 @@ def emails(today: date) -> list[Email]:
         f"Your auto policy renews on {geico[4]:%B %d, %Y}. Your new monthly payment will be $121.00 (was $102.00).")
 
     # One-time money.
-    add(today - timedelta(days=9), "BestBuyInfo@emailinfo.bestbuy.com", "Thanks for your order",
-        "Order number: BBY01-806512345678. Item: Logitech MX Master 3S Wireless Mouse, $129.99. "
+    add(today - timedelta(days=9), "orders@staples.com", "Thanks for your Staples order",
+        "Order number: 7712345678. Item: Logitech MX Master 3S Wireless Mouse, $129.99. "
         "Order total: $129.99. We'll email you when it ships.")
-    add(today - timedelta(days=6), "orders@oe.target.com", "Thanks for your order!",
-        "Order #102938475610. Item: Sony WH-1000XM5 Wireless Noise Canceling Headphones, $199.99. "
-        "Order total: $199.99.")
+    add(today - timedelta(days=6), "BestBuyInfo@emailinfo.bestbuy.com", "Thanks for your order",
+        "Order number: BBY01-806512345678. Item: Apple AirPods Pro 2, $249.00. "
+        "Order total: $249.00. We'll email you when it ships.")
     add(today - timedelta(days=8), "help@walmart.com", "Your Walmart order is confirmed",
         "Order #200011122233. Item: Ninja Air Fryer AF101, $89.00. Order total: $89.00.")
     flight_day = today + timedelta(days=12)

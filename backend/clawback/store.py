@@ -92,6 +92,9 @@ class UserData:
     # Gym visits from a Google Maps Timeline export: gym id (rules/gyms.json) -> visit dates. Nothing else from the
     # file is kept: no coordinates, no other places.
     gym_visits: dict[str, list[date]] = field(default_factory=dict)
+    # Items checked inside their price-adjustment window with no drop today (findings/refunds.price_drops), so the
+    # price card can say "no drop today" instead of disappearing.
+    price_watch: list[dict] = field(default_factory=list)
     # Plaid /transactions/sync position of the transactions held in memory. None = pull from the start.
     plaid_cursor: str | None = None
     # Extracted facts by email id, so each email goes to a model once. Reset demo clears it.

@@ -125,6 +125,12 @@ def _price_step(user_id: str, u: UserData, rules: Rulebook, purchases: list[Purc
 
     def check(p: Purchase, item: Item, adjusts: bool) -> PriceCheck | None:
         if demo:
+            # The demo's purchase is made up, but today's price is real when the keys are set: a live check on the
+            # store's own site (once a day: the demo month is built once a day). Else the labelled simulated price.
+            if adjusts and live:
+                pc = prices.live_price(user_id, p.store, item.name, prices.store_domain(p.retailer), paid=item.price)
+                if pc is not None:
+                    return pc
             price = prices.demo_price(p.store, item.name)
             return PriceCheck(price=price, how="simulated") if price is not None else None
         if not adjusts or not live:
@@ -133,7 +139,8 @@ def _price_step(user_id: str, u: UserData, rules: Rulebook, purchases: list[Purc
 
     notes: list[str] = []
     start = time.perf_counter()
-    drops = price_drops(purchases, check, today, notes)
+    u.price_watch = []
+    drops = price_drops(purchases, check, today, notes, u.price_watch)
     if demo:
         how = "simulated price check (demo data)"
         status = "ok"
