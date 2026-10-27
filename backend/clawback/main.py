@@ -222,7 +222,8 @@ def showcase(user_id: UserId):
     streaming = next((s for s in sorted(live, key=lambda s: -best_saving(s))
                       if s.category == "video_streaming" and any(f.kind in ("unused", "cancel_pending") for f in s.flags)),
                      None)
-    drop = next((f for f in u.findings.values() if f.kind == "price_drop" and f.status == "open"), None)
+    drops = [f for f in u.findings.values() if f.kind == "price_drop" and f.status == "open"]
+    drop = max(drops, key=lambda f: f.amount, default=None)  # the biggest, so the card doesn't depend on list order
     price = {"finding_id": drop.id} if drop else ({"watch": u.price_watch[0]} if u.price_watch else None)
     return {"gym": {"sub_id": gym.id} if gym else None,
             "streaming": {"sub_id": streaming.id} if streaming else None,

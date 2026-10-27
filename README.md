@@ -139,7 +139,7 @@ money arithmetic. Every step is logged with its engine, time and cost, and the d
 If a model call fails, the next tier takes over, then the code fallback, so the app never breaks. Models never
 compute dates or money, and links always come from checked search results, never from a model. Each session has a
 daily model spend limit. The model trace shows every call with its tier, tokens (including thinking tokens) and
-cost. Measured cost on the eval set: about $0.026 per 1,000 emails for the whole pipeline (see
+cost. Measured cost on the held-out eval set: about $0.057 per 1,000 emails for the whole pipeline (see
 [docs/EVAL.md](docs/EVAL.md)).
 
 ## Docs

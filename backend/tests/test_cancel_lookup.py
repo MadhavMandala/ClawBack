@@ -1,6 +1,7 @@
 """The cancel-page lookup: Tavily results checked against the merchant's own domains, cached per merchant, and
 cancel steps read from the page only when each one is grounded in the page text. All with fake Tavily results."""
 
+import dataclasses
 import json
 from datetime import date, timedelta
 
@@ -8,7 +9,8 @@ import pytest
 
 from clawback import config, rules
 from clawback.models import Subscription
-from clawback.pipeline import cancel_lookup
+from clawback import merchants
+from clawback.pipeline import cancel, cancel_lookup
 from clawback.pipeline.cancel import cancel_prep
 from clawback.store import store
 from clawback.tools import tavily
@@ -18,6 +20,18 @@ LIGHTNING = "nvidia/Nemotron-3_5-Lightning"
 NETFLIX = Subscription(id="netflix", merchant="Netflix", category="video_streaming", monthly_cost=17.99)
 HULU = Subscription(id="hulu", merchant="Hulu", category="video_streaming", monthly_cost=18.99)
 GYM = Subscription(id="touchstone", merchant="Touchstone Climbing", category="unknown", monthly_cost=85.0)
+
+
+
+@pytest.fixture(autouse=True)
+def search_path_for_netflix(monkeypatch):
+    """These tests exercise the search for a cancel page, so Netflix's hand-checked cancel link is set aside."""
+    def by_name(name):
+        m = merchants.by_name(name)
+        return dataclasses.replace(m, known_cancel_url=None) if m and m.name == "Netflix" else m
+
+    monkeypatch.setattr(cancel, "by_name", by_name)
+
 
 NETFLIX_PAGE = """# How to cancel Netflix
 
@@ -337,3 +351,10 @@ def test_store_billed_and_bill_pages_skip_the_search(fake_tavily):
     prep = cancel_prep("t", bill, TODAY)
     assert prep["links"][0]["verified"] is True and prep["links"][0]["url"].startswith("https://www.xfinity.com/")
     assert fake.searches == []
+
+
+def test_netflix_uses_its_checked_cancel_page(monkeypatch):
+    monkeypatch.setattr(cancel, "by_name", merchants.by_name)
+    prep = cancel_prep("t", NETFLIX, TODAY)
+    assert prep["primary_link"]["url"] == "https://www.netflix.com/cancelplan"
+    assert prep["primary_link"]["label"] == "Cancel on Netflix"

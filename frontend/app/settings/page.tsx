@@ -197,6 +197,7 @@ export default function Settings() {
                       <tr><td>Money owed to you</td><td className="num">{me.counts.findings}</td></tr>
                       <tr><td>Bank transactions</td><td className="num">{me.counts.transactions}</td></tr>
                       <tr><td>Emails read</td><td className="num">{me.counts.emails}</td></tr>
+                      <tr><td>Gym visit dates, from Google Maps</td><td className="num">{me.counts.gym_visits ?? 0}</td></tr>
                       <tr><td>Alerts</td><td className="num">{me.counts.alerts}</td></tr>
                     </tbody>
                   </table>

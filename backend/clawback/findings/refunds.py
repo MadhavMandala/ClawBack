@@ -27,6 +27,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Callable
+from urllib.parse import urlparse
 
 from .. import llm
 from ..models import Email, Finding, RuleRef
@@ -102,6 +103,12 @@ def price_drops(purchases: list[Purchase], check: Callable[[Purchase, Item, bool
     return out
 
 
+def _host(url: str | None) -> str | None:
+    """bestbuy.com, not the full product URL: the link itself is on the price card."""
+    host = urlparse(url).hostname if url else None
+    return host.removeprefix("www.") if host else None
+
+
 def _price_finding(p: Purchase, item: Item, r: dict, pc: PriceCheck, drop: float, deadline: date, today: date) -> Finding:
     store, start = r["store"], r.get("window_from") or "purchase"
     number = f" (order {p.order_number})" if p.order_number else ""
@@ -110,7 +117,7 @@ def _price_finding(p: Purchase, item: Item, r: dict, pc: PriceCheck, drop: float
         evidence.append("The price you paid was read from a receipt image by Nemotron 3.5 Super-VL. "
                         "Check it against your receipt.")
     evidence.append(f"Price now: {money(pc.price)}, from a simulated price check (demo data)." if pc.how == "simulated"
-                    else f"Price now: {money(pc.price)} at {pc.url or store} (checked {day(today)}).")
+                    else f"Price now: {money(pc.price)} on {_host(pc.url) or store} (checked {day(today)}).")
     evidence.append(f"{store} adjusts prices within {r['window_days']} days of {start}: until {day(deadline)}.")
     if start == "delivery":
         evidence.append("The window counts from delivery. The delivery date isn't known, so this counts from the order "

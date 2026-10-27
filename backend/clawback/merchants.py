@@ -62,6 +62,7 @@ class MerchantRow(BaseModel):
     membership: str | None = None
     evidence: Literal["official", "common", "guess"] = "common"
     source_url: str | None = None
+    cancel_url: str | None = None  # the merchant's own cancel page, checked by hand (sign-in, then the cancel button)
 
 
 class MerchantsFile(BaseModel):
@@ -78,7 +79,8 @@ def merchants_file() -> MerchantsFile:
 
 
 def _merchant(row: MerchantRow) -> Merchant:
-    cancel = {"apple": APPLE_SUBSCRIPTIONS_URL, "google_play": GOOGLE_PLAY_SUBSCRIPTIONS_URL}.get(row.billed_by or "")
+    cancel = {"apple": APPLE_SUBSCRIPTIONS_URL, "google_play": GOOGLE_PLAY_SUBSCRIPTIONS_URL}.get(row.billed_by or "") \
+        or row.cancel_url
     return Merchant(row.name, row.category, row.match, row.domains, row.billed_by, cancel, row.aliases, row.bill,
                     row.membership, row.exclude)
 

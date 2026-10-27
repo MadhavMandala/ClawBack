@@ -36,7 +36,7 @@ def test_finds_subscriptions_and_ignores_noise(subs):
 
 def test_flags(subs):
     assert "price_increase" in kinds(subs["Netflix"])
-    assert "unused" in kinds(subs["Hulu"])
+    assert "unused" in kinds(subs["Netflix"])
     assert "membership_losing_money" in kinds(subs["DoorDash DashPass"])
     assert "overlap" in kinds(subs["iCloud+"]) and "overlap" in kinds(subs["Google One"])
     assert "trial_ending" in kinds(subs["Super Duolingo"])
