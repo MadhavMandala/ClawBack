@@ -8,10 +8,10 @@ import {
 } from "../api";
 import { bankNotice, connectBank as openPlaid, connectEmail as openEmailSignIn } from "../connect";
 import { groupOf, humanDates, money, reclaimable, shortDate, type GroupKey } from "../format";
-import FindingRow from "../components/FindingRow";
+import { FindingDetail, FindingLine } from "../components/FindingRow";
 import SiteNav from "../components/SiteNav";
 import Donut from "../components/Donut";
-import SubscriptionRow, { PrimaryAction, type RowPanel } from "../components/SubscriptionRow";
+import { SubscriptionDetail, SubscriptionLine, type RowPanel } from "../components/SubscriptionRow";
 import { Check, Chevron, Close } from "../components/icons";
 import "./dashboard.css";
 
@@ -32,11 +32,12 @@ export default function Dashboard() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [findings, setFindings] = useState<Finding[]>([]);
-  const [findOpen, setFindOpen] = useState<string | null>(null);
   const [findPrep, setFindPrep] = useState<{ id: string; a: ActionPrep } | null>(null);
   const [trace, setTrace] = useState<TraceStep[]>([]);
   const [conns, setConns] = useState<Connections | null>(null);
-  const [open, setOpen] = useState<string | null>(null);
+  // The row shown in the detail pane. One at a time, across findings and subscriptions.
+  const [sel, setSel] = useState<{ kind: "sub" | "finding"; id: string } | null>(null);
+  const paneRef = useRef<HTMLElement>(null);
   const [panel, setPanel] = useState<{ id: string; p: RowPanel } | null>(null);
   const [notice, setNotice] = useState<Notice>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export default function Dashboard() {
   const [alerts, setAlerts] = useState<Alerts | null>(null);
   const [recovered, setRecovered] = useState<Recovered | null>(null);
   const [guide, setGuide] = useState(false);
-  const [slice, setSlice] = useState<string | null>(null);
+  const [filter, setFilter] = useState<string | null>(null); // a donut group: the list shows only its services
   const [connectOpen, setConnectOpen] = useState(false);
   const [restOpen, setRestOpen] = useState(false);
   const connectRef = useRef<HTMLDivElement>(null);
@@ -164,7 +165,7 @@ export default function Dashboard() {
   }
 
   async function openPanel(id: string, kind: "cancel" | "cheaper") {
-    setOpen(id);
+    setSel({ kind: "sub", id });
     const data = kind === "cancel"
       ? await post<CancelPrep>(`row-${id}`, `/api/subscriptions/${id}/cancel-prep`)
       : await act<Alternatives>(`row-${id}`, `/api/subscriptions/${id}/alternatives`);
@@ -177,33 +178,36 @@ export default function Dashboard() {
   }
 
   async function negotiate(id: string) {
-    setOpen(id);
+    setSel({ kind: "sub", id });
     const data = await post<ActionPrep>(`row-${id}`, `/api/subscriptions/${id}/negotiate`);
     if (data) setPanel({ id, p: { kind: "negotiate", data } });
   }
 
   async function prepareFinding(id: string) {
-    setFindOpen(id);
+    setSel({ kind: "finding", id });
     const a = await post<ActionPrep>(`find-${id}`, `/api/findings/${id}/prepare`);
     if (a) setFindPrep({ id, a });
   }
 
   async function finishFinding(id: string, gotBack: number) {
     const out = await post<Finding>(`find-${id}`, `/api/findings/${id}/done`, { got_back: gotBack });
-    if (out) { setFindOpen(null); setNotice({ tone: "info", text: `Nice. ${money(gotBack)} added to what you've recovered.` }); }
+    if (out) { setSel(null); setFindPrep(null); setNotice({ tone: "info", text: `Nice. ${money(gotBack)} added to what you've recovered.` }); }
   }
 
   async function dismissFinding(id: string) {
     const out = await post<Finding>(`find-${id}`, `/api/findings/${id}/dismiss`);
-    if (out) setFindOpen(null);
+    if (out) { setSel(null); setFindPrep(null); }
   }
 
-  function pick(id: string) {
-    setOpen(id);
-    const target = subs.find((x) => x.id === id);
-    // Rows that look fine, cancelled ones and money back live in the "Everything else" fold: open it first.
-    if (target && !MAIN.includes(groupOf(target))) setRestOpen(true);
-    setTimeout(() => document.getElementById(`sub-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 60);
+  // Show a row in the pane. Rows that look fine, cancelled ones and money back live in the "Everything else" fold,
+  // so it opens first; the list line scrolls into view.
+  function select(kind: "sub" | "finding", id: string) {
+    setSel({ kind, id });
+    if (kind === "sub") {
+      const target = subs.find((x) => x.id === id);
+      if (target && !MAIN.includes(groupOf(target))) setRestOpen(true);
+    }
+    setTimeout(() => document.getElementById(`${kind === "sub" ? "sub" : "find"}-${id}`)?.scrollIntoView({ block: "nearest" }), 60);
   }
 
   const openFindings = findings.filter((f) => f.status === "open");
@@ -218,6 +222,26 @@ export default function Dashboard() {
       .sort((a, b) => reclaimable(b) - reclaimable(a) || b.monthly_cost - a.monthly_cost),
   }));
   const rest = grouped.filter((g) => !MAIN.includes(g.key) && g.rows.length);
+  const inFilter = filter ? new Set((summary?.spend_groups ?? []).find((g) => g.label === filter)?.items.map((i) => i.id) ?? []) : null;
+  const shown = (rows: Subscription[]) => (inFilter ? rows.filter((s) => inFilter.has(s.id)) : rows);
+  const selSub = sel?.kind === "sub" ? subs.find((x) => x.id === sel.id) ?? null : null;
+  const selFinding = sel?.kind === "finding" ? findings.find((x) => x.id === sel.id) ?? null : null;
+  const output = (selSub && panel?.id === selSub.id) || (selFinding && findPrep?.id === selFinding.id);
+
+  // On a wide screen the pane is never empty: show the first thing owed (or to decide on). On a phone the pane
+  // is a sheet over the list, so nothing opens until you tap a row.
+  useEffect(() => {
+    if (sel || !ready || typeof window === "undefined" || !window.matchMedia("(min-width: 761px)").matches) return;
+    const first = openFindings[0];
+    const sub = grouped.find((g) => g.key === "decide")?.rows[0] ?? grouped.find((g) => g.key === "bills")?.rows[0];
+    if (first) setSel({ kind: "finding", id: first.id });
+    else if (sub) setSel({ kind: "sub", id: sub.id });
+  }, [sel, ready, openFindings, grouped]);
+
+  // When ClawBack writes something, the pane jumps to its top, where the output is.
+  useEffect(() => {
+    if (output) paneRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [output, panel, findPrep]);
 
   return (
     <div className={intro ? "intro" : undefined}>
@@ -242,8 +266,8 @@ export default function Dashboard() {
         </div>
       </SiteNav>
 
-      <section className="dash-head" aria-label="Your month">
-        <div className="wrap">
+      <main className="wrap dash-grid" id="content">
+        <aside className="dash-left" aria-label="Your month">
           {summary && (
             <>
               <h1>
@@ -252,52 +276,20 @@ export default function Dashboard() {
                   <HeroSecond save={save} owed={owed} any={summary.subscriptions + (summary.bills ?? 0) > 0} />
                 </span>
               </h1>
-              <Donut groups={summary.spend_groups ?? []} selected={slice} onSelect={setSlice} />
+              <Donut groups={summary.spend_groups ?? []} selected={filter} onSelect={setFilter} />
               {(summary.trials ?? []).map((t) => (
                 <p key={t.id} className="trial-note">
                   Plus a {money(t.amount)} {t.merchant} trial that starts charging {shortDate(t.starts_on)}.
                 </p>
               ))}
-              {slice && (() => {
-                const g = (summary.spend_groups ?? []).find((x) => x.label === slice);
-                if (!g) return null;
-                return (
-                  <section className="slice-list" aria-label={`${g.label}: what you pay`}>
-                    <div className="slice-head">
-                      <h2>{g.label} <span className="count">{money(g.monthly)} a month</span></h2>
-                      <button className="quiet" onClick={() => setSlice(null)}>Show all</button>
-                    </div>
-                    <ul>
-                      {g.items.map((it) => {
-                        const s = subs.find((x) => x.id === it.id);
-                        return (
-                          <li key={it.id}>
-                            <button className="svc-link" onClick={() => pick(it.id)}>{it.merchant}</button>
-                            <span className="num">{money(it.monthly)}</span>
-                            <span className="num">{it.could_cut > 0 ? <span className="hl">{money(it.could_cut)}</span> : <span className="nil">None</span>}</span>
-                            <span className="act">
-                              {s && <PrimaryAction s={s} busy={busy === `row-${s.id}`}
-                                onOpen={() => pick(s.id)}
-                                onCancel={() => { pick(s.id); openPanel(s.id, "cancel"); }}
-                                onCheaper={() => { pick(s.id); openPanel(s.id, "cheaper"); }}
-                                onNegotiate={() => { pick(s.id); negotiate(s.id); }} />}
-                            </span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </section>
-                );
-              })()}
               <div className="legend">
                 <RecoveredLegend s={summary} />
               </div>
             </>
           )}
-        </div>
-      </section>
+        </aside>
 
-      <main className="wrap dash-main" id="content">
+        <section className="dash-list" aria-label="What ClawBack found">
         {notice && (
           <div className={`notice ${notice.tone}`} role="status">
             {notice.tone === "missing" && <span className="tag missing">Missing</span>}
@@ -308,7 +300,7 @@ export default function Dashboard() {
 
         {guide && demo && (
           <p className="guide-line" role="note">
-            <span>This is a made-up month. Click a slice, or open any row with a yellow amount.</span>
+            <span>This is a made-up month. Click a slice to filter the list, or pick any row to see what ClawBack can do.</span>
             <button className="quiet" onClick={closeGuide}>Got it</button>
           </p>
         )}
@@ -331,148 +323,131 @@ export default function Dashboard() {
           </section>
         )}
 
-        {openFindings.length > 0 && (
-          <section className="group owed" id="owed" aria-labelledby="h-owed">
-            <div className="group-head">
-              <h2 id="h-owed">Owed to you <span className="count">{openFindings.length}</span></h2>
-              <span className="group-sum">{money(owed)} to claim</span>
-            </div>
-            <div className="sheet">
-              <div className="row-line owed cols" aria-hidden>
-                <span>From</span><span>What ClawBack found</span><span>Deadline</span><span className="num">Amount</span><span />
+          {filter && (
+            <p className="filter-line">
+              <span>Showing <b>{filter}</b></span>
+              <button className="quiet" onClick={() => setFilter(null)}>Show all</button>
+            </p>
+          )}
+
+          {!filter && openFindings.length > 0 && (
+            <section className="group owed" id="owed" aria-labelledby="h-owed">
+              <div className="group-head">
+                <h2 id="h-owed">Owed to you <span className="count">{openFindings.length}</span></h2>
+                <span className="group-sum">{money(owed)} to claim</span>
               </div>
-              <ol className="rows">
+              <ul className="lines">
                 {openFindings.map((f) => (
-                  <FindingRow
-                    key={f.id}
-                    f={f}
-                    open={findOpen === f.id}
-                    prep={findPrep?.id === f.id ? findPrep.a : null}
-                    busy={busy === `find-${f.id}`}
-                    onToggle={() => setFindOpen(findOpen === f.id ? null : f.id)}
-                    onPrepare={() => prepareFinding(f.id)}
-                    onClosePrep={() => setFindPrep(null)}
-                    onDone={(v) => finishFinding(f.id, v)}
-                    onDismiss={() => dismissFinding(f.id)}
-                  />
+                  <FindingLine key={f.id} f={f} selected={sel?.kind === "finding" && sel.id === f.id} onSelect={() => select("finding", f.id)} />
                 ))}
-              </ol>
-            </div>
-            {closedFindings > 0 && <p className="fine-print after">{closedFindings} more marked done or dismissed.</p>}
-          </section>
-        )}
+              </ul>
+              {closedFindings > 0 && <p className="fine-print after">{closedFindings} more marked done or dismissed.</p>}
+            </section>
+          )}
 
-        {grouped.filter((g) => MAIN.includes(g.key)).map((g) => {
-          if (!g.rows.length) return null;
-          const cost = g.rows.reduce((t, s) => t + s.monthly_cost, 0);
-          const sum = g.key === "cancelled" ? `${money(cost)} a month you no longer pay` : `${money(cost)} a month`;
-          return (
-            <section key={g.key} className={`group ${g.key}`} id={`g-${g.key}`} aria-labelledby={`h-${g.key}`}>
-              <div className="group-head">
-                <h2 id={`h-${g.key}`}>{g.title} <span className="count">{g.rows.length}</span></h2>
-                <span className="group-sum">{sum}</span>
-              </div>
-              <div className="sheet">
-                <div className="row-line cols" aria-hidden>
-                  <span>{g.key === "bills" ? "Bill" : g.key === "fine" ? "Subscription or bill" : "Subscription"}</span><span>What ClawBack found</span><span className="num">Costs</span><span className="num">Could save</span><span />
+          {grouped.filter((g) => MAIN.includes(g.key)).map((g) => {
+            const rows = shown(g.rows);
+            if (!rows.length) return null;
+            const cost = rows.reduce((t, s) => t + s.monthly_cost, 0);
+            return (
+              <section key={g.key} className={`group ${g.key}`} id={`g-${g.key}`} aria-labelledby={`h-${g.key}`}>
+                <div className="group-head">
+                  <h2 id={`h-${g.key}`}>{g.title} <span className="count">{rows.length}</span></h2>
+                  <span className="group-sum">{money(cost)} a month</span>
                 </div>
-                <ol className="rows">
-                  {g.rows.map((s) => (
-                    <SubscriptionRow
-                      key={s.id}
-                      s={s}
-                      open={open === s.id}
-                      panel={panel?.id === s.id ? panel.p : null}
-                      busy={busy === `row-${s.id}`}
-                      onToggle={() => setOpen(open === s.id ? null : s.id)}
-                      onCheckin={(used) => post(`row-${s.id}`, `/api/subscriptions/${s.id}/checkin`, { used })}
-                      onKeep={() => { setPanel(null); post(`row-${s.id}`, `/api/subscriptions/${s.id}/keep`); }}
-                      onCancel={() => openPanel(s.id, "cancel")}
-                      onCheaper={() => openPanel(s.id, "cheaper")}
-                      onNegotiate={() => negotiate(s.id)}
-                      onClosePanel={() => setPanel(null)}
-                      onCancelled={() => markCancelled(s.id)}
-                    />
+                <ul className="lines">
+                  {rows.map((s) => (
+                    <SubscriptionLine key={s.id} s={s} selected={sel?.kind === "sub" && sel.id === s.id} onSelect={() => select("sub", s.id)} />
                   ))}
-                </ol>
+                </ul>
+              </section>
+            );
+          })}
+
+          {(rest.length > 0 || (recovered?.events.length ?? 0) > 0) && (
+            <details className="group rest" open={restOpen || !!filter} onToggle={(e) => setRestOpen(e.currentTarget.open)}>
+              <summary>
+                <span>Everything else: {restSummary(rest, recovered)}</span>
+                <Chevron className="chev" />
+              </summary>
+              {rest.map((g) => {
+                const rows = shown(g.rows);
+                if (!rows.length) return null;
+                return (
+                  <section key={g.key} className={`group ${g.key}`} id={`g-${g.key}`} aria-labelledby={`h-${g.key}`}>
+                    <div className="group-head">
+                      <h2 id={`h-${g.key}`}>{g.title} <span className="count">{rows.length}</span></h2>
+                    </div>
+                    <ul className="lines">
+                      {rows.map((s) => (
+                        <SubscriptionLine key={s.id} s={s} selected={sel?.kind === "sub" && sel.id === s.id} onSelect={() => select("sub", s.id)} />
+                      ))}
+                    </ul>
+                  </section>
+                );
+              })}
+          {recovered && recovered.events.length > 0 && (
+            <section className="group money-back" id="money-back" aria-labelledby="h-back">
+              <div className="group-head">
+                <h2 id="h-back">Money back <span className="count">{recovered.events.length}</span></h2>
+                <span className="group-sum">{recovered.note}</span>
+              </div>
+              <div className="table-scroll sheet">
+                <table>
+                  <thead><tr><th>When</th><th>From</th><th>What happened</th><th>Checked</th><th className="num">Amount</th></tr></thead>
+                  <tbody>
+                    {recovered.events.map((e) => (
+                      <tr key={e.id}>
+                        <td>{shortDate(e.on)}</td>
+                        <td>{e.merchant}</td>
+                        <td>{e.kind === "cancelled_subscription" ? `Cancelled. ${humanDates(e.note)}` : humanDates(e.note)}</td>
+                        <td>{e.status === "confirmed" ? <span className="tag ok"><Check /> In your bank data</span> : <span className="tag">You told us</span>}</td>
+                        <td className="num">{e.monthly ? <>{money(e.monthly)} a month</> : money(e.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </section>
-          );
-        })}
+          )}
+            </details>
+          )}
+        </section>
 
-        {(rest.length > 0 || (recovered?.events.length ?? 0) > 0) && (
-          <details className="group rest" open={restOpen} onToggle={(e) => setRestOpen(e.currentTarget.open)}>
-            <summary>
-              <span>Everything else: {restSummary(rest, recovered)}</span>
-              <Chevron className="chev" />
-            </summary>
-        {rest.map((g) => {
-          if (!g.rows.length) return null;
-          const cost = g.rows.reduce((t, s) => t + s.monthly_cost, 0);
-          const sum = g.key === "cancelled" ? `${money(cost)} a month you no longer pay` : `${money(cost)} a month`;
-          return (
-            <section key={g.key} className={`group ${g.key}`} id={`g-${g.key}`} aria-labelledby={`h-${g.key}`}>
-              <div className="group-head">
-                <h2 id={`h-${g.key}`}>{g.title} <span className="count">{g.rows.length}</span></h2>
-                <span className="group-sum">{sum}</span>
-              </div>
-              <div className="sheet">
-                <div className="row-line cols" aria-hidden>
-                  <span>{g.key === "bills" ? "Bill" : g.key === "fine" ? "Subscription or bill" : "Subscription"}</span><span>What ClawBack found</span><span className="num">Costs</span><span className="num">Could save</span><span />
-                </div>
-                <ol className="rows">
-                  {g.rows.map((s) => (
-                    <SubscriptionRow
-                      key={s.id}
-                      s={s}
-                      open={open === s.id}
-                      panel={panel?.id === s.id ? panel.p : null}
-                      busy={busy === `row-${s.id}`}
-                      onToggle={() => setOpen(open === s.id ? null : s.id)}
-                      onCheckin={(used) => post(`row-${s.id}`, `/api/subscriptions/${s.id}/checkin`, { used })}
-                      onKeep={() => { setPanel(null); post(`row-${s.id}`, `/api/subscriptions/${s.id}/keep`); }}
-                      onCancel={() => openPanel(s.id, "cancel")}
-                      onCheaper={() => openPanel(s.id, "cheaper")}
-                      onNegotiate={() => negotiate(s.id)}
-                      onClosePanel={() => setPanel(null)}
-                      onCancelled={() => markCancelled(s.id)}
-                    />
-                  ))}
-                </ol>
-              </div>
-            </section>
-          );
-        })}
+        <aside className={`dash-pane${sel ? " has-sel" : ""}`} id="pane" ref={paneRef} aria-label="Details">
+          {sel && <button className="pane-back quiet" onClick={() => { setSel(null); setPanel(null); setFindPrep(null); }}>Back to the list</button>}
+          {selFinding ? (
+            <FindingDetail
+              key={selFinding.id}
+              f={selFinding}
+              prep={findPrep?.id === selFinding.id ? findPrep.a : null}
+              busy={busy === `find-${selFinding.id}`}
+              onPrepare={() => prepareFinding(selFinding.id)}
+              onClosePrep={() => setFindPrep(null)}
+              onDone={(v) => finishFinding(selFinding.id, v)}
+              onDismiss={() => dismissFinding(selFinding.id)}
+            />
+          ) : selSub ? (
+            <SubscriptionDetail
+              key={selSub.id}
+              s={selSub}
+              panel={panel?.id === selSub.id ? panel.p : null}
+              busy={busy === `row-${selSub.id}`}
+              onCheckin={(used) => post(`row-${selSub.id}`, `/api/subscriptions/${selSub.id}/checkin`, { used })}
+              onKeep={() => { setPanel(null); post(`row-${selSub.id}`, `/api/subscriptions/${selSub.id}/keep`); }}
+              onCancel={() => openPanel(selSub.id, "cancel")}
+              onCheaper={() => openPanel(selSub.id, "cheaper")}
+              onNegotiate={() => negotiate(selSub.id)}
+              onClosePanel={() => setPanel(null)}
+              onCancelled={() => markCancelled(selSub.id)}
+            />
+          ) : (
+            <p className="pane-empty">Pick anything on the list to see what ClawBack found and what it can write for you.</p>
+          )}
+        </aside>
+      </main>
 
-        {recovered && recovered.events.length > 0 && (
-          <section className="group money-back" id="money-back" aria-labelledby="h-back">
-            <div className="group-head">
-              <h2 id="h-back">Money back <span className="count">{recovered.events.length}</span></h2>
-              <span className="group-sum">{recovered.note}</span>
-            </div>
-            <div className="table-scroll sheet">
-              <table>
-                <thead><tr><th>When</th><th>From</th><th>What happened</th><th>Checked</th><th className="num">Amount</th></tr></thead>
-                <tbody>
-                  {recovered.events.map((e) => (
-                    <tr key={e.id}>
-                      <td>{shortDate(e.on)}</td>
-                      <td>{e.merchant}</td>
-                      <td>{e.kind === "cancelled_subscription" ? `Cancelled. ${humanDates(e.note)}` : humanDates(e.note)}</td>
-                      <td>{e.status === "confirmed" ? <span className="tag ok"><Check /> In your bank data</span> : <span className="tag">You told us</span>}</td>
-                      <td className="num">{e.monthly ? <>{money(e.monthly)} a month</> : money(e.amount)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-
-          </details>
-        )}
-
-
+      <div className="wrap">
         <details className="trace" id="trace">
           <summary>
             <span>How ClawBack worked this out</span>
@@ -495,7 +470,7 @@ export default function Dashboard() {
             </table>
           </div>
         </details>
-      </main>
+      </div>
 
       <footer className="site-foot">
         <div className="wrap">
@@ -504,7 +479,7 @@ export default function Dashboard() {
             <span>{demo ? "Prototype. Made-up demo month." : "Your own data, from your connections."}</span>{" "}
             <a href="/built">What&apos;s built</a>
             {demo && <button className="quiet" disabled={!!busy} onClick={() => post("sync", "/api/sync")}>Re-run</button>}
-            <button className="quiet" disabled={!!busy} onClick={() => { setPanel(null); setOpen(null); setSlice(null); post("seed", "/api/demo/seed"); }}>
+            <button className="quiet" disabled={!!busy} onClick={() => { setPanel(null); setFindPrep(null); setSel(null); setFilter(null); post("seed", "/api/demo/seed"); }}>
               {demo ? "Reset demo data" : "Switch to demo data"}
             </button>
           </p>
