@@ -36,6 +36,7 @@ def test_template_without_key():
     "Please cancel; manage it at www.hulu.com/account. [your account email]",
     "Please cancel; see hulu.com/cancel. [your account email]",
     "Please cancel account #48213 effective October 31. [your account email]",
+    "Please cancel. Account: [your account email]\n\nThank you,\n[Your Name]",  # a placeholder Send can't fill
 ])
 def test_model_email_with_bare_link_or_invented_numbers_uses_template(fake_llm, body):
     fake_llm.script = {ULTRA: [json.dumps({"subject": "Cancel", "body": body})]}

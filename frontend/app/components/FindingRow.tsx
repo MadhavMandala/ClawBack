@@ -75,6 +75,7 @@ export function FindingDetail(p: DetailProps) {
       </header>
 
       <p className="pane-find">{humanDates(f.kind === "settlement" ? f.title : f.message)}</p>
+      {f.kind === "price_drop" && f.price_check && <PriceCompare f={f} />}
       {f.kind === "settlement" && <p className="fine-print">{humanDates(f.message)}</p>}
 
       {!p.prep && (
@@ -119,6 +120,38 @@ export function FindingDetail(p: DetailProps) {
         )}
       </section>
     </article>
+  );
+}
+
+// The purchase from the bank next to today's price on the store's own site.
+function PriceCompare({ f }: { f: Finding }) {
+  const d = f.price_check!;
+  const live = d.how === "live";
+  const url = d.url;
+  let host = "the store's site";
+  try { if (url) host = new URL(url).hostname.replace(/^www\./, ""); } catch { /* keep the default */ }
+  return (
+    <div className="price-compare">
+      <div>
+        <span className="pc-label">You paid</span>
+        <span className="pc-amount num">{money(Number(d.paid))}</span>
+        <span className="pc-note">{shortDate(d.paid_on)}, from your bank and the order email</span>
+      </div>
+      <div>
+        <span className="pc-label">Today</span>
+        <span className="pc-amount num">{money(Number(d.now))}</span>
+        <span className="pc-note">
+          {live && url
+            ? <><a href={url} target="_blank" rel="noreferrer">{host}<External className="ext" /></a>, checked {shortDate(d.checked_on)}</>
+            : "Simulated price (the live check wasn't available)"}
+        </span>
+      </div>
+      <div>
+        <span className="pc-label">Difference</span>
+        <span className="pc-amount num"><span className="hl">{money(f.amount)}</span></span>
+        <span className="pc-note">yours to ask back by {shortDate(f.deadline)}</span>
+      </div>
+    </div>
   );
 }
 

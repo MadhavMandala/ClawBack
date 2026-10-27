@@ -30,7 +30,7 @@ def sub(id: str, category: str, cost: float, saving: float = 0.0, status: str = 
 def test_demo_groups_match_month_sentence():
     s = summary("test", TODAY)
     groups = s["spend_groups"]
-    assert [g["label"] for g in groups][:2] == ["Home and phone", "Insurance"]
+    assert [g["label"] for g in groups][:3] == ["Home and phone", "Gym and fitness", "Insurance"]
     assert round(sum(g["monthly"] for g in groups), 2) == s["monthly_total"]
     assert len(groups) <= 6
 

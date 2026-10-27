@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   API, call,
   type ActionPrep, type Alerts, type Alternatives, type CancelPrep, type Connection, type Connections,
-  type Finding, type Recovered, type Subscription, type Summary, type TraceStep,
+  type Finding, type Recovered, type Showcase as ShowcaseData, type Subscription, type Summary, type TraceStep,
 } from "../api";
+import Showcase from "../components/Showcase";
 import { bankNotice, connectBank as openPlaid, connectEmail as openEmailSignIn } from "../connect";
 import { groupOf, humanDates, money, reclaimable, shortDate, type GroupKey } from "../format";
 import { FindingDetail, FindingLine } from "../components/FindingRow";
@@ -45,6 +46,7 @@ export default function Dashboard() {
   const [ready, setReady] = useState(false);
   const [alerts, setAlerts] = useState<Alerts | null>(null);
   const [recovered, setRecovered] = useState<Recovered | null>(null);
+  const [showcase, setShowcase] = useState<ShowcaseData | null>(null);
   const [guide, setGuide] = useState(false);
   const [filter, setFilter] = useState<string | null>(null); // a donut group: the list shows only its services
   const [connectOpen, setConnectOpen] = useState(false);
@@ -89,6 +91,7 @@ export default function Dashboard() {
       setConns(await call<Connections>("/api/connections").catch(() => null));
       setAlerts(await call<Alerts>("/api/alerts").catch(() => null));
       setRecovered(await call<Recovered>("/api/recovered").catch(() => null));
+      setShowcase(await call<ShowcaseData>("/api/showcase").catch(() => null));
       if (!loaded.current) {
         loaded.current = true;
         setTimeout(() => setIntro(false), 1600); // the highlighter pass runs once, on first load
@@ -103,6 +106,7 @@ export default function Dashboard() {
     load();
     // Coming back from the email sign-in lands here with ?connected=email or ?connect_error=...
     const q = new URLSearchParams(window.location.search);
+    if (q.get("connected") === "email-send") setNotice({ tone: "info", text: "Email connected for sending only. Your demo month stays, and nothing is read from your inbox." });
     if (q.get("connected") === "email") setNotice({ tone: "info", text: "Email connected. ClawBack read your recent receipts and billing emails." });
     if (q.get("connect_error")) setNotice({ tone: "error", text: `Couldn't connect: ${q.get("connect_error")}` });
     if (q.toString()) window.history.replaceState(null, "", window.location.pathname + window.location.hash);
@@ -164,6 +168,15 @@ export default function Dashboard() {
     if (out) setNotice({ tone: "info", text: `Added ${out.added_transactions} transactions from ${file.name}.` });
   }
 
+  async function uploadTimeline(file: File) {
+    const form = new FormData();
+    form.append("file", file);
+    const out = await act<{ visits: number; gyms: string[] }>("upload", "/api/ingest/timeline", { method: "POST", body: form });
+    if (out) setNotice({ tone: "info", text: out.visits
+      ? `Read your Google Maps Timeline: ${out.visits} gym visits (${out.gyms.join(", ")}). Only those visit dates were kept.`
+      : "Read your Google Maps Timeline. No visits to a gym ClawBack knows, so nothing was kept." });
+  }
+
   async function openPanel(id: string, kind: "cancel" | "cheaper") {
     setSel({ kind: "sub", id });
     const data = kind === "cancel"
@@ -212,7 +225,8 @@ export default function Dashboard() {
 
   const openFindings = findings.filter((f) => f.status === "open");
   const closedFindings = findings.length - openFindings.length;
-  const owed = summary?.owed_total ?? openFindings.reduce((t, f) => t + f.amount, 0);
+  // Only the money the page shows: the price-drop card. Other findings are hidden from the dashboard for now.
+  const owed = openFindings.find((f) => f.id === showcase?.price?.finding_id)?.amount ?? 0;
   const demo = (conns?.mode ?? "demo") === "demo";
   const save = summary?.potential_monthly_savings ?? 0;
   const grouped = GROUPS.map((g) => ({
@@ -222,6 +236,12 @@ export default function Dashboard() {
       .sort((a, b) => reclaimable(b) - reclaimable(a) || b.monthly_cost - a.monthly_cost),
   }));
   const rest = grouped.filter((g) => !MAIN.includes(g.key) && g.rows.length);
+  // The three workflows lead the page; everything else folds away, minus what already has a card.
+  const onCards = new Set([showcase?.gym?.sub_id, showcase?.streaming?.sub_id].filter(Boolean) as string[]);
+  const others = grouped
+    .map((g) => ({ ...g, rows: g.rows.filter((s) => !onCards.has(s.id)) }))
+    .filter((g) => g.rows.length);
+  const otherCount = others.reduce((t, g) => t + g.rows.length, 0);
   const inFilter = filter ? new Set((summary?.spend_groups ?? []).find((g) => g.label === filter)?.items.map((i) => i.id) ?? []) : null;
   const shown = (rows: Subscription[]) => (inFilter ? rows.filter((s) => inFilter.has(s.id)) : rows);
   const selSub = sel?.kind === "sub" ? subs.find((x) => x.id === sel.id) ?? null : null;
@@ -232,11 +252,11 @@ export default function Dashboard() {
   // is a sheet over the list, so nothing opens until you tap a row.
   useEffect(() => {
     if (sel || !ready || typeof window === "undefined" || !window.matchMedia("(min-width: 761px)").matches) return;
-    const first = openFindings[0];
-    const sub = grouped.find((g) => g.key === "decide")?.rows[0] ?? grouped.find((g) => g.key === "bills")?.rows[0];
-    if (first) setSel({ kind: "finding", id: first.id });
-    else if (sub) setSel({ kind: "sub", id: sub.id });
-  }, [sel, ready, openFindings, grouped]);
+    // The first workflow card: the gym, else the streaming service, else the price drop.
+    const card = showcase?.gym?.sub_id ?? showcase?.streaming?.sub_id;
+    if (card) setSel({ kind: "sub", id: card });
+    else if (showcase?.price?.finding_id) setSel({ kind: "finding", id: showcase.price.finding_id });
+  }, [sel, ready, showcase]);
 
   // When ClawBack writes something, the pane jumps to its top, where the output is.
   useEffect(() => {
@@ -261,6 +281,10 @@ export default function Dashboard() {
             <label className="btn file-btn">
               Upload a statement
               <input type="file" accept=".csv,.ofx,.qfx" hidden onChange={(e) => { const f = e.target.files?.[0]; setConnectOpen(false); if (f) upload(f); e.target.value = ""; }} />
+            </label>
+            <label className="btn file-btn" title="From the Google Maps app: Settings, then Location or Personal content, then Export Timeline data">
+              Upload Google Maps Timeline
+              <input type="file" accept=".json,application/json" hidden onChange={(e) => { const f = e.target.files?.[0]; setConnectOpen(false); if (f) uploadTimeline(f); e.target.value = ""; }} />
             </label>
           </div>
         </div>
@@ -330,47 +354,24 @@ export default function Dashboard() {
             </p>
           )}
 
-          {!filter && openFindings.length > 0 && (
-            <section className="group owed" id="owed" aria-labelledby="h-owed">
-              <div className="group-head">
-                <h2 id="h-owed">Owed to you <span className="count">{openFindings.length}</span></h2>
-                <span className="group-sum">{money(owed)} to claim</span>
-              </div>
-              <ul className="lines">
-                {openFindings.map((f) => (
-                  <FindingLine key={f.id} f={f} selected={sel?.kind === "finding" && sel.id === f.id} onSelect={() => select("finding", f.id)} />
-                ))}
-              </ul>
-              {closedFindings > 0 && <p className="fine-print after">{closedFindings} more marked done or dismissed.</p>}
-            </section>
+          {!filter && (
+            <Showcase data={showcase} subs={subs} findings={openFindings}
+              onOpen={(kind, id, action) => {
+                select(kind, id);
+                if (kind === "sub" && action === "cancel") openPanel(id, "cancel");
+              }} />
           )}
 
-          {grouped.filter((g) => MAIN.includes(g.key)).map((g) => {
-            const rows = shown(g.rows);
-            if (!rows.length) return null;
-            const cost = rows.reduce((t, s) => t + s.monthly_cost, 0);
-            return (
-              <section key={g.key} className={`group ${g.key}`} id={`g-${g.key}`} aria-labelledby={`h-${g.key}`}>
-                <div className="group-head">
-                  <h2 id={`h-${g.key}`}>{g.title} <span className="count">{rows.length}</span></h2>
-                  <span className="group-sum">{money(cost)} a month</span>
-                </div>
-                <ul className="lines">
-                  {rows.map((s) => (
-                    <SubscriptionLine key={s.id} s={s} selected={sel?.kind === "sub" && sel.id === s.id} onSelect={() => select("sub", s.id)} />
-                  ))}
-                </ul>
-              </section>
-            );
-          })}
-
-          {(rest.length > 0 || (recovered?.events.length ?? 0) > 0) && (
+          {(others.length > 0 || (recovered?.events.length ?? 0) > 0) && (
             <details className="group rest" open={restOpen || !!filter} onToggle={(e) => setRestOpen(e.currentTarget.open)}>
               <summary>
-                <span>Everything else: {restSummary(rest, recovered)}</span>
+                <span>
+                  Everything else: {otherCount} more subscription{otherCount === 1 ? "" : "s"} and bills
+                  {recovered && recovered.events.length > 0 ? `, ${restSummary([], recovered)}` : ""}
+                </span>
                 <Chevron className="chev" />
               </summary>
-              {rest.map((g) => {
+              {others.map((g) => {
                 const rows = shown(g.rows);
                 if (!rows.length) return null;
                 return (
@@ -440,6 +441,7 @@ export default function Dashboard() {
               onNegotiate={() => negotiate(selSub.id)}
               onClosePanel={() => setPanel(null)}
               onCancelled={() => markCancelled(selSub.id)}
+              onSent={() => load()}
             />
           ) : (
             <p className="pane-empty">Pick anything on the list to see what ClawBack found and what it can write for you.</p>

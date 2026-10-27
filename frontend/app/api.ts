@@ -87,6 +87,20 @@ export type Finding = {
   rule: { name: string; summary: string; source_url: string } | null;
   status: "open" | "dismissed" | "done";
   found_on: string;
+  // Price drops: what you paid next to today's price on the store's own site.
+  price_check?: { store: string; item: string; paid: number; paid_on: string; now: number; url: string | null;
+                  how: "live" | "simulated"; checked_on: string } | null;
+};
+
+// GET /api/showcase: the three workflows the dashboard leads with.
+export type PriceWatch = {
+  store: string; item: string; paid: number; paid_on: string; price_now: number; url: string | null;
+  how: "live" | "simulated"; checked_on: string; deadline: string;
+};
+export type Showcase = {
+  gym: { sub_id: string } | null;
+  streaming: { sub_id: string } | null;
+  price: { finding_id: string; watch?: undefined } | { watch: PriceWatch; finding_id?: undefined } | null;
 };
 
 export type ActionPrep = {
@@ -132,6 +146,8 @@ export type CancelPrep = {
   watch_after: string | null; // ClawBack checks the bank for a charge after this date
   // Only when the merchant's own page lists a cancellation address; most don't take email.
   email: { subject: string; body: string; status: string; to?: string | null; written_by?: string | null } | null;
+  // A gym that takes written notice by email: where Send delivers. The server decides; in the demo it's yourself.
+  send?: { to_shown: string; goes_to: string | null; test: boolean; from: string | null; connected: boolean } | null;
   // The user's rights line(s): their state's auto-renewal law when it applies, else federal ROSCA.
   rights?: { scope: "state" | "federal"; state: string | null; text: string; law: string; title: string; source_url: string; checked_on: string }[];
   missing: string[];

@@ -1,0 +1,5 @@
+/* Tailwind for the 3D workflow cards only: its theme and utilities, without its preflight reset, so the rest of the
+   app's CSS (globals.css, DESIGN.md) is unchanged. Layered, so the app's own unlayered rules still win a tie. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);

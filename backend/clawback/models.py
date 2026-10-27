@@ -247,6 +247,9 @@ class Finding(BaseModel):
     confirmed_from: str | None = None
     # Facts the action builder needs (order number, flight, fare...). Not sent to the frontend.
     details: dict = Field(default_factory=dict, exclude=True)
+    # Price drops: what the card shows side by side (store, item, paid, order date, today's price, where and when it
+    # was checked, live or simulated). No order number.
+    price_check: dict | None = None
 
 
 class ActionLink(BaseModel):

@@ -158,7 +158,7 @@ def gym_usage(sub: Subscription, gym: dict, visits: list[date], today: date) -> 
     last = past[-1] if past else None
     if not recent and len(window) < 2:
         since = f"since {last:%b} {last.day}" if last else "in your Google Maps Timeline"
-        lead = f"{(last or today).isoformat()}: no visits to {studio} {since} (Google Maps)"
+        lead = f"{today.isoformat()}: no visits to {studio} {since} (Google Maps)"
         evidence = [lead] + [f"{d.isoformat()}: visit to {studio} (Google Maps)" for d in reversed(past[-3:])]
         return UsageSummary(level="none", strength="strong", evidence=evidence)
     evidence = [f"{d.isoformat()}: visit to {studio} (Google Maps)" for d in reversed(window[-5:] or past[-3:])]
