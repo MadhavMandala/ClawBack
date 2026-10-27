@@ -179,6 +179,8 @@ class FakeNylas:
         self.grant_status = "valid"  # what GET /v3/grants/{id} says; "gone" answers 404
         self.calls: list[tuple[str, str, dict]] = []
         self.deleted: list[str] = []
+        self.sent: list[dict] = []  # payloads of POST /v3/grants/{id}/messages/send
+        self.send_status = 200  # e.g. 403 when the grant lacks gmail.send
 
     def __call__(self, request: httpx.Request) -> httpx.Response | None:
         if request.url.host != "api.us.nylas.com":
@@ -208,6 +210,12 @@ class FakeNylas:
             return httpx.Response(200, json={"request_id": "r", "data": {
                 "id": self.grant_id, "provider": self.provider, "grant_status": self.grant_status,
                 "email": "me@example.com"}})
+        if path == f"/v3/grants/{self.grant_id}/messages/send" and method == "POST":
+            if self.send_status != 200:
+                return httpx.Response(self.send_status, json={"request_id": "r", "error": {
+                    "type": "insufficient_scope", "message": "Request had insufficient authentication scopes."}})
+            self.sent.append(json.loads(request.content))
+            return httpx.Response(200, json={"request_id": "r", "data": {"id": f"sent-{len(self.sent)}"}})
         if path.startswith(f"/v3/grants/{self.grant_id}/messages/") and method == "GET":  # one message
             found = next((m for m in self.messages if m["id"] == path.rsplit("/", 1)[-1]), None)
             if found is None:

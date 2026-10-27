@@ -34,7 +34,7 @@ from .pipeline.recommend import alternatives
 from .pipeline.recovered import history
 from .pipeline.run import best_saving, run, summary
 from .sessions import AddonUserId, UserId, user_scope
-from . import gyms
+from . import gyms, sending
 from .sources import nylas, plaid, timeline
 from .sources.net import SourceError
 from .sources.statements import parse_upload
@@ -353,9 +353,10 @@ def connections_status(user_id: UserId):
 
 
 @app.get("/api/connect/email")
-def email_start(user_id: UserId, login_hint: str | None = None):
-    """Where to send the browser: the Nylas provider picker, then the provider's sign-in. Not configured -> 501."""
-    return {"auth_url": nylas.start_url(user_id, login_hint)}
+def email_start(user_id: UserId, login_hint: str | None = None, purpose: str = "connect"):
+    """Where to send the browser: the Nylas provider picker, then the provider's sign-in. Not configured -> 501.
+    purpose=send (the gym's Send button): the inbox is used only to send, and the demo month stays."""
+    return {"auth_url": nylas.start_url(user_id, login_hint, purpose)}
 
 
 @app.get("/api/connect/email/callback")
@@ -510,6 +511,14 @@ def save_email_draft(user_id: UserId, sub_id: str, text: DraftText | None = None
     403 when the connection can only read. Never sends."""
     t = text or DraftText()
     return drafts.save_cancel_email(user_id, _sub(user_id, sub_id), date.today(), t.subject, t.body, t.to)
+
+
+@app.post("/api/subscriptions/{sub_id}/send-email")
+def send_cancel_email(user_id: UserId, sub_id: str, text: DraftText):
+    """Send the gym cancellation email from the user's own inbox. Only after the user clicked Send (and confirmed).
+    The server picks the recipient: a listed studio in real mode, else the user's own address with "[ClawBack test]".
+    A `to` in the request is ignored."""
+    return sending.send_cancel(user_id, _sub(user_id, sub_id), text.subject, text.body, date.today())
 
 
 @app.post("/api/findings/{finding_id}/email-draft")

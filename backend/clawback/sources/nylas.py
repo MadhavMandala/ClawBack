@@ -108,16 +108,22 @@ def require_config() -> None:
 # --- Hosted OAuth -----------------------------------------------------------------------------------
 
 _states: dict[str, tuple[str, float]] = {}  # state -> (user id, expiry)
+# Why the sign-in was started: "connect" (the Connect menu: read mail, leave the demo) or "send" (the gym's Send
+# button: only send, keep the demo month). Missing means "connect".
+_purposes: dict[str, str] = {}
 _states_lock = threading.Lock()
 
+PURPOSES = ("connect", "send")
 
-def start_url(user_id: str, login_hint: str | None = None) -> str:
+
+def start_url(user_id: str, login_hint: str | None = None, purpose: str = "connect") -> str:
     require_config()
     s = config.settings
     state = secrets.token_urlsafe(32)  # Nylas returns it unchanged (max 256 characters)
     with _states_lock:
         _purge_states()
         _states[state] = (user_id, time.time() + STATE_TTL)
+        _purposes[state] = purpose if purpose in PURPOSES else "connect"
     params = {
         "client_id": s.nylas_client_id,
         "redirect_uri": s.email_redirect_uri,
@@ -140,10 +146,18 @@ def check_state(state: str | None) -> str:
     return entry[0]
 
 
+def state_purpose(state: str | None) -> str:
+    """Why this sign-in was started ("connect" or "send"). Read it before check_state uses the state up."""
+    with _states_lock:
+        return _purposes.get(state or "", "connect")
+
+
 def _purge_states() -> None:
     t = time.time()
     for k in [k for k, (_, exp) in _states.items() if exp < t]:
         del _states[k]
+    for k in [k for k in _purposes if k not in _states]:
+        del _purposes[k]
 
 
 def finish_connect(user_id: str, code: str) -> EmailConnection:
@@ -521,6 +535,42 @@ def create_draft(user_id: str, conn: EmailConnection, subject: str, body: str, t
             raise EmailError("Your email provider didn't confirm the draft. Check your Drafts folder before you "
                              "try again.")
         raise EmailError(f"Couldn't save the draft: {reason or f'HTTP {r.status_code}'}")
+
+
+# --- Sending (only after the user's click; see sending.py) -------------------------------------------
+
+NEEDS_SEND_PERMISSION = "Reconnect email to allow sending."
+
+
+class SendNotAllowed(EmailError):
+    """The provider refused to send because the grant lacks the send permission (Google: gmail.send)."""
+
+
+def send_message(user_id: str, conn: EmailConnection, to: str, subject: str, body: str) -> str:
+    """Send one plain-text email from the user's own mailbox and return the message id. Callers decide the recipient;
+    this only checks it is one address. POST /v3/grants/{id}/messages/send (Google needs the gmail.send scope)."""
+    require_config()
+    if conn.needs_reconnect:
+        raise EmailExpired(conn.error or EXPIRED, status=401)
+    if not is_address(to):
+        raise EmailError("That isn't a single email address.", status=400)
+    payload = {"to": [{"email": to.strip()}], "subject": subject.strip()[:300], "body": body, "is_plaintext": True}
+    with net.client() as c, timed(user_id, "email: send", ENGINE) as info:
+        r = _call(c, "POST", f"/v3/grants/{quote(conn.grant_id, safe='')}/messages/send", retry_server_errors=False,
+                  json=payload)
+        data = net.json_or_empty(r)
+        msg_id = (data.get("data") or {}).get("id") if isinstance(data.get("data"), dict) else None
+        if r.is_success and msg_id:
+            info["note"] = f"sent from {provider_name(conn.provider)} after the user clicked Send"
+            return str(msg_id)
+        reason = _reason(r, data)
+        if r.status_code == 403 or (r.status_code in (400, 401) and _PERMISSION_WORDS.search(reason or "")):
+            raise SendNotAllowed(NEEDS_SEND_PERMISSION, status=403, code="insufficient_scope")
+        if r.status_code in (401, 404):
+            raise EmailExpired(f"{EXPIRED} (Nylas: {reason})" if reason else EXPIRED, status=401, code="grant_invalid")
+        if r.status_code == 429:
+            raise EmailError("The email provider is limiting requests right now. Try again in a minute.")
+        raise EmailError("Your email provider didn't confirm the send. Check your Sent folder before you try again.")
 
 
 # --- Still MISSING ----------------------------------------------------------------------------------
