@@ -123,6 +123,7 @@ def _pull_email(user_id: str) -> int:
     if conn is None:
         raise EmailError("No email account is connected.", status=400)
     if conn.send_only:
+        store.mark_warm(user_id)  # nothing to read, so nothing to wait for
         return 0  # connected only to send: its mail is never read
     try:
         emails = nylas.fetch_emails(user_id, conn)
@@ -282,8 +283,8 @@ def ensure_fresh(user_id: str) -> dict | None:
     if not store.is_cold(user_id):
         return None
     conn = connections.get(user_id).email
-    if store.user(user_id).mode != "real" or conn is None or conn.needs_reconnect:
-        store.mark_warm(user_id)
+    if store.user(user_id).mode != "real" or conn is None or conn.needs_reconnect or conn.send_only:
+        store.mark_warm(user_id)  # a send-only inbox is never read, so there's no mail to wait for
         return None
     if not store.retry_due(user_id):
         return {"ok": False, "error": "The mail will be read again in a few minutes."}
@@ -307,8 +308,8 @@ def _rerun_and_alert(user_id: str, before: set[str]) -> int:
 def on_new_message(user_id: str, grant_id: str, message_id: str | None) -> str:
     """Nylas says a message arrived: read it and, if it may be about money, re-run the pipeline. Never raises."""
     conn = connections.get(user_id).email
-    if conn is None or conn.grant_id != grant_id or store.user(user_id).mode != "real":
-        return "ignored"
+    if conn is None or conn.grant_id != grant_id or store.user(user_id).mode != "real" or conn.send_only:
+        return "ignored"  # a send-only inbox is never read, webhooks included
     before = set(alerts.keys(store.user(user_id)))
     if store.is_cold(user_id):
         ensure_fresh(user_id)  # reads every recent message, this one included

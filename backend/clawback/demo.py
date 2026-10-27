@@ -10,17 +10,19 @@ from __future__ import annotations
 
 import copy
 import threading
+import time
 from datetime import date
 
 from . import demo_data, llm
 from .findings import rulebook
+from .tools import prices
 from .pipeline.run import run, summary
 from .store import UserData, store
 
 TEMPLATE_USER = "_demo"  # "_" ids are system users: never a session, exempt from the per-session model cap
 
 _lock = threading.Lock()
-_template: tuple[tuple, UserData] | None = None
+_template: tuple[tuple, UserData, float] | None = None
 
 
 def _build(today: date) -> UserData:
@@ -38,12 +40,22 @@ def _build(today: date) -> UserData:
     return data
 
 
+def _price_came_out_simulated(data: UserData) -> bool:
+    return any(f.kind == "price_drop" and (f.price_check or {}).get("how") == "simulated"
+               for f in data.findings.values())
+
+
 def template(today: date) -> UserData:
+    """Built once a day. If the live price check failed and the demo fell back to a simulated price, it is rebuilt
+    after prices.RETRY_FAILED, so one search hiccup doesn't leave every visitor with a simulated price all day."""
     global _template
     key = (today, llm.available())
+    now = time.monotonic()
     with _lock:
-        if _template is None or _template[0] != key:
-            _template = (key, _build(today))
+        stale = _template is not None and _template[0] == key and _price_came_out_simulated(_template[1]) \
+            and prices.live_available() and now - _template[2] >= prices.RETRY_FAILED
+        if _template is None or _template[0] != key or stale:
+            _template = (key, _build(today), now)
         return _template[1]
 
 

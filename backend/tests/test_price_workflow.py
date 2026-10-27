@@ -66,3 +66,29 @@ def test_api_shows_the_price_check_but_not_the_private_details(client):
     pc = drop["price_check"]
     assert (pc["store"], pc["paid"], pc["how"]) == ("Best Buy", 249.0, "simulated") and pc["item"] == "Apple AirPods Pro 2"
     assert "details" not in drop and "order_number" not in pc
+
+
+def test_a_failed_live_check_is_retried_after_ten_minutes(monkeypatch):
+    clock = {"t": 1000.0}
+    monkeypatch.setattr(prices.time, "monotonic", lambda: clock["t"])
+    monkeypatch.setattr(prices, "live_available", lambda: True)
+    answers = [None, PriceCheck(price=164.99, how="live", url=URL)]
+    monkeypatch.setattr(prices, "_live_price", lambda *a, **k: answers.pop(0))
+    prices._checked.clear()
+    assert prices.live_price("u", "Best Buy", "Apple AirPods Pro 2", "bestbuy.com") is None
+    assert prices.live_price("u", "Best Buy", "Apple AirPods Pro 2", "bestbuy.com") is None  # still cached
+    clock["t"] += 11 * 60
+    assert prices.live_price("u", "Best Buy", "Apple AirPods Pro 2", "bestbuy.com").price == 164.99
+
+
+def test_demo_rebuilds_when_its_price_came_out_simulated(monkeypatch):
+    clock = {"t": 1000.0}
+    monkeypatch.setattr(demo.time, "monotonic", lambda: clock["t"])
+    monkeypatch.setattr(prices, "live_available", lambda: True)
+    live = {"ok": False}
+    monkeypatch.setattr(prices, "live_price",
+                        lambda *a, **k: PriceCheck(price=164.99, how="live", url=URL) if live["ok"] else None)
+    assert _airpods(demo.template(TODAY)).price_check["how"] == "simulated"
+    live["ok"] = True
+    clock["t"] += 11 * 60
+    assert _airpods(demo.template(TODAY)).price_check["how"] == "live"

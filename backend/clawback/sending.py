@@ -58,7 +58,12 @@ def send_cancel(user_id: str, sub: Subscription, subject: str | None, body: str 
     if p["test"]:
         subject = TEST_PREFIX + subject
     body = body.replace(PLACEHOLDER, conn.account or PLACEHOLDER)
-    message_id = nylas.send_message(user_id, conn, p["goes_to"], subject, body)
+    try:
+        message_id = nylas.send_message(user_id, conn, p["goes_to"], subject, body)
+    except nylas.EmailExpired:
+        conn.needs_reconnect = True  # so the panel and the Connect menu offer a new sign-in
+        connections.set_email(user_id, conn)
+        raise
 
     u = store.user(user_id)
     u.cancel_pending[sub.id] = today
