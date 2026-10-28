@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Logo } from "./icons";
+import ThemeToggle from "./ThemeToggle";
 
-// The bar along the top of both pages. Each page passes its own controls for the right-hand end.
+// The bar along the top of every page. Each page passes its own controls for the right-hand end, after the
+// light/dark toggle.
 export default function SiteNav({ current, children }: { current?: "home" | "dashboard" | "settings" | "built"; children?: React.ReactNode }) {
   return (
     <header className="site-nav">
@@ -13,7 +15,7 @@ export default function SiteNav({ current, children }: { current?: "home" | "das
           <Link href="/dashboard" aria-current={current === "dashboard" ? "page" : undefined}>Dashboard</Link>
           <Link href="/settings" aria-current={current === "settings" ? "page" : undefined}>Your data</Link>
         </nav>
-        {children && <div className="nav-end">{children}</div>}
+        <div className="nav-end"><ThemeToggle />{children}</div>
       </div>
     </header>
   );

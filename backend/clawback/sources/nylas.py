@@ -546,22 +546,24 @@ class SendNotAllowed(EmailError):
     """The provider refused to send because the grant lacks the send permission (Google: gmail.send)."""
 
 
-def send_message(user_id: str, conn: EmailConnection, to: str, subject: str, body: str) -> str:
-    """Send one plain-text email from the user's own mailbox and return the message id. Callers decide the recipient;
-    this only checks it is one address. POST /v3/grants/{id}/messages/send (Google needs the gmail.send scope)."""
+def send_message(user_id: str, conn: EmailConnection, to: str, subject: str, body: str, *, html: bool = False,
+                 why: str = "after the user clicked Send") -> str:
+    """Send one email from the user's own mailbox and return the message id. Plain text unless `html` (the monthly
+    recap). Callers decide the recipient; this only checks it is one address. `why` goes in the trace note.
+    POST /v3/grants/{id}/messages/send (Google needs the gmail.send scope)."""
     require_config()
     if conn.needs_reconnect:
         raise EmailExpired(conn.error or EXPIRED, status=401)
     if not is_address(to):
         raise EmailError("That isn't a single email address.", status=400)
-    payload = {"to": [{"email": to.strip()}], "subject": subject.strip()[:300], "body": body, "is_plaintext": True}
+    payload = {"to": [{"email": to.strip()}], "subject": subject.strip()[:300], "body": body, "is_plaintext": not html}
     with net.client() as c, timed(user_id, "email: send", ENGINE) as info:
         r = _call(c, "POST", f"/v3/grants/{quote(conn.grant_id, safe='')}/messages/send", retry_server_errors=False,
                   json=payload)
         data = net.json_or_empty(r)
         msg_id = (data.get("data") or {}).get("id") if isinstance(data.get("data"), dict) else None
         if r.is_success and msg_id:
-            info["note"] = f"sent from {provider_name(conn.provider)} after the user clicked Send"
+            info["note"] = f"sent from {provider_name(conn.provider)} {why}"
             return str(msg_id)
         reason = _reason(r, data)
         if r.status_code == 403 or (r.status_code in (400, 401) and _PERMISSION_WORDS.search(reason or "")):

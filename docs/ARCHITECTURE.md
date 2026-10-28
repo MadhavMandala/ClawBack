@@ -475,8 +475,9 @@ native app keeps the id in secure storage and sends the same header.
 
 ## 12. Security and privacy
 
-- Email is read-only, plus drafts when the person allows them. ClawBack sends one email, a gym cancellation, only when the
-  person clicks Send and confirms; the server picks the recipient (in the demo, the person's own address).
+- Email is read-only, plus drafts when the person allows them. ClawBack sends two emails, both from the person's own
+  inbox: a gym cancellation, only when they click Send and confirm (the server picks the recipient; in the demo, the
+  person's own address), and the monthly recap (`recap.py`), only to their own address and only if they turn it on.
 - Mail passes through Nylas, a third-party processor; `docs/PRIVACY.md` says so. A paid Nylas plan is still
   [MISSING: nylas-production].
 - Store extracted facts, not raw email bodies. Real email text is never written to disk or the trace; only the fake

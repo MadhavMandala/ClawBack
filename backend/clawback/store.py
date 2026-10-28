@@ -107,6 +107,11 @@ class UserData:
     bank_accounts: dict[str, BankAccount] = field(default_factory=dict)
     # The user's US state (two-letter code, e.g. "CA"), for state auto-renewal rules. None = not told us.
     state: str | None = None
+    # The monthly recap email (recap.py): off until the user turns it on. recap_sent is the last month the nightly
+    # job recapped ("2026-10"), so each month goes out once; turning it on sets it to last month, so the first recap
+    # is the next whole month.
+    recap_monthly: bool = False
+    recap_sent: str | None = None
 
 
 # --- Serialization ---------------------------------------------------------------------------------
