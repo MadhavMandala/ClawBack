@@ -1,20 +1,8 @@
 # ClawBack: project write-up
 
-Draft for the submission page. Placeholders in `[brackets]` get filled in before submitting:
-- `[EVAL: ...]` comes from `docs/EVAL.md`, the synthetic test set. Never write a number there that `docs/EVAL.md`
-  doesn't show.
-- `[DEMO URL]`, `[VIDEO URL]` and `[REPO URL]` come after the deploy.
-- `[TEAM: ...]` is a decision for the team.
-
-It is written for the finished build. These statements depend on work landing after the merge; check each one
-before submitting, and cut it if the work didn't land:
-- per-visitor sessions with no login;
-- SQLite storage and encrypted tokens;
-- the injection screen on email text;
-- the cancel page checked to be on the merchant's own site, and cached per merchant;
-- letters and emails saved as Nylas drafts;
-- the nightly job;
-- the backend running on Nebius AI Cloud.
+Draft for the submission page. Before submitting, fill the three links below (after the deploy and the video
+upload), and check the Nebius AI Cloud line under "The rest of the stack" against the actual deploy. Numbers come
+from `docs/EVAL.md` or the live app.
 
 **Track:** Best Apps and Agents.
 
@@ -26,47 +14,50 @@ before submitting, and cut it if the work didn't land:
 
 ## Inspiration
 
-Small amounts of money leave most people's accounts every month without a decision behind them. A streaming
-service nobody has opened since spring. A delivery membership that costs more than it saves. An internet bill that
-jumped when a promotional rate ended. An overdraft fee a bank would reverse if asked. A store price drop, inside
-the refund window. A class-action settlement for something already bought.
+Small amounts of money leave most people's accounts every month without a decision behind them. A gym membership
+nobody has used since summer. A streaming service whose price went up while nobody was watching. A purchase that
+got cheaper a week after checkout, still inside the store's price adjustment window.
 
 Each one is worth a few dollars to a few hundred. None of them feels worth an evening of reading statements,
 policies and fine print. So the money stays where it is.
 
-The evidence is already in two places people own: the bank statement and the inbox. The statement shows what you
-pay. The inbox shows what you use: order receipts, "we miss you" emails, renewal notices, trial reminders, flight
-changes. We wanted an agent that reads both, works out where money is slipping away, and does the paperwork to get
-it back, while leaving the last click to the person.
+The evidence is already in places people own. The bank statement shows what you pay. The inbox shows what you use:
+order receipts, "we miss you" emails, price-change notices. Google Maps Timeline knows whether you still go to the
+gym you pay for. We wanted an agent that reads all three, works out where money is slipping away, and does the next
+step to get it back, while leaving the last click to the person.
 
 ## What it does
 
-ClawBack connects to your bank (through Plaid) and your email, from any provider (through Nylas). It finds money in
-five places:
+ClawBack connects to your bank (through Plaid, or a statement upload), your email from any provider (through
+Nylas), and your Google Maps Timeline export. The dashboard leads with three jobs, and does each one start to finish:
 
-| Area | What ClawBack finds | What it prepares |
+| Job | What ClawBack finds | What it does next |
 |---|---|---|
-| Subscriptions | Services you've stopped using, memberships that lose money, two plans doing one job, trials about to convert, prices that crept up | The merchant's own cancel page and a reminder before the next charge, or a cheaper plan that fits how you use it |
-| Bills | Internet, phone and insurance that went up, often when a promotion ended | A negotiation script with what you paid before |
-| Bank charges | The same charge twice; overdraft, ATM and foreign transaction fees | A dispute letter with its deadline, or a polite request to reverse the fee |
-| Refunds owed | Price drops inside a store's adjustment window; cancelled or heavily changed flights | A claim citing the store's policy, or the US Department of Transportation refund rule, or EU261 / UK261 |
-| Settlements | Open class-action settlements that match your purchases | The official claim link and the proof it asks for |
+| A gym you stopped going to | The monthly charge, and your Timeline visits near the studio: no visit in 30 days and fewer than two in 60 | Nemotron 3 Ultra writes the cancellation email with the notice the gym asks for. ClawBack sends it from your own inbox when you click Send, then watches your bank for the next charge |
+| Streaming you don't watch | A "we miss you" email from the service, and a price that went up | One button to the service's own cancel page (netflix.com/cancelplan for Netflix), a calendar reminder before the next charge, and a bank check afterwards |
+| A purchase that got cheaper | What you paid, from the bank charge and the order email, against today's price on the store's own site | Nemotron 3 Ultra writes the message asking for the difference, citing the store's adjustment window and deadline, with a phone script |
 
-**ClawBack never cancels, pays, disputes or files anything itself, and it sends only one thing: a gym cancellation
-email, when you click Send.** Everything else it prepares, and the person makes the final click. Letters, and cancellation emails for merchants that take them, can be saved as
-drafts in the person's own mailbox, ready to send.
+**ClawBack never cancels, pays or files anything itself, and it sends only one thing: the gym cancellation email,
+after you click Send and confirm.** In the demo, Send delivers to your own inbox with "[ClawBack test]" in the
+subject, so the demo never emails a real business.
+
+Behind those three, the same pipeline finds more, and each detector is built and tested: memberships that cost more
+than they save, two plans doing one job, trials about to convert, bills that jumped after a promotion, duplicate
+charges, bank fees, cancelled flights and open class-action settlements. The dashboard lists the other
+subscriptions and bills under "Everything else". We kept the rest off the dashboard so the three jobs stay clear.
 
 Every finding shows its working: the charges and emails it relied on, the rule behind it, and a link to that rule's
 official source. Every step the agent takes is logged with the model it used, the time, the tokens and the cost, and
 the dashboard shows that log.
 
-An example, from the demo month:
-- "DashPass cost $9.99 this month. One order saved you $2.99. Net, it cost you $7.00."
-- "Hulu sent a 'we miss you' email. It still costs $9.99 a month." Help me cancel: one button to the cancel page on
-  Hulu's own site, a calendar reminder before the next charge, and a bank check afterwards that the charge stopped.
-  Hulu doesn't take cancellations by email, so ClawBack doesn't write one.
-- "Best Buy charged $129.99 twice. Your email shows one order." A dispute letter with the deadline, written by
-  Nemotron 3 Ultra and saved as a draft.
+From the demo month:
+- "Orangetheory Fitness, $169.00 a month. No visits to Orangetheory Edison since late August (Google Maps)." The
+  studio takes 30 days' written notice by email, so Nemotron 3 Ultra writes it and Send delivers it from the
+  person's own inbox.
+- "Netflix went from $15.49 to $17.99, then emailed 'we miss you.'" One button to netflix.com/cancelplan and a
+  reminder before the next charge. Netflix doesn't take cancellations by email, so ClawBack doesn't write one.
+- "You paid $249.00 for Apple AirPods Pro 2. Today bestbuy.com says $164.99" (checked live on Oct 27). Best Buy
+  adjusts prices for 15 days, so Ultra writes the request for the $84.01 difference, with the deadline.
 
 ## How we built it
 
@@ -75,7 +66,8 @@ An example, from the demo month:
 ```
 bank (Plaid) ─┐
               ├─> rules (code) ─> Nemotron 3.5 Lightning ─> code: usage, value, flags, findings
-email (Nylas) ┘                   reads each email once
+email (Nylas) ┘                   reads each email once            ^
+Google Maps Timeline (upload) ─> code: visit dates near known gyms ┘
 
 on a click:  Tavily ─> Nemotron 3 Super ─> Nemotron 3 Ultra ─> code checks ─> a prepared action
              finds     reads plan pages    fits plans to usage,   links and     the person sends it
@@ -84,7 +76,8 @@ on a click:  Tavily ─> Nemotron 3 Super ─> Nemotron 3 Ultra ─> code checks
 
 1. **Data in.** Plaid Link and `/transactions/sync` pull 180 days of bank transactions. Nylas Hosted OAuth connects
    Gmail, Outlook, Yahoo, iCloud and other inboxes, and reads up to 150 subscription-like messages from 180 days. A
-   statement CSV works too.
+   statement CSV works too. A Google Maps Timeline export is parsed in code (Google offers no location API any more),
+   and only the dates of visits near a gym on ClawBack's checked list are kept.
 2. **Rules first.** Code finds recurring charges (steady cadence, steady amount) and matches bills to known
    providers. Sender and keyword rules set aside email that can't matter. Most email stops here, at no model cost.
 3. **Lightning reads.** Nemotron 3.5 Lightning reads each email that passes the rules into facts: the kind of
@@ -97,7 +90,10 @@ on a click:  Tavily ─> Nemotron 3 Super ─> Nemotron 3 Ultra ─> code checks
    reads the pages into a list of plans, and Nemotron 3 Ultra, with thinking on, picks the ones that fit how the
    person uses the service. "Help me cancel": Tavily finds the cancel page, and once code has checked it, it
    becomes the panel's one button. Nemotron 3 Ultra writes the dispute and refund letters, the bill negotiation
-   script, and a cancellation email when the merchant's own page says it takes one.
+   script, and a cancellation email when the merchant's own page says it takes one. For a gym on ClawBack's
+   checked list that takes notice by email, Ultra writes the email and ClawBack sends it after the person's click.
+   For a price drop, Tavily searches the store's own site and code accepts a price only if it is written on that
+   page.
 6. **Code checks the output.** Options that don't cite a page Tavily returned are dropped. A cancel page is shown
    only if it is on the merchant's own site. A letter or email is used only if it has no links and no numbers that
    aren't in the facts.
@@ -117,7 +113,7 @@ has one job, and the big models run only when a person asks for something.
 | fast fallback | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | The same, when Lightning fails | Only on failure | 0.06 / 0.24 |
 | mid | `nvidia/nemotron-3-super-120b-a12b` | Reads plan and pricing pages into a plan list | "Find a cheaper option" | 0.30 / 0.90 |
 | reason | `nvidia/Nemotron-3-Ultra-550b-a55b` | Fits plans to usage (thinking on); writes letters, scripts and cancellation emails | When the person clicks | 1.00 / 3.00 |
-| vision | `nvidia/Nemotron-3.5-Super-VL` | Receipts sent as images and PDFs | Planned | 0.30 / 0.90 |
+| vision | `nvidia/Nemotron-3.5-Super-VL` | Reads receipt images attached to order emails | Image attachments (built and run live on made-up receipts; the demo month has none) | 0.30 / 0.90 |
 
 Why this split:
 - **Lightning for volume.** Reading email is most of the work, so it goes to the cheapest, fastest tier. Ultra costs
@@ -151,6 +147,8 @@ list of checked pages, never from a model.
 - **Zero Data Retention** is on for the team's Token Factory organization, so prompts and answers aren't kept.
 - **The person makes the final click.** ClawBack sends one email (a gym cancellation) only after a click and a
   confirm, and in the demo only to the person's own address. It never cancels, pays or files anything.
+- **Gym visits, not location history.** From a Timeline export, ClawBack keeps only the dates of visits near gyms on
+  its list. Nothing else from the file is stored.
 - **Facts, not email.** The database keeps facts pulled out of email, never email text. Saved bank and email tokens
   are encrypted.
 - **Rules with sources.** Only rules rows marked verified can raise a finding, and each finding links to the rule's
@@ -160,7 +158,8 @@ list of checked pages, never from a model.
 
 ### The rest of the stack
 
-- Backend: Python, FastAPI, SQLite. It runs on a CPU virtual machine on Nebius AI Cloud, behind Caddy for HTTPS.
+- Backend: Python, FastAPI, SQLite. It deploys to a CPU virtual machine on Nebius AI Cloud, behind Caddy for HTTPS
+  (`docs/DEPLOY.md`).
 - Frontend: Next.js on Vercel.
 - Email: Nylas v3, from any provider. Bank: Plaid (Sandbox).
 - Each visitor to the demo gets their own session, with no login.
@@ -184,7 +183,8 @@ Measured on the synthetic test sets (`docs/EVAL.md`):
 
 - About 9 in 10 test emails reached a model, because the test inboxes are almost all billing mail. A real inbox has
   far more mail that the free rules set aside.
-- One "find a cheaper option" click (Tavily, Super, Ultra) cost about $0.004 in a live run on Hulu.
+- One "find a cheaper option" click (Tavily, Super, Ultra) cost about $0.004 in a live run on a streaming
+  subscription.
 
 ## How we tested it
 
@@ -202,7 +202,7 @@ Measured on the synthetic test sets (`docs/EVAL.md`):
 - Every failure on the first set is published in `docs/EVAL.md`. What's left is mostly utility bills that vary a lot,
   Apple-billed apps with no receipt in the inbox, newsletters read as usage, and low-confidence flight hints. The
   held-out set's item-by-item failures stay out of the page, so it stays held out.
-- 691 offline tests cover every detector, the model fallbacks, the citation and email checks, sessions and storage,
+- 829 offline tests cover every detector, the model fallbacks, the citation and email checks, sessions and storage,
   the webhooks, and the email and bank connections against fake APIs. Live checks call each Nemotron tier on demand.
 
 ## Challenges we ran into
@@ -212,6 +212,8 @@ Measured on the synthetic test sets (`docs/EVAL.md`):
   that tier, with a guard in code.
 - **Probing what Token Factory supports.** Strict JSON schemas and the thinking switch work on all five models, but
   we had to test each one to find out.
+- **No location API.** Google no longer offers an API for location history, so ClawBack reads the Timeline export a
+  person downloads from their phone, and throws away everything except gym visit dates.
 - **Rules that are right.** Every store, airline and card has its own window and its own fine print. We turned them
   into rules data with an official source for each row, and kept the date math in code.
 - **Not doing the last step.** Cancelling for people would need their passwords and could cancel the wrong thing.
@@ -236,13 +238,16 @@ and the date math got the most care.
 ## Limitations
 
 - The demo connects **Plaid's test banks only**. Real banks need Plaid's production approval.
-- Email runs on the **Nylas Sandbox**, which allows 5 connected inboxes in total. `[TEAM: say whether judges should
-  connect their own inbox, or use the demo month.]`
+- Email runs on the **Nylas Sandbox**, which allows 5 connected inboxes in total. Judges don't need to connect one:
+  the demo month is preloaded. Connecting a Gmail inbox from the gym panel shows Send working, to your own address.
+- **One gym is on the checked list**, the demo studio. A real Timeline upload only counts visits to gyms on that
+  list, so today the gym job runs on the demo month.
 - The test set is **synthetic**. Real inboxes will be messier.
 - Settlement matching is by merchant name, so it can match a settlement about a different product from the same
   company.
 - Dispute deadlines are estimated: the card's real statement date isn't known.
-- Price-drop checks are simulated in the demo month, and labelled so.
+- The demo's price check is live on bestbuy.com. If the search fails, the card falls back to a simulated price and
+  says so, and ClawBack tries again after 10 minutes.
 - "Recovered" is what the person says came back. Nothing checks it against the bank yet.
 - US-first: US rules, US dollars, English only.
 
@@ -250,7 +255,8 @@ and the date math got the most care.
 
 - Plaid production and OAuth banks, so real people can connect real accounts.
 - Nylas production and Google's verification for Gmail.
-- Nemotron 3.5 Super-VL for receipts sent as images and PDFs.
+- A gym lookup that adds any studio, with its address and how it takes cancellations, to the checked list.
+- Testing Nemotron 3.5 Super-VL on real receipt images from connected inboxes.
 - Checking that a cancelled charge really stopped, from the next statement.
 - State auto-renewal rules in requests, such as New York's partial refund after an unconsented price increase.
 - A trained email filter, once volume makes it cheaper than Lightning.
@@ -258,7 +264,7 @@ and the date math got the most care.
 ## Built with
 
 NVIDIA Nemotron 3.5 Lightning, NVIDIA Nemotron 3 Nano, NVIDIA Nemotron 3 Super, NVIDIA Nemotron 3 Ultra, Nebius
-Token Factory, Nebius AI Cloud, Tavily, Nylas, Plaid, Python, FastAPI, SQLite, Next.js, React, TypeScript, Vercel,
+Token Factory, Nebius AI Cloud, Tavily, Nylas, Plaid, Google Maps Timeline (export), Python, FastAPI, SQLite, Next.js, React, TypeScript, Vercel,
 Caddy.
 
 ## Made during the hackathon
@@ -272,6 +278,14 @@ See `docs/token-factory-feedback.md`.
 ## Trying the demo
 
 - Open `[DEMO URL]`. There is no login. Each browser gets its own session with a made-up demo month.
-- **Connect bank:** pick a test bank in the Plaid window and sign in with `user_good` / `pass_good`.
-- **Connect email:** `[TEAM: as decided above.]`
+- The three cards are the three jobs:
+  - **Write and send the email** on the gym card shows the Timeline evidence and the email Nemotron 3 Ultra wrote.
+    To send it, click **Connect email to send** and sign in with a Gmail account. The email goes to that same
+    address, marked "[ClawBack test]".
+  - **Cancel on Netflix** opens the panel with Netflix's own cancel page and a reminder.
+  - **See the purchase and ask** compares what you paid with today's price, and **Claim the difference** writes the
+    request.
+- **How ClawBack worked this out**, at the bottom of the dashboard, lists every step with its model, tokens and cost.
+- **Connect bank** is optional: pick a test bank in the Plaid window and sign in with `user_good` / `pass_good`.
+  Connecting a real source replaces the demo month.
 - **Reset demo data** reloads the demo month at any time.

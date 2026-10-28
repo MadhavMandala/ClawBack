@@ -31,15 +31,17 @@ in `backend/clawback/llm.py` maps each job to a model.
    carries a "JSON mode" tag. The thinking switch, `extra_body={"chat_template_kwargs": {"enable_thinking": ...}}`,
    works too, but it isn't in the API reference. We found both by testing each model. One table per model of
    supported options (JSON schema, thinking switch, `reasoning_effort`, tools) would save every team that probe.
-   **[confirm]** We never tried `reasoning_effort`, so we don't know how it maps onto Nemotron's thinking.
+   We didn't try `reasoning_effort`, so we can't say how it maps onto Nemotron's thinking.
 2. **Document the thinking default.** Thinking is on by default for Nemotron 3. A caller who sets a small
    `max_tokens` for a short JSON answer can lose the whole budget to reasoning. Stating the default on each model
    page, next to the switch, would prevent that.
-3. **Report reasoning tokens and cached tokens clearly.** We read `usage.completion_tokens_details.reasoning_tokens`
-   to show what thinking cost. **[confirm]** whether Token Factory fills that field for Super, Ultra and Super-VL,
-   and whether reasoning tokens bill at the output price. The catalog lists cached-input prices for Super and Ultra,
-   but we found no field saying how many input tokens were cached, so our cost log charges every input token at the
-   full price. **[confirm]**
+3. **Document the token fields, and which models cache.** Token Factory fills the standard OpenAI fields. In a live
+   check on 2026-10-28, `usage.completion_tokens_details.reasoning_tokens` came back on Super, Ultra and Super-VL,
+   counted inside `completion_tokens`. `usage.prompt_tokens_details.cached_tokens` showed 1,424 of 1,441 input
+   tokens cached when we repeated a Super prompt, but 0 on the same repeat for Ultra and Super-VL, though the
+   catalog lists a cached-input price for Ultra. We learned all of this by probing. The docs could say that these
+   fields are filled, which models cache input and when, and whether reasoning tokens bill at the output price.
+   (Our own cost log doesn't read the cached field yet, so it charges every input token at the full price.)
 4. **Publish typical latency and retry advice.** The OpenAI SDK retries twice by default. With Ultra thinking, one
    click could then wait for minutes. We turned SDK retries off and do one retry of our own on 429 and 5xx, and none
    on timeouts, with per-tier timeouts of 20 s (Lightning, Nano), 60 s (Super, Super-VL) and 90 s (Ultra). Typical
@@ -55,8 +57,9 @@ in `backend/clawback/llm.py` maps each job to a model.
    header, or a field on `/v1/models`, would make that possible.
 8. **A Nemotron guard model.** Google's rules for Gmail data ask for protection against prompt injection. There is no
    NVIDIA safety or guard model on Token Factory to build that screen on. A hosted Nemotron guard model would fit
-   that need directly. **[confirm]** how our screen ended up being built, and adjust this item. There is also no
-   NVIDIA embedding model; the only embedding model is `Qwen/Qwen3-Embedding-8B`.
+   that need directly. We built ours in two steps: rules first (instruction-like phrases, hidden characters, hidden
+   HTML), then Nemotron 3.5 Lightning answering yes or no on borderline emails. A guard model would replace the
+   second step. There is also no NVIDIA embedding model; the only embedding model is `Qwen/Qwen3-Embedding-8B`.
 9. **Fine-tuning for Nemotron.** Fine-tuning covers Qwen, Llama, gpt-oss and Gemma, not Nemotron. We'd have liked to
    train Lightning or Nano on labels from Ultra for our email filter, and keep the whole pipeline on Nemotron.
 
@@ -74,8 +77,10 @@ Retention for user email. The gaps above cost us probing time, not features.
 - Nemotron 3.5 Lightning reads every email that passes our rules into facts, with thinking off.
 - Nemotron 3 Nano is Lightning's backup.
 - Nemotron 3 Super reads plan and pricing pages into a list of plans.
-- Nemotron 3 Ultra fits those plans to how a person uses a service (thinking on), and writes cancellation emails.
-- Nemotron 3.5 Super-VL answered our live text check; reading receipt images is planned.
+- Nemotron 3 Ultra fits those plans to how a person uses a service (thinking on), and writes the gym cancellation
+  email and the price-drop request.
+- Nemotron 3.5 Super-VL reads receipt images attached to order emails. It ran live on made-up receipts; no real
+  inbox has sent one through it yet.
 
 **What worked.**
 - Lightning is fast and cheap enough to run on every email (timings in the running notes).
@@ -144,6 +149,12 @@ and the nightly job, behind Caddy for HTTPS.
 - **Merchant names come back "as written"** ("Chipotle" for a DoorDash order, "Duolingo" for Super Duolingo).
   That's reasonable, but it means app code must map names to its own catalog. We do that in code.
 - The `/v1/models` listing matches the public catalog's IDs exactly, which made setup easy.
+
+### 2026-10-28: token fields
+
+- One short prompt per model with thinking on, sent twice. Super, Ultra and Super-VL all filled
+  `completion_tokens_details.reasoning_tokens`, inside `completion_tokens`, and all returned `reasoning_content`.
+- Only Super reported cached input on the repeat (1,424 of 1,441 tokens). Ultra and Super-VL reported 0.
 
 ### 2026-10-23: planning the deploy
 

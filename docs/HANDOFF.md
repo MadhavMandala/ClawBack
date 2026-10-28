@@ -16,7 +16,6 @@ Submissions close **Fri Oct 30, 10:00 am PT**. Most urgent first.
 - [ ] Delete the `!backend/.env` line from `.gitignore`, then run `git rm --cached backend/.env`.
 - [ ] Remove the file from history with `git filter-repo`, or publish a fresh repo with squashed history.
 - [ ] Make the repo public. Check the MIT license shows in the GitHub About box.
-- [ ] Delete the README's last line, "The repo is private for now."
 
 ## 3. Deploy (a working demo link is required)
 
@@ -40,15 +39,16 @@ Submissions close **Fri Oct 30, 10:00 am PT**. Most urgent first.
 
 ## 5. Write-ups
 
-- [ ] [WRITEUP.md](WRITEUP.md) (the Devpost text):
-  - fill the placeholders: the demo, video and repo links and the `[TEAM: ...]` lines;
-  - delete the preamble at the top;
-  - add the Google Maps Timeline gym workflow, and say Netflix instead of Hulu;
-  - remove "backend running on Nebius AI Cloud" unless the deploy ends up there.
-- [ ] [token-factory-feedback.md](token-factory-feedback.md): fill its `[confirm]` items. The feedback is required,
-      judged, and counts toward the feedback prize.
-- [ ] README: add a "Try it" section at the top with the demo link, and lead with the three workflows.
-- [ ] Make the docs agree on the vision model (Nemotron 3.5 Super-VL). Some say "planned", others say "used".
+Done on Oct 28: WRITEUP.md, the README and the feedback doc now describe the three workflows (gym with Google Maps
+Timeline, Netflix, Best Buy), the vision model is described the same way everywhere, and the factual `[confirm]`
+items are filled. What's left:
+
+- [ ] Paste the demo, video and repo links in for `[DEMO URL]`, `[VIDEO URL]` and `[REPO URL]` (WRITEUP.md, README).
+- [ ] Check the Nebius AI Cloud line under "The rest of the stack" in WRITEUP.md matches the actual deploy.
+- [ ] [token-factory-feedback.md](token-factory-feedback.md): the team's own words for the four opinion items
+      (onboarding time, "would we build with it again" twice, whether Ultra's thinking was worth it), and the
+      Nebius AI Cloud section after the deploy. The feedback is required, judged, and counts toward the feedback
+      prize.
 
 ## 6. Devpost form
 

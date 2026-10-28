@@ -1,22 +1,28 @@
 # ClawBack
 
-**Rocket Money shows what you pay. ClawBack finds the money you can get back, and writes the request.**
+**Rocket Money shows what you pay. ClawBack finds the money you can get back, and does the next step.**
 
-ClawBack connects to your bank and your email and looks for money in five places:
-- **subscriptions** you've stopped using, two plans doing one job, free trials about to convert, prices that crept up;
-- **bills** that jumped when a promotional rate ended;
-- **bank charges**: the same charge twice, and fees a bank will often reverse;
-- **refunds owed**: price drops inside a store's adjustment window, cancelled or changed flights;
-- **settlements**: open class-action settlements that match what you bought.
+- **Try it:** `[DEMO URL]` (no login; each browser gets its own made-up demo month)
+- **Video:** `[VIDEO URL]`
 
-For each one it prepares the cancel page and email, the negotiation script, the dispute letter or the claim link,
-and can save the email as a draft in your own mailbox. **You make the final click.** ClawBack never cancels,
-pays, sends or files anything on its own.
+ClawBack reads your bank, your email and your Google Maps Timeline. The dashboard leads with three jobs, each done
+start to finish:
+- **A gym you stopped going to.** The Timeline shows no visits since late August, so NVIDIA Nemotron 3 Ultra writes
+  the cancellation email with the notice the gym asks for, and ClawBack sends it from your own inbox when you click
+  Send.
+- **Streaming you don't watch.** Netflix's price went up and it emailed "we miss you." One button opens Netflix's own
+  cancel page, with a reminder before the next charge.
+- **A purchase that got cheaper.** You paid $249 for AirPods; bestbuy.com, checked live through Tavily, says less
+  today. Ultra writes the request for the difference before the store's window closes.
 
-> **Status: hackathon prototype.** Each visitor gets their own private demo month with no login, and can connect
-> their own email or Plaid's test bank. The NVIDIA Nemotron models on Nebius Token Factory run live. Not deployed
-> yet. See [STATUS.md](STATUS.md) for exactly what works and what doesn't, and
-> [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
+Behind those three, the same pipeline also finds bills that crept up, duplicate charges, bank fees, flight refunds
+and class-action settlements. **You make the final click.** ClawBack never cancels, pays or files anything, and the
+only thing it sends is the gym email, after you click Send. In the demo, that email goes to your own address.
+
+> **Status: hackathon prototype.** The NVIDIA Nemotron models on Nebius Token Factory run live. Each visitor gets
+> their own private demo month with no login, and can connect their own email or Plaid's test bank. See
+> [STATUS.md](STATUS.md) for exactly what works and what doesn't, and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> for the full design.
 
 ## Run it locally
 
@@ -80,7 +86,8 @@ and other IMAP inboxes.
 2. Copy the app's Client ID, and create an API key.
 3. Under **Hosted authentication → Callback URIs**, add `http://localhost:8000/api/connect/email/callback`.
 4. Set `NYLAS_CLIENT_ID` and `NYLAS_API_KEY`. EU apps also set `NYLAS_API_URI=https://api.eu.nylas.com`.
-5. Saving drafts needs a write scope on the connector: Gmail `gmail.compose`, Microsoft `Mail.ReadWrite`.
+5. Saving drafts needs a write scope on the connector: Gmail `gmail.compose`, Microsoft `Mail.ReadWrite`. The gym
+   email's **Send** button needs `gmail.send`.
 
 **Bank (Plaid).**
 1. Sign up at https://dashboard.plaid.com/signup.
@@ -120,6 +127,8 @@ emails ──> triage (rules, Lightning for unknown senders) ──> injection s
            extraction (Nemotron 3.5 Lightning, receipts by Super-VL) ──────────────────┘
 "Find cheaper":   Tavily ──> Nemotron 3 Super (read plans) ──> Nemotron 3 Ultra (fit to usage)
 "Prepare cancel": Tavily (merchant's own cancel page) + state rule + Nemotron 3 Ultra (email) ──> you send it
+Gym:              Timeline upload ──> gym visit dates (code) ──> Ultra writes the notice ──> sent on your click
+Price drop:       Tavily (store's own site) ──> code checks the price is on the page ──> Ultra writes the request
 Letters:          Nemotron 3 Ultra writes from facts code worked out; code checks every number, date and link
 ```
 
@@ -186,4 +195,4 @@ docs/                architecture, design, eval, deploy, privacy, write-up, vide
 STATUS.md            what works / what's MISSING
 ```
 
-License: [MIT](LICENSE). The repo is private for now.
+License: [MIT](LICENSE).
