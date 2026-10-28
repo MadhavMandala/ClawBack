@@ -17,10 +17,14 @@
     });
   }
 
+  // An exact address first (a stand-in sender set for the demo), then the merchant's own domains.
   function flagFor(address) {
-    const domain = (address || "").split("@").pop().toLowerCase().trim();
-    if (!domain) return null;
-    return flags.find((f) => f.domains.some((d) => domain === d || domain.endsWith("." + d))) || null;
+    const addr = (address || "").toLowerCase().trim();
+    const domain = addr.split("@").pop();
+    if (!addr || !domain) return null;
+    return flags.find((f) => (f.addresses || []).includes(addr))
+      || flags.find((f) => f.domains.some((d) => domain === d || domain.endsWith("." + d)))
+      || null;
   }
 
   // --- Drawing ----------------------------------------------------------------------------------------------

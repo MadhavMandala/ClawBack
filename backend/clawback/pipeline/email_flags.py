@@ -51,8 +51,26 @@ def _finding_flag(f: Finding) -> dict | None:
             "amount": round(f.amount, 2), "period": "once", "link": _link(f"finding:{f.id}")}
 
 
+def demo_senders() -> dict[str, list[str]]:
+    """CLAWBACK_DEMO_SENDERS as {merchant: [addresses]}. For filming: a teammate's address stands in for the
+    merchant, since no real business emails the demo inbox."""
+    out: dict[str, list[str]] = {}
+    for part in settings.demo_senders.split(";"):
+        name, _, addrs = part.partition("=")
+        found = [a.strip().lower() for a in addrs.split(",") if "@" in a]
+        if name.strip() and found:
+            out.setdefault(name.strip(), []).extend(found)
+    return out
+
+
 def email_flags(user_id: str) -> list[dict]:
-    """Flags, biggest amount first. When two flags share a domain the extension shows the first."""
+    """Flags, biggest amount first. When two flags share a domain the extension shows the first. A merchant named
+    in CLAWBACK_DEMO_SENDERS matches those exact addresses instead of its domains."""
     u = store.user(user_id)
     out = [x for x in (*map(_sub_flag, u.subscriptions.values()), *map(_finding_flag, u.findings.values())) if x]
+    stand_ins = demo_senders()
+    for x in out:
+        x["addresses"] = stand_ins.get(x["merchant"], [])
+        if x["addresses"]:
+            x["domains"] = []
     return sorted(out, key=lambda x: -x["amount"])
