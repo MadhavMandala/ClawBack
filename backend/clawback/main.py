@@ -34,7 +34,7 @@ from .pipeline.recommend import alternatives
 from .pipeline.recovered import history
 from .pipeline.run import best_saving, run, summary
 from .sessions import AddonUserId, UserId, user_scope
-from . import gyms, sending
+from . import gyms, recap, sending, workflows
 from .sources import nylas, plaid, timeline
 from .sources.net import SourceError
 from .sources.statements import parse_upload
@@ -214,19 +214,11 @@ def subscriptions(user_id: UserId):
 def showcase(user_id: UserId):
     """The three workflows the dashboard leads with: a gym you stopped going to (cancel by email), a streaming
     service you don't use (its own cancel page), and a price drop (or the item being watched when it hasn't dropped).
-    Each is null when this user has none."""
-    u = store.user(user_id)
-    live = [s for s in u.subscriptions.values() if s.status != "cancelled"]
-    demo_ok = u.mode != "real"
-    gym = next((s for s in sorted(live, key=lambda s: -best_saving(s)) if gyms.for_subscription(s, demo=demo_ok)), None)
-    streaming = next((s for s in sorted(live, key=lambda s: -best_saving(s))
-                      if s.category == "video_streaming" and any(f.kind in ("unused", "cancel_pending") for f in s.flags)),
-                     None)
-    drops = [f for f in u.findings.values() if f.kind == "price_drop" and f.status == "open"]
-    drop = max(drops, key=lambda f: f.amount, default=None)  # the biggest, so the card doesn't depend on list order
-    price = {"finding_id": drop.id} if drop else ({"watch": u.price_watch[0]} if u.price_watch else None)
-    return {"gym": {"sub_id": gym.id} if gym else None,
-            "streaming": {"sub_id": streaming.id} if streaming else None,
+    Each is null when this user has none. Picked in workflows.py, which the monthly recap shares."""
+    p = workflows.pick(user_id)
+    price = {"finding_id": p["drop"].id} if p["drop"] else ({"watch": p["watch"]} if p["watch"] else None)
+    return {"gym": {"sub_id": p["gym"].id} if p["gym"] else None,
+            "streaming": {"sub_id": p["streaming"].id} if p["streaming"] else None,
             "price": price}
 
 
@@ -514,6 +506,35 @@ def set_state(user_id: UserId, body: StateSetting):
         raise HTTPException(400, str(exc))
     store.user(user_id).state = code
     return rights.settings_view(code)
+
+
+# --- The monthly recap: an email to yourself, from your own inbox (recap.py) ------------------------
+
+class RecapSetting(BaseModel):
+    enabled: bool
+
+
+@app.get("/api/recap")
+def get_recap(user_id: UserId, month: str | None = None):
+    """The recap email for a month (default: this month so far), whether it's turned on, and where it goes."""
+    if month:
+        try:
+            return {**recap.view(user_id), "recap": recap.build(user_id, recap.parse_month(month))}
+        except ValueError as exc:
+            raise HTTPException(400, str(exc) or "Use a month like 2026-10.")
+    return recap.view(user_id)
+
+
+@app.post("/api/settings/recap")
+def set_recap(user_id: UserId, body: RecapSetting):
+    """Turn the monthly recap on or off. On: the nightly job sends it once a month, for the month before."""
+    return recap.set_enabled(user_id, body.enabled)
+
+
+@app.post("/api/recap/send")
+def send_recap(user_id: UserId):
+    """Send this month's recap so far, now, to the user's own address from their own inbox."""
+    return recap.send(user_id)
 
 
 # --- Drafts in the user's own mailbox (never sent) ------------------------------------------------

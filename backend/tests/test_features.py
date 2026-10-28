@@ -64,7 +64,7 @@ def test_features_route(client):
     assert [p["label"] for p in body["phases"]] == ["Planned", "Started", "Built", "Live-tested"]
     assert all(set(p) == {"id", "label", "description"} and p["description"] for p in body["phases"])
     assert body["areas"] == list(AREAS)
-    assert body["updated"] == "2026-10-23"
+    assert body["updated"] == "2026-10-27"
     assert len(body["features"]) == len(FEATURES)
     assert all(set(f) == FIELDS for f in body["features"])
     tally = {p: sum(1 for f in body["features"] if f["phase"] == p) for p in PHASE_IDS}

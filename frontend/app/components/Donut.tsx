@@ -4,8 +4,8 @@ import { useState } from "react";
 import type { SpendGroup } from "../api";
 import { money } from "../format";
 
-// The month at a glance: what you pay in at most six groups. Each group is the part you keep (green) then the part
-// you could cut (the highlighter). Groups are told apart by the table beside the ring, not by colour.
+// The month at a glance: what you pay in at most six groups. Each group is the part you keep (grey) then the part
+// you could cut (green). Groups are told apart by the table beside the ring, not by colour.
 
 const C = 130; // centre of the 260x260 viewBox
 const R = 118; // outer radius
