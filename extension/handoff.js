@@ -3,6 +3,11 @@
 
 const API_ALLOWED = /^(http:\/\/localhost:8000|https:\/\/[a-z0-9-]+\.sslip\.io)$/;
 
+// Tells the worker to fetch fresh flags. Never lets a sleeping or reloaded worker stop the handoff.
+function forgetCache() {
+  try { chrome.runtime.sendMessage({ type: "forget-cache" }).catch(() => {}); } catch { /* worker gone */ }
+}
+
 window.addEventListener("message", (event) => {
   if (event.source !== window || event.origin !== window.location.origin) return;
   const m = event.data;
@@ -10,13 +15,13 @@ window.addEventListener("message", (event) => {
 
   if (m.type === "addon-token" && typeof m.token === "string" && API_ALLOWED.test(m.api || "")) {
     chrome.storage.local.set({ token: m.token, api: m.api }, () => {
-      chrome.runtime.sendMessage({ type: "forget-cache" });
       window.postMessage({ source: "clawback-addon", type: "addon-connected" }, window.location.origin);
+      forgetCache();
     });
   } else if (m.type === "addon-disconnect") {
     chrome.storage.local.remove(["token", "api"], () => {
-      chrome.runtime.sendMessage({ type: "forget-cache" });
       window.postMessage({ source: "clawback-addon", type: "addon-disconnected" }, window.location.origin);
+      forgetCache();
     });
   } else if (m.type === "addon-ping") {
     chrome.storage.local.get(["token"], (s) => {

@@ -75,7 +75,7 @@ export default function Settings() {
     if (await answered) return "Gmail add-on connected. Reload Gmail to see the flags.";
     await call("/api/addon-token", { method: "DELETE" });
     setAddon("absent");
-    throw new Error("The Gmail add-on isn't installed in this browser. Install it first (see the steps below).");
+    throw new Error("The Gmail add-on didn't answer. If you just installed or reloaded it, reload this page and click Connect again. Otherwise install it first (steps below).");
   });
 
   const disconnectAddon = () => run("addon", async () => {
@@ -208,7 +208,7 @@ export default function Settings() {
                       {addon === "on"
                         ? "Connected. In Gmail, emails from services with money in them get a ClawBack flag."
                         : addon === "absent"
-                          ? "Not installed in this browser. It's a Chrome extension in the repo's extension folder."
+                          ? "Not found in this browser. Just installed it? Reload this page. Otherwise it's a Chrome extension in the repo's extension folder."
                           : "Flags emails in Gmail from services where ClawBack found money. It reads only each sender's address, in your browser."}
                     </span>
                   </div>
