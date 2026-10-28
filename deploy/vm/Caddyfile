@@ -1,7 +1,7 @@
 # ClawBack: HTTPS in front of the API. setup.sh copies this to /etc/caddy/Caddyfile and fills in the host name.
 # Caddy gets and renews a Let's Encrypt certificate for the host by itself; ports 80 and 443 must be open.
 #
-# __BIND__: on a VM where another program already listens on port 443 (on oracle-hermes, Tailscale Funnel),
+# __BIND__: on a VM where another program already listens on port 443 (on oracle-hermes, another service),
 # setup.sh fills in the VM's private address so Caddy listens there only. Otherwise it deletes the bind line.
 #
 # No access log on purpose: Caddy's log records every request header, including the visitor's session id. The

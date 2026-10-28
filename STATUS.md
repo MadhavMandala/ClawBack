@@ -82,8 +82,7 @@ P0 = needed for the hackathon demo. P1 = needed for a convincing submission. P2 
 
 | Priority | Area | What is missing | Where |
 |---|---|---|---|
-| P0 | Submission | Public demo URL (frontend on Vercel, backend on a Nebius VM) that works until Dec 15 | `docs/DEPLOY.md, deploy/vm, backend/Dockerfile` |
-| P0 | Submission | Make the repo public (required to submit). The MIT LICENSE file is added | `LICENSE, docs/DEPLOY.md` |
+| P0 | Submission | Public demo URL (frontend on Vercel, backend on an Oracle Cloud VM) that works until Dec 15 | `docs/DEPLOY.md, deploy/vm, backend/Dockerfile` |
 | P0 | Submission | The submission write-up and the tool feedback | `docs/WRITEUP.md, docs/token-factory-feedback.md` |
 | P0 | Submission | Demo video under 3 minutes | `docs/VIDEO.md` |
 | P1 | Data sources | A paid Nylas plan for real users: the free Sandbox allows 5 connected accounts and isn't meant for production | `Nylas Dashboard, privacy policy` |

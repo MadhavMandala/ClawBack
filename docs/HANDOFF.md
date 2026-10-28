@@ -10,12 +10,13 @@ Submissions close **Fri Oct 30, 10:00 am PT**. Most urgent first.
 
 ## 2. Keys and a public repo (required)
 
-`backend/.env` is committed. Its keys must be treated as leaked once the repo goes public.
+`backend/.env` was committed until Oct 28. Its keys were treated as leaked and replaced (DEPLOY.md section 13).
 
-- [ ] Rotate every key in it: Nebius, Tavily, Nylas, Plaid.
-- [ ] Delete the `!backend/.env` line from `.gitignore`, then run `git rm --cached backend/.env`.
-- [ ] Remove the file from history with `git filter-repo`, or publish a fresh repo with squashed history.
-- [ ] Make the repo public. Check the MIT license shows in the GitHub About box.
+- [x] Rotate every key in it: Nebius, Tavily, Nylas, Plaid. Still to do: delete the old Tavily key in Ishani's
+      Tavily account.
+- [x] Delete the `!backend/.env` line from `.gitignore`, then run `git rm --cached backend/.env`.
+- [x] Remove the file from history with `git filter-repo`, or publish a fresh repo with squashed history.
+- [x] Make the repo public (Oct 28). Check the MIT license shows in the GitHub About box.
 
 ## 3. Deploy (a working demo link is required)
 

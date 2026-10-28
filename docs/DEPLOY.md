@@ -22,7 +22,7 @@ Each step is marked:
 | Database | the same VM | the SQLite file in `/var/lib/clawback`, on the boot disk |
 | Nightly job | the same VM | a systemd timer at 3:00 AM Pacific running `python -m clawback.nightly` |
 | Logs | the same VM | ClawBack's own journal (`journalctl --namespace=clawback`), kept for 14 days |
-| Code | GitHub, private repo | a read-only deploy key made on the VM |
+| Code | GitHub, public since Oct 28 | an archive copy for now; the VM can clone over HTTPS (section 6) |
 | Frontend | Vercel, Hobby plan | root directory `frontend`, `NEXT_PUBLIC_API_URL=https://157-151-180-120.sslip.io` |
 | Models | Nebius Token Factory | the backend calls it with `NEBIUS_API_KEY` |
 
@@ -33,11 +33,10 @@ In the rest of this runbook, `HOST` means `157-151-180-120.sslip.io`: the VM's p
 
 ### What's different about this VM
 
-`oracle-hermes` already runs Hermes, AutoGPT (in Docker), a Node app on port 3001 and Tailscale. `setup.sh` works
-around them by itself:
-- **Port 443 is taken.** Tailscale Funnel listens on it, on the Tailscale address. Caddy listens on the VM's
-  private address `10.0.0.213` instead, which is where Oracle forwards the public IP, and Funnel keeps working.
-  The script notices the busy port and picks the address; `BIND_ADDR` overrides it.
+`oracle-hermes` already runs other services. `setup.sh` works around them by itself:
+- **Port 443 may be taken.** If another program already listens on it on a different address, Caddy listens on
+  the VM's private address `10.0.0.213` instead, which is where Oracle forwards the public IP, and the other
+  program keeps working. The script notices the busy port and picks the address; `BIND_ADDR` overrides it.
 - **The firewall is iptables, not ufw.** Oracle's Ubuntu images come with iptables rules that turn away everything
   except SSH, and Oracle warns that ufw can stop an instance from booting. The script adds two rules (ports 80 and
   443) just above the reject rule, both live and in `/etc/iptables/rules.v4`. It backs that file up first, as
@@ -46,10 +45,10 @@ around them by itself:
   opened there by hand: step 1.
 - **Nothing else is upgraded or restarted.** Packages already on the VM keep their versions, and needrestart only
   lists the services it would restart.
-- **Logs:** the 14-day limit the privacy policy promises applies to ClawBack's own journal, not to the Hermes or
-  AutoGPT logs.
+- **Logs:** the 14-day limit the privacy policy promises applies to ClawBack's own journal, not to the logs of
+  the VM's other services.
 - **Isolation:** the API runs as the `clawback` user with `ProtectHome=yes` and a read-only system. It can't read
-  `/home/ubuntu` (Hermes and its keys) or write outside `/var/lib/clawback`.
+  `/home` or write outside `/var/lib/clawback`.
 
 ## 2. Before you start
 
@@ -68,8 +67,8 @@ Checked on 2026-10-28.
 | Fact | Source |
 |---|---|
 | The VM: Ubuntu 24.04.4, Python 3.12.3, ARM (`aarch64`), 2 cores, 12 GB of memory with about 5 GB free, 69 GB of disk free | on the VM |
-| Port 443 belongs to Tailscale Funnel (serving `127.0.0.1:8787`); ports 80, 2019 and 8000 are free | `ss -tlnp` and `tailscale serve status` on the VM |
-| The saved iptables rules are Oracle's defaults (SSH only, then reject); Docker and Tailscale add theirs at boot | `/etc/iptables/rules.v4` on the VM |
+| Port 443 is in use on another address; ports 80, 2019 and 8000 are free | `ss -tlnp` on the VM |
+| The saved iptables rules are Oracle's defaults (SSH only, then reject); other services add theirs at boot | `/etc/iptables/rules.v4` on the VM |
 | "Do not use Uncomplicated Firewall (UFW) to edit firewall rules on an Ubuntu image" | https://docs.oracle.com/en-us/iaas/Content/Compute/References/bestpracticescompute.htm |
 | Caddy's `bind` directive limits a site to given addresses | https://caddyserver.com/docs/caddyfile/directives/bind |
 | A journal namespace has its own settings file, `journald@NAMESPACE.conf`; a unit joins it with `LogNamespace=` | `man journald.conf`, `man systemd.exec` |
@@ -240,7 +239,14 @@ journalctl -u caddy -n 50                         # HTTPS and certificates
 
 ## 6. How the VM gets the code
 
-The repo is private, so the VM needs a way in.
+The repo was private until Oct 28, so the VM needed a way in. Now that it's public, the VM can clone over HTTPS
+with no key at all:
+
+```bash
+sudo mv /opt/clawback/app /opt/clawback/app.copy && sudo REPO=https://github.com/MadhavMandala/ClawBack.git bash setup.sh
+```
+
+The options below were written while it was private.
 
 | Option | How | For | Against |
 |---|---|---|---|
@@ -379,9 +385,11 @@ so the team could share test keys.
 - `git filter-repo` removed `backend/.env` from every commit on all 8 branches, which were then force-pushed. A
   check of every commit and stored object found none of the old or new key values.
 - **Still visible:** pull requests #1 to #7 keep their original commits on GitHub, so they still show the old file.
-  Only GitHub Support can remove those. With the old keys dead, that's harmless.
+  Only GitHub Support can remove those. The Nebius, Nylas and Plaid keys in them are dead; the old Tavily key
+  still worked on Oct 28, so delete it in Ishani's Tavily account.
 
-Left before changing the visibility: delete the old Tavily key, then steps 7 and 8.
+**Made public on 2026-10-28**, after steps 7 and 8: no old or current key in any branch's history, and no private
+file tracked. The old Tavily key was still live then (see above).
 
 1. **[You] Regenerate every key** in `backend/.env`, and delete the old ones in each dashboard.
 
