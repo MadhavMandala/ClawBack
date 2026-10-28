@@ -244,11 +244,19 @@ The repo is private, so the VM needs a way in.
 
 | Option | How | For | Against |
 |---|---|---|---|
-| **Deploy key (recommended)** | `setup.sh` makes an SSH key on the VM; you add the public half on GitHub as a read-only deploy key | One click on GitHub, then `update.sh` pulls on its own. Works the same after the repo goes public. Nothing to install on the laptop. | Gives the VM read access to the whole repo, including `backend/.env` while it is still tracked |
+| **Deploy key (recommended)** | `setup.sh` makes an SSH key on the VM; you add the public half on GitHub as a read-only deploy key | One click on GitHub, then `update.sh` pulls on its own. Works the same after the repo goes public. Nothing to install on the laptop. | Gives the VM read access to the whole repo |
 | Copy from the laptop | `git archive` on the laptop, `scp` to the VM, `update.sh --archive` | No GitHub change | Every update is a manual copy. This laptop has `scp` but not `rsync`. |
 
 **Recommendation: the deploy key.** Updates during judging become one command on the VM. Remove the key on GitHub
 after Dec 15.
+
+**What's in place (Oct 28):** the first deploy used the copy route, because adding a deploy key needs a person's OK
+on GitHub. The VM's key already exists. To switch to it, add the line from
+`sudo cat /opt/clawback/.ssh/clawback_deploy.pub` on GitHub (step 4), then on the VM:
+
+```bash
+sudo mv /opt/clawback/app /opt/clawback/app.copy && sudo bash setup.sh
+```
 
 The copy route, if you need it:
 
@@ -361,20 +369,30 @@ Nebius serverless endpoint.
 
 ## 13. Before the repo goes public
 
-The repo has to be public to submit. `backend/.env` is tracked on purpose while it is private, so the team can share
-test keys. Those keys are in the git history too. Do all of this, in order, before changing the visibility.
+The repo has to be public to submit. Until Oct 28, `backend/.env` was tracked on purpose while the repo was private,
+so the team could share test keys.
 
-1. **[You] Regenerate every key** in `backend/.env`, and delete the old ones in each dashboard. Every one of them
-   is in the history of `main` and of every pushed branch.
+**Done on 2026-10-28** (steps 1 to 6):
+- Every key was replaced. The old Nebius, Nylas and Plaid keys no longer work (checked: 401, 401 and
+  `INVALID_API_KEYS`). The old Tavily key belongs to Ishani's Tavily account; delete it there.
+- `backend/.env` is no longer tracked, and `.gitignore` ignores it.
+- `git filter-repo` removed `backend/.env` from every commit on all 8 branches, which were then force-pushed. A
+  check of every commit and stored object found none of the old or new key values.
+- **Still visible:** pull requests #1 to #7 keep their original commits on GitHub, so they still show the old file.
+  Only GitHub Support can remove those. With the old keys dead, that's harmless.
 
-   | Key | Who made it | Where it comes from | What to do |
+Left before changing the visibility: delete the old Tavily key, then steps 7 and 8.
+
+1. **[You] Regenerate every key** in `backend/.env`, and delete the old ones in each dashboard.
+
+   | Key | Who made it | Where it comes from | Status (Oct 28) |
    |---|---|---|---|
-   | `NEBIUS_API_KEY` | Ishani (commit `f9dbac5`, Oct 22) | Nebius Token Factory: https://tokenfactory.nebius.com, **API keys** | Make a new key and delete the old one. The Oct 22 key stopped working by Oct 28 (401). Check Zero Data Retention is still on. |
-   | `TAVILY_API_KEY` | Ishani (commit `f9dbac5`, Oct 22) | Tavily: https://app.tavily.com, **API Keys** | Make a new key and delete the old one |
-   | `NYLAS_API_KEY` | Madhav (commit `e1cee22`, Oct 22) | Nylas Dashboard: https://dashboard-v3.nylas.com, the ClawBack app, **API Keys** | Make a new key and delete the old one |
-   | `NYLAS_CLIENT_ID` | Madhav (commit `e1cee22`) | Nylas Dashboard, the app's overview page | Not a secret; it stays |
-   | `PLAID_SECRET` | Madhav (commit `e1cee22`, Oct 22) | Plaid Dashboard: https://dashboard.plaid.com, **Developers → Keys**, the Sandbox secret | **Rotate**; the old secret stops working |
-   | `PLAID_CLIENT_ID` | Madhav (commit `e1cee22`) | the same page | Not a secret; it stays |
+   | `NEBIUS_API_KEY` | Ishani, Oct 22 | Nebius Token Factory: https://tokenfactory.nebius.com, **API keys** | Replaced. Check Zero Data Retention is on for the account the new key belongs to. |
+   | `TAVILY_API_KEY` | Ishani, Oct 22 | Tavily: https://app.tavily.com, **API Keys** | Replaced. Delete the old key in Ishani's Tavily account. |
+   | `NYLAS_API_KEY` | Madhav, Oct 22 | Nylas Dashboard: https://dashboard-v3.nylas.com, the ClawBack app, **API Keys** | Replaced; the old one answers 401 |
+   | `NYLAS_CLIENT_ID` | Madhav, Oct 22 | Nylas Dashboard, the app's overview page | Not a secret; it stays |
+   | `PLAID_SECRET` | Madhav, Oct 22 | Plaid Dashboard: https://dashboard.plaid.com/developers/keys, **Rotate** on the Sandbox secret | Rotated; the old one is rejected |
+   | `PLAID_CLIENT_ID` | Madhav, Oct 22 | the same page | Not a secret; it stays |
    | `CLAWBACK_SECRET_KEY` | made by `setup.sh` on the VM | `/etc/clawback/clawback.env`; never in git | Nothing: it was never committed. Keep the backup from step 7 |
    | `NYLAS_WEBHOOK_SECRET` | Nylas, when the webhook is created | `/etc/clawback/clawback.env`; never in git | Nothing, unless it leaks |
 
