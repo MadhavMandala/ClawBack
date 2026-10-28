@@ -7,22 +7,63 @@
 
 ClawBack reads your bank, your email and your Google Maps Timeline. The dashboard leads with three jobs, each done
 start to finish:
-- **A gym you stopped going to.** The Timeline shows no visits since late August, so NVIDIA Nemotron 3 Ultra writes
-  the cancellation email with the notice the gym asks for, and ClawBack sends it from your own inbox when you click
+- A gym you stopped going to: the Timeline shows no visits since late August, so NVIDIA Nemotron 3 Ultra writes the
+  cancellation email with the notice the gym asks for, and ClawBack sends it from your own inbox when you click
   Send.
-- **Streaming you don't watch.** Netflix's price went up and it emailed "we miss you." One button opens Netflix's own
+- Streaming you don't watch: Netflix's price went up and it emailed "we miss you." One button opens Netflix's own
   cancel page, with a reminder before the next charge.
-- **A purchase that got cheaper.** You paid $249 for AirPods; bestbuy.com, checked live through Tavily, says less
-  today. Ultra writes the request for the difference before the store's window closes.
+- A purchase that got cheaper: you paid $249 for AirPods, and bestbuy.com, checked live through Tavily, lists them
+  for less today. Ultra writes the request for the difference before the store's window closes.
 
 Behind those three, the same pipeline also finds bills that crept up, duplicate charges, bank fees, flight refunds
-and class-action settlements. **You make the final click.** ClawBack never cancels, pays or files anything, and the
+and class-action settlements. You make the final click: ClawBack doesn't cancel, pay or file anything, and the
 only thing it sends is the gym email, after you click Send. In the demo, that email goes to your own address.
 
-> **Status: hackathon prototype.** The NVIDIA Nemotron models on Nebius Token Factory run live. Each visitor gets
+> Status: hackathon prototype. The NVIDIA Nemotron models on Nebius Token Factory run live. Each visitor gets
 > their own private demo month with no login, and can connect their own email or Plaid's test bank. See
-> [STATUS.md](STATUS.md) for exactly what works and what doesn't, and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> [STATUS.md](STATUS.md) for what works and what doesn't, and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 > for the full design.
+
+## NVIDIA Nemotron on Nebius Token Factory
+
+Every model call in ClawBack goes to an NVIDIA Nemotron model on Nebius Token Factory. Each of the five models has
+one job. The small ones read every email; the large ones run only when you click something.
+
+| Tier | Model | Job | When it runs |
+|---|---|---|---|
+| fast | `nvidia/Nemotron-3_5-Lightning` (thinking off) | Email to facts, receipts and flights, unknown senders and charges, the injection check, store prices | Every email that passes triage, once (cached) |
+| fast_fallback | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | Same, when Lightning fails | Only on failure |
+| mid | `nvidia/nemotron-3-super-120b-a12b` | Reads plan pages, bill offers and settlement pages into lists | "Find cheaper", "Negotiate", the settlements refresh |
+| reason | `nvidia/Nemotron-3-Ultra-550b-a55b` | Fits plans to usage (thinking on); writes letters, scripts and cancel emails when a merchant takes them | When you click |
+| vision | `nvidia/Nemotron-3.5-Super-VL` | Receipt images and scanned PDFs | Attachments on receipt emails |
+
+If a model call fails, the next tier takes over, then a code fallback, so the app keeps working. Models never
+compute dates or money, and every link comes from a checked search result. Each session has a daily model spend
+limit. The dashboard's trace shows every call with its tier, tokens (thinking tokens included) and cost. On the
+held-out eval set, the whole pipeline cost about $0.057 per 1,000 emails ([docs/EVAL.md](docs/EVAL.md)).
+
+### Where Token Factory sped us up
+
+- One client for five models: the API is OpenAI-compatible, so the standard `openai` SDK pointed at Token Factory
+  is all the client code ([backend/clawback/llm.py](backend/clawback/llm.py)). Moving a job to another model is a
+  one-line change in the tier table.
+- Strict JSON on every Nemotron model: a strict `json_schema` response format came back schema-shaped on all five,
+  so we dropped most defensive parsing. The same prompt and schema work on every model, which is why the Lightning
+  to Nano fallback needed no special case.
+- Prices and model IDs from the public catalog, which needs no key. Our cost table comes from it, so each call's
+  cost is logged as it happens.
+- Speed: Lightning answers a short prompt in 0.7 to 0.9 seconds, and 15 emails in parallel took about 2.4 seconds.
+  That made reading every email affordable.
+- Zero Data Retention is one organization setting, and it's on, so prompts carrying facts from people's email
+  aren't kept.
+
+### Other Nebius services
+
+- Nebius AI Cloud: the hosted backend is set up for one CPU VM (`cpu-d3`, 2 vCPU, 8 GB) with Caddy for HTTPS. We
+  picked a VM over Serverless endpoints because the email sign-in and webhooks need a fixed URL. The runbook is
+  [docs/DEPLOY.md](docs/DEPLOY.md), and the scripts are in `deploy/vm/`.
+- Our notes on Token Factory, the Nemotron models and AI Cloud, including what we'd change, are in
+  [docs/token-factory-feedback.md](docs/token-factory-feedback.md).
 
 ## Run it locally
 
@@ -76,11 +117,11 @@ one user across browsers in local development, set `CLAWBACK_SESSIONS=single`.
 
 ### Connect real email and a bank (optional)
 
-People using ClawBack just click **Connect email** or **Connect bank** and sign in on their provider's own page.
+People using ClawBack click **Connect email** or **Connect bank** and sign in on their provider's own page.
 For that to work, the person running the app registers it once with two services and puts the keys in
 `backend/.env` (copy `backend/.env.example`). Never commit real keys to a public repo.
 
-**Email, any provider (Nylas).** One sign-in page covers Gmail, Outlook/Hotmail/Microsoft 365, Yahoo, iCloud
+**Email, any provider (Nylas):** one sign-in page covers Gmail, Outlook/Hotmail/Microsoft 365, Yahoo, iCloud
 and other IMAP inboxes.
 1. Sign up at https://dashboard-v3.nylas.com and create a Sandbox app. It's free for 5 connected accounts.
 2. Copy the app's Client ID, and create an API key.
@@ -89,7 +130,7 @@ and other IMAP inboxes.
 5. Saving drafts needs a write scope on the connector: Gmail `gmail.compose`, Microsoft `Mail.ReadWrite`. The gym
    email's **Send** button needs `gmail.send`.
 
-**Bank (Plaid).**
+**Bank (Plaid):**
 1. Sign up at https://dashboard.plaid.com/signup.
 2. Under **Developers → Keys**, copy the client ID and the Sandbox secret.
 3. Set `PLAID_CLIENT_ID`, `PLAID_SECRET` and `PLAID_ENV=sandbox`.
@@ -135,22 +176,6 @@ Letters:          Nemotron 3 Ultra writes from facts code worked out; code check
 Cheap steps run on everything. Models only see the few items that need judgement, and code does all the date and
 money arithmetic. Every step is logged with its engine, time and cost, and the dashboard shows that log.
 
-## Model tiers (Nemotron on Nebius Token Factory)
-
-| Tier | Model | Job | When it runs |
-|---|---|---|---|
-| fast | `nvidia/Nemotron-3_5-Lightning` (thinking off) | Email to facts, receipts and flights, unknown senders and charges, the injection check, store prices | Every email that passes triage, once (cached) |
-| fast_fallback | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | Same, when Lightning fails | Only on failure |
-| mid | `nvidia/nemotron-3-super-120b-a12b` | Reads plan pages, bill offers and settlement pages into lists | "Find cheaper", "Negotiate", the settlements refresh |
-| reason | `nvidia/Nemotron-3-Ultra-550b-a55b` | Fits plans to usage (thinking on); writes letters, scripts and cancel emails when a merchant takes them | When you click |
-| vision | `nvidia/Nemotron-3.5-Super-VL` | Receipt images and scanned PDFs | Attachments on receipt emails |
-
-If a model call fails, the next tier takes over, then the code fallback, so the app never breaks. Models never
-compute dates or money, and links always come from checked search results, never from a model. Each session has a
-daily model spend limit. The model trace shows every call with its tier, tokens (including thinking tokens) and
-cost. Measured cost on the held-out eval set: about $0.057 per 1,000 emails for the whole pipeline (see
-[docs/EVAL.md](docs/EVAL.md)).
-
 ## Docs
 
 - [STATUS.md](STATUS.md): what works and what's MISSING
@@ -168,7 +193,8 @@ cost. Measured cost on the held-out eval set: about $0.057 per 1,000 emails for 
 
 - **NVIDIA Nemotron** models on **Nebius Token Factory**, through its OpenAI-compatible API
   (`nvidia/Nemotron-3_5-Lightning`, `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`, `nvidia/nemotron-3-super-120b-a12b`,
-  `nvidia/Nemotron-3-Ultra-550b-a55b`, `nvidia/Nemotron-3.5-Super-VL`). See "Model tiers" above.
+  `nvidia/Nemotron-3-Ultra-550b-a55b`, `nvidia/Nemotron-3.5-Super-VL`). See "NVIDIA Nemotron on Nebius Token
+  Factory" above.
 - **Tavily** for current plans, cancel pages, bill offers, store prices and new settlements
 - **Nylas** for email from any provider, and **Plaid** for bank transactions
 - FastAPI (Python) with SQLite, and a Next.js frontend
@@ -195,4 +221,6 @@ docs/                architecture, design, eval, deploy, privacy, write-up, vide
 STATUS.md            what works / what's MISSING
 ```
 
-License: [MIT](LICENSE).
+## License
+
+ClawBack is open source under the [MIT License](LICENSE).
