@@ -32,7 +32,7 @@ const MODELS = [
   { name: "Nemotron 3 Nano", id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B", job: "Takes over when Lightning fails.", when: "Only on failure" },
   { name: "Nemotron 3 Super", id: "nvidia/nemotron-3-super-120b-a12b", job: "Reads plan and pricing pages into a list of plans.", when: "“Find cheaper”" },
   { name: "Nemotron 3 Ultra", id: "nvidia/Nemotron-3-Ultra-550b-a55b", job: "Writes the gym cancellation email and the price-drop request, and fits plans to how you use a service.", when: "When you click" },
-  { name: "Nemotron 3.5 Super-VL", id: "nvidia/Nemotron-3.5-Super-VL", job: "Will read receipts sent as images and PDFs.", when: "Planned", planned: true },
+  { name: "Nemotron 3.5 Super-VL", id: "nvidia/Nemotron-3.5-Super-VL", job: "Reads receipt images attached to order emails.", when: "Image receipts" },
 ];
 
 const RULES = [
@@ -133,7 +133,7 @@ export default function Home() {
                 <thead><tr><th>Model</th><th>Its job</th><th>Runs</th><th>Model ID</th></tr></thead>
                 <tbody>
                   {MODELS.map((m) => (
-                    <tr key={m.id} className={m.planned ? "planned" : undefined}>
+                    <tr key={m.id}>
                       <td>{m.name}</td><td>{m.job}</td><td>{m.when}</td><td><code>{m.id}</code></td>
                     </tr>
                   ))}
