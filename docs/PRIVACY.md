@@ -64,6 +64,14 @@ third-party email service. Nylas processes your mail on ClawBack's behalf.
   150 m), and discards the rest of the file: coordinates, other places, travel. Deleting your data deletes those
   dates too.
 
+### The Gmail add-on, if you install it
+- The add-on is a Chrome extension you load yourself. It reads one thing from your Gmail page: each sender's
+  email address in the inbox list and in an open email. It compares the address with the services ClawBack flagged,
+  inside your browser. No address, subject or email text is sent to ClawBack or anywhere else, and the add-on never
+  changes or clicks anything in Gmail.
+- It fetches the flags with a token that can only list them. Disconnecting it on the settings page, or deleting
+  your data, revokes the token.
+
 ### Bank transactions, through Plaid
 
 ClawBack reads bank and card transactions through [Plaid](https://plaid.com). The demo only connects Plaid's test

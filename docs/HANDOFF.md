@@ -67,6 +67,11 @@ items are filled. What's left:
 
 ## If there's time
 
+- [ ] The Gmail add-on (PR "Gmail add-on"): load `extension/` in Chrome, click **Connect** on the settings page,
+      and film a short shot of a Netflix email in Gmail with the ClawBack flag and its hover card, then **More
+      info** opening Netflix on the dashboard. It needs a real email from netflix.com, orangetheory.com or bestbuy.com
+      in the inbox. Steps are in the README under "Gmail add-on".
+
 - [ ] Run ClawBack once on a teammate's real bank statement CSV and report one real dollar found. This would raise
       the impact score more than anything else.
 - [ ] Small leftovers from the review:

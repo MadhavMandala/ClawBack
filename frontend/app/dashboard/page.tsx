@@ -64,6 +64,8 @@ export default function Dashboard() {
     return () => { document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", esc); };
   }, [connectOpen]);
   const loaded = useRef(false);
+  const focus = useRef<string | null>(null);
+  const jumped = useRef(false); // a ?focus= link already picked the row; don't replace it with the first card
 
   // The first-visit guide: three lines, shown once per browser.
   useEffect(() => {
@@ -106,6 +108,8 @@ export default function Dashboard() {
     load();
     // Coming back from the email sign-in lands here with ?connected=email or ?connect_error=...
     const q = new URLSearchParams(window.location.search);
+    // The Gmail add-on's "More info" link: ?focus=sub:<id> or ?focus=finding:<id> opens that row once data loads.
+    if (q.get("focus")) focus.current = q.get("focus"); // kept if this runs twice (the URL is cleaned below)
     if (q.get("connected") === "email-send") setNotice({ tone: "info", text: "Email connected for sending only. Your demo month stays, and nothing is read from your inbox." });
     if (q.get("connected") === "email") setNotice({ tone: "info", text: "Email connected. ClawBack read your recent receipts and billing emails." });
     if (q.get("connect_error")) setNotice({ tone: "error", text: `Couldn't connect: ${q.get("connect_error")}` });
@@ -253,7 +257,24 @@ export default function Dashboard() {
   // On a wide screen the pane is never empty: show the first thing owed (or to decide on). On a phone the pane
   // is a sheet over the list, so nothing opens until you tap a row.
   useEffect(() => {
-    if (sel || !ready || typeof window === "undefined" || !window.matchMedia("(min-width: 761px)").matches) return;
+    if (!ready || !focus.current) return;
+    const [kind, ...rest] = focus.current.split(":");
+    const id = rest.join(":");
+    focus.current = null;
+    jumped.current = true;
+    const found = kind === "sub" ? subs.some((s) => s.id === id) : kind === "finding" && findings.some((f) => f.id === id);
+    if (found) {
+      select(kind === "sub" ? "sub" : "finding", id);
+      if (window.matchMedia("(max-width: 760px)").matches) return; // the pane is a sheet; it opens over the list
+      setTimeout(() => paneRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }), 120);
+    } else {
+      setNotice({ tone: "info", text: "That item isn't in this browser's ClawBack. It may have been dismissed, or the link came from another session." });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  useEffect(() => {
+    if (sel || focus.current || jumped.current || !ready || typeof window === "undefined" || !window.matchMedia("(min-width: 761px)").matches) return;
     // The first workflow card: the gym, else the streaming service, else the price drop.
     const card = showcase?.gym?.sub_id ?? showcase?.streaming?.sub_id;
     if (card) setSel({ kind: "sub", id: card });
