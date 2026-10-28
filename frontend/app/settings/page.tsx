@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { API, call, forgetSession, type Me, type Settings as StateSettings } from "../api";
+import { API, call, forgetSession, type Me, type RecapView, type Settings as StateSettings } from "../api";
 import { bankNotice, connectBank, connectEmail } from "../connect";
 import { shortDate } from "../format";
 import InstallApp from "../components/InstallApp";
 import SiteNav from "../components/SiteNav";
-import { Check, External } from "../components/icons";
+import { Check, Close, External } from "../components/icons";
 import "./settings.css";
 
 type Notice = { tone: "info" | "error"; text: string } | null;
@@ -32,11 +32,15 @@ export default function Settings() {
   const [busy, setBusy] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [deleted, setDeleted] = useState<string | null>(null);
+  const [recap, setRecap] = useState<RecapView | null>(null);
+  const [preview, setPreview] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [m, s] = await Promise.all([call<Me>("/api/me"), call<StateSettings>("/api/settings")]);
-      setMe(m); setSt(s);
+      const [m, s, r] = await Promise.all([
+        call<Me>("/api/me"), call<StateSettings>("/api/settings"), call<RecapView>("/api/recap").catch(() => null),
+      ]);
+      setMe(m); setSt(s); setRecap(r);
     } catch (e) {
       setNotice({ tone: "error", text: `Can't reach the ClawBack server. ${(e as Error).message}` });
     }
@@ -131,6 +135,21 @@ export default function Settings() {
       return out.state_rule ? `Saved. Cancel steps now include ${out.state_name}'s rule.` : out.state ? `Saved. ClawBack has no ${out.state_name} rule yet, so cancel steps show the federal one.` : "Cleared.";
     });
 
+  const toggleRecap = (on: boolean) =>
+    run("recap", async () => {
+      const out = await call<RecapView>("/api/settings/recap", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: on }),
+      });
+      setRecap(out);
+      return out.enabled ? `Turned on. The first recap comes ${shortDate(out.next_send)}.` : "Turned off. No more recaps.";
+    });
+
+  const sendRecap = () =>
+    run("recap-send", async () => {
+      const out = await call<{ sent_to: string; subject: string }>("/api/recap/send", { method: "POST" });
+      return `Sent “${out.subject}” to ${out.sent_to}. Check your inbox.`;
+    });
+
   const email = me?.connections.email;
   const bank = me?.connections.plaid;
   const spent = me?.model_spend_today_usd ?? 0;
@@ -150,7 +169,7 @@ export default function Settings() {
         {notice && (
           <div className={`notice ${notice.tone}`} role="status">
             <p>{notice.text}</p>
-            <button className="icon" aria-label="Dismiss" onClick={() => setNotice(null)}>×</button>
+            <button className="icon" aria-label="Dismiss" onClick={() => setNotice(null)}><Close /></button>
           </div>
         )}
 
@@ -224,6 +243,42 @@ export default function Settings() {
                   pick the <code>extension</code> folder from the ClawBack repo. Then come back here and click Connect.
                 </p>
               )}
+            </Sec>
+
+            <Sec id="recap" title="Monthly recap">
+              <p>
+                Once a month, ClawBack can email you what it saved you that month and since you started, and what to do
+                next. It goes from your own inbox to you, and to no one else. Code works out every number in it.
+              </p>
+              <label className="st-switch">
+                <input type="checkbox" role="switch" checked={!!recap?.enabled} disabled={!recap || !!busy}
+                  onChange={(e) => toggleRecap(e.target.checked)} />
+                <span className="track" aria-hidden><span className="thumb" /></span>
+                <span>Email me a monthly recap</span>
+              </label>
+              <p className="fine-print">
+                {!recap ? "Loading."
+                  : !recap.to ? "Connect your email to get it. ClawBack sends it from your own inbox, only to you."
+                  : recap.enabled ? `Next one on ${shortDate(recap.next_send)}, to ${recap.to}.`
+                  : `It would go to ${recap.to}.`}
+              </p>
+              <div className="pair">
+                {recap?.connected
+                  ? <button className="solid" disabled={!!busy} onClick={sendRecap}>{busy === "recap-send" ? "Sending" : "Send me one now"}</button>
+                  : <button className="solid" disabled={!!busy} onClick={() => run("email", async () => { await connectEmail("send"); })}>Connect email to send it</button>}
+                <button disabled={!recap} aria-expanded={preview} onClick={() => setPreview((v) => !v)}>
+                  {preview ? "Hide the preview" : "Preview this month's"}
+                </button>
+              </div>
+              {preview && recap && (
+                <iframe className="st-recap-frame" title={`Preview: ${recap.recap.subject}`} srcDoc={recap.recap.html}
+                  sandbox="allow-same-origin"
+                  onLoad={(e) => {
+                    const doc = e.currentTarget.contentDocument;
+                    if (doc) e.currentTarget.style.height = `${doc.documentElement.scrollHeight}px`;
+                  }} />
+              )}
+              {preview && recap && <p className="fine-print">Subject: {recap.recap.subject}</p>}
             </Sec>
 
             <Sec id="state" title="Your state">
@@ -313,7 +368,7 @@ export default function Settings() {
 
       <footer className="site-foot">
         <div className="wrap">
-          <p>ClawBack never cancels, pays or files anything. It sends one email, a gym cancellation, only when you click Send.</p>
+          <p>ClawBack never cancels, pays or files anything. It sends a gym cancellation only when you click Send, and a monthly recap to you only if you turn it on.</p>
           <p><Link href="/privacy">Privacy policy</Link></p>
         </div>
       </footer>

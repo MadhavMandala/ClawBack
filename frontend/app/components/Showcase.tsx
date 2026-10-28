@@ -2,10 +2,10 @@
 
 import type { Finding, Showcase as ShowcaseData, Subscription } from "../api";
 import { leadFlag, money, reclaimable, shortDate } from "../format";
-import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
 
-// The three workflows the dashboard leads with, each on a card that tilts toward the pointer (Aceternity's 3D card).
-// One button per card opens its workflow in the detail pane. Yellow only marks money you can get back.
+// The three workflows the dashboard leads with, each on a plain white card that lifts a little on hover.
+// One button per card opens its workflow in the detail pane. Green only marks money you can get back.
+// (The earlier tilting card, Aceternity's 3D card, is still in ui/3d-card.tsx if it's wanted back.)
 
 type Open = (kind: "sub" | "finding", id: string, action?: "cancel" | "prepare") => void;
 
@@ -79,19 +79,15 @@ function WorkflowCard({ title, merchant, line, money: amount, action, disabled, 
   onClick: () => void;
 }) {
   return (
-    <CardContainer containerClassName="py-0 w-full" className="w-full">
-      <CardBody className="workflow-card group/card relative h-auto w-full rounded-[3px] border border-[var(--rule)] bg-[var(--sheet)] p-5 transition-shadow hover:shadow-xl hover:shadow-black/40">
-        <CardItem translateZ={30} as="h3" className="workflow-title">{title}</CardItem>
-        <CardItem translateZ={50} as="p" className="workflow-merchant">{merchant}</CardItem>
-        <CardItem translateZ={40} as="p" className="workflow-line">{line}</CardItem>
-        <div className="workflow-foot">
-          <CardItem translateZ={60} as="p" className="workflow-money">{amount}</CardItem>
-          <CardItem translateZ={40} as="button" className="solid" disabled={disabled} onClick={onClick}>
-            {action}
-          </CardItem>
-        </div>
-      </CardBody>
-    </CardContainer>
+    <article className="workflow-card">
+      <h3 className="workflow-title">{title}</h3>
+      <p className="workflow-merchant">{merchant}</p>
+      <p className="workflow-line">{line}</p>
+      <div className="workflow-foot">
+        <p className="workflow-money">{amount}</p>
+        <button className="solid" disabled={disabled} onClick={onClick}>{action}</button>
+      </div>
+    </article>
   );
 }
 

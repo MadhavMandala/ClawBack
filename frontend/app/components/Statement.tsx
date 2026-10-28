@@ -1,7 +1,7 @@
-// The front page's picture: one month of the demo user's bank statement, read with a highlighter.
+// The front page's picture: one month of the demo user's bank statement, with ClawBack's notes beside it.
 // Every line and note comes from the demo data (backend/clawback/demo_data.py) and what the dashboard finds in it.
-// The rule holds here too: yellow marks only money you can get back. When only part of a charge is reclaimable,
-// the amount stays plain and the note highlights the part.
+// The rule holds here too: green marks only money you can get back. When only part of a charge is reclaimable,
+// the amount stays plain and the note marks the part.
 
 type Line = { d: string; t: string; a: string; mark?: boolean; note?: (hl: (s: string) => React.ReactNode) => React.ReactNode };
 
@@ -18,7 +18,7 @@ const LINES: Line[] = [
 export default function Statement() {
   let i = 0;
   return (
-    <figure className="stmt" aria-label="An example bank statement and Google Maps Timeline, with the money ClawBack would flag highlighted">
+    <figure className="stmt" aria-label="An example bank statement and Google Maps Timeline, with the money ClawBack would flag marked in green">
       <div className="stmt-top">
         <b>First Platypus Bank, checking</b>
         <span>OCT 01 TO OCT 22, 2026</span>

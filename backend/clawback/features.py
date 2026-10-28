@@ -25,7 +25,7 @@ from dataclasses import asdict, dataclass, field
 
 from .missing import REGISTRY
 
-UPDATED = "2026-10-23"
+UPDATED = "2026-10-27"
 
 PHASES: tuple[dict[str, str], ...] = (
     {"id": "planned", "label": "Planned", "description": "Designed or listed; no code yet."},
@@ -310,6 +310,12 @@ FEATURES: tuple[Feature, ...] = (
       "Saves the cancellation email or a letter as a draft in the person's own mailbox, so they only press send.",
       "Save one draft in a connected Sandbox inbox; Gmail may need the gmail.compose scope on the Nylas connector.",
       "backend/clawback/drafts.py, backend/clawback/sources/nylas.py, backend/clawback/main.py"),
+    # Live: on 2026-10-27 "Send me one now" sent the demo month's October recap through Nylas from a connected Gmail
+    # inbox to the same address, and it arrived (one message, HTML). The nightly monthly send has run only in tests.
+    F("monthly-recap", "Actions", "Monthly savings recap email", "live",
+      "For people who turn it on, emails them once a month what ClawBack saved that month and since they started, and what's next. It goes from their own inbox to them only, and code works out every number.",
+      "Turn on the nightly timer on the hosted backend so it goes out on its own each month.",
+      "backend/clawback/recap.py, backend/clawback/nightly.py, frontend/app/settings/page.tsx"),
     # Live: on 2026-10-23 Tavily, Nemotron 3 Super and Nemotron 3 Ultra (thinking on) ran on the demo Hulu
     # subscription for about $0.004, and every option cited a returned page.
     F("find-cheaper", "Actions", "Find a cheaper plan", "live",
