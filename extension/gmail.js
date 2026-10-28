@@ -151,13 +151,27 @@
     // Inbox and label lists: one row per thread; each sender's address is on a span[email]. A thread can list
     // several senders, so any of them can match. The flag goes before the subject, wherever this layout puts it
     // (the wide one-line layout and the narrow multi-line one differ), or before the sender as a last resort.
-    for (const row of document.querySelectorAll("tr.zA, [role='main'] tr[role='row']")) {
+    // Rows are found from the sender spans, so a layout without tr.zA still works. Sender spans in an open email
+    // (span.gD and the recipients) are handled below, not as rows.
+    const rows = new Set(document.querySelectorAll("tr.zA"));
+    for (const s of document.querySelectorAll("[role='main'] span[email]")) {
+      if (s.closest(".gs, .adn, h3")) continue; // inside an open email
+      const row = s.closest("tr, [role='row'], [role='listitem']");
+      if (row) rows.add(row);
+    }
+    let matched = 0;
+    for (const row of rows) {
       const senders = [...row.querySelectorAll("span[email]")].map((s) => s.getAttribute("email"));
       const match = senders.find((a) => flagFor(a)) || senders[0];
       const subject = row.querySelector(".bog");
       const slot = row.querySelector(".y6") || (subject && subject.parentElement) || row.querySelector(".xT")
         || (row.querySelector("span[email]") || {}).parentElement;
+      if (flagFor(match)) matched += 1;
       place(slot, match);
+    }
+    if (all) {
+      const senders = document.querySelectorAll("span[email]").length;
+      console.info(`ClawBack: ${rows.size} rows, ${senders} sender addresses on the page, ${matched} rows flagged.`);
     }
     // An open email: the sender's name span.gD carries the address. The flag goes next to the subject.
     const opened = document.querySelector("span.gD[email]");
