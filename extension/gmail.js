@@ -163,15 +163,18 @@
     for (const row of rows) {
       const senders = [...row.querySelectorAll("span[email]")].map((s) => s.getAttribute("email"));
       const match = senders.find((a) => flagFor(a)) || senders[0];
-      const subject = row.querySelector(".bog");
-      const slot = row.querySelector(".y6") || (subject && subject.parentElement) || row.querySelector(".xT")
-        || (row.querySelector("span[email]") || {}).parentElement;
+      // Gmail keeps hidden copies of some row parts for its other layouts, so take the first spot that's on screen.
+      const shown = (el) => el && el.getClientRects().length > 0;
+      const subjects = [...row.querySelectorAll(".bog")].filter(shown).map((b) => b.parentElement);
+      const slot = [...row.querySelectorAll(".y6"), ...subjects, ...row.querySelectorAll(".xT"),
+        ...[...row.querySelectorAll("span[email]")].map((s) => s.parentElement)].find(shown);
       if (flagFor(match)) matched += 1;
       place(slot, match);
     }
     if (all) {
       const senders = document.querySelectorAll("span[email]").length;
-      console.info(`ClawBack: ${rows.size} rows, ${senders} sender addresses on the page, ${matched} rows flagged.`);
+      const drawn = [...document.querySelectorAll("clawback-flag")].filter((f) => f.getClientRects().length).length;
+      console.info(`ClawBack: ${rows.size} rows, ${senders} sender addresses on the page, ${matched} rows flagged, ${drawn} flags visible.`);
     }
     // An open email: the sender's name span.gD carries the address. The flag goes next to the subject.
     const opened = document.querySelector("span.gD[email]");
