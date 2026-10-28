@@ -266,7 +266,7 @@ export default function Dashboard() {
   }, [output, panel, findPrep]);
 
   return (
-    <div className={intro ? "intro" : undefined}>
+    <div className={intro ? "dash intro" : "dash"}>
       <SiteNav current="dashboard">
         {!demo && <button disabled={busy === "sync"} onClick={() => post("sync", "/api/sync")}>{busy === "sync" ? "Syncing" : "Sync now"}</button>}
         <div className="connect-menu" ref={connectRef}>
@@ -480,7 +480,7 @@ export default function Dashboard() {
 
       <footer className="site-foot">
         <div className="wrap">
-          <p>ClawBack never cancels, pays or files anything. It sends one email, a gym cancellation, only when you click Send.</p>
+          <p>ClawBack never cancels, pays or files anything. It sends a gym cancellation only when you click Send, and a monthly recap to you only if you turn it on.</p>
           <p className="foot-demo">
             <span>{demo ? "Prototype. Made-up demo month." : "Your own data, from your connections."}</span>{" "}
             <a href="/built">What&apos;s built</a>

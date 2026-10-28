@@ -61,9 +61,10 @@ def template(today: date) -> UserData:
 
 def seed(user_id: str, today: date | None = None) -> dict:
     """Switch this user to demo mode with fresh demo data. Saved connections stay saved but unused."""
-    state = store.user(user_id).state  # a setting, not data: it survives reseeding
+    old = store.user(user_id)  # settings, not data: the state and the monthly recap choice survive reseeding
+    state, recap_monthly, recap_sent = old.state, old.recap_monthly, old.recap_sent
     data = copy.deepcopy(template(today or date.today()))
-    data.state = state
+    data.state, data.recap_monthly, data.recap_sent = state, recap_monthly, recap_sent
     store.replace(user_id, data)
     return summary(user_id)
 

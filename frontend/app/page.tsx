@@ -36,7 +36,7 @@ const MODELS = [
 ];
 
 const RULES = [
-  { b: "Nothing happens without you.", p: "ClawBack never cancels, pays or files anything. It sends one email, a gym cancellation, only when you click Send. Everything else it prepares, and you send it." },
+  { b: "Nothing happens without you.", p: "ClawBack never cancels, pays or files anything. It sends a gym cancellation only when you click Send, and a monthly recap to you only if you turn it on. Everything else it prepares, and you send it." },
   { b: "It keeps only what it needs.", p: "From your email, the billing facts. From your Timeline, the days you went to a gym. Your bank sign-in happens on Plaid's page, so ClawBack never sees your bank password." },
   { b: "Every find shows its working.", p: "The charges and emails it relied on, the rule behind the claim, and a link to that rule's official source." },
   { b: "Models don't make up links or numbers.", p: "Code does every date and every dollar. Links come from search results or checked pages, never from a model." },
@@ -167,7 +167,7 @@ export default function Home() {
 
         <section className="lp-end" aria-labelledby="h-end">
           <div className="wrap">
-            <h2 id="h-end">See what a month looks like <em>with the highlighter on.</em></h2>
+            <h2 id="h-end">See what a month looks like <em>once ClawBack has read it.</em></h2>
             <div className="lp-ctas">
               <Link className="btn solid big" href="/dashboard">Open the dashboard</Link>
             </div>

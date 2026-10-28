@@ -54,7 +54,7 @@ export default function Privacy() {
           <Sec id="short" title="The short version">
             <ul>
               <li>ClawBack reads your email and bank transactions to find money you are losing or owed.</li>
-              <li>Email access is read-only. If you allow drafts, ClawBack can also save a draft in your mailbox. It sends one thing, a gym cancellation email, and only when you click Send. It never cancels, pays or files anything.</li>
+              <li>Email access is read-only. If you allow drafts, ClawBack can also save a draft in your mailbox. It sends a gym cancellation email only when you click Send, and, if you turn it on, a monthly recap to your own address. It never cancels, pays or files anything.</li>
               <li>If you upload a Google Maps Timeline file, ClawBack keeps only the dates you visited a gym it knows. The rest of the file is discarded as it&apos;s read.</li>
               <li>You sign in to your email and your bank on their own pages. ClawBack never sees those passwords.</li>
               <li>ClawBack stores the facts it pulls out of your email, never the email text itself.</li>
@@ -169,7 +169,7 @@ export default function Privacy() {
               <li>It never sells your data or shares it for advertising.</li>
               <li>It never uses your data to train or improve an AI model, ours or anyone else&apos;s.</li>
               <li>No person reads your email or transactions, unless you ask us to look at a problem with your session, or it is needed for security or the law.</li>
-              <li>It never cancels, pays, disputes or files anything. It sends one thing, a gym cancellation email, and only when you click Send. Everything else it prepares, and you make the final click.</li>
+              <li>It never cancels, pays, disputes or files anything. It sends a gym cancellation email only when you click Send, and a monthly recap to you only if you turn it on. Everything else it prepares, and you make the final click.</li>
             </ul>
           </Sec>
 

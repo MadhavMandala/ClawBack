@@ -161,6 +161,19 @@ export type Settings = {
   states: { code: string; name: string; has_rule: boolean }[];
 };
 
+// GET /api/recap: the monthly recap email (this month so far), whether it's on, and where it goes (backend/clawback/recap.py).
+export type RecapView = {
+  enabled: boolean;
+  to: string | null; // the person's own connected address: the only place it ever goes
+  connected: boolean;
+  next_send: string | null; // the 1st of next month, when it's on
+  recap: {
+    month: string; label: string; partial: boolean; demo: boolean;
+    saved_month: number; saved_total: number; could_save_monthly: number;
+    subject: string; html: string; text: string;
+  };
+};
+
 export type Alternatives = {
   hints: string[];
   options: { option: string; monthly_price: number | null; why: string; source_url: string }[];

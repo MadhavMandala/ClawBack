@@ -11,8 +11,9 @@ Before publishing, fill in the two placeholders: `[contact email]` and `[server 
 ## The short version
 
 - ClawBack reads your email and bank transactions to find money you are losing or owed.
-- Email access is read-only. If you allow drafts, ClawBack can also save a draft in your mailbox. It sends one thing,
-  a gym cancellation email, and only when you click Send. It never cancels, pays or files anything.
+- Email access is read-only. If you allow drafts, ClawBack can also save a draft in your mailbox. It sends a gym
+  cancellation email only when you click Send, and, if you turn it on, a monthly recap to your own address. It
+  never cancels, pays or files anything.
 - If you upload a Google Maps Timeline file, ClawBack keeps only the dates you visited a gym it knows. The file, its
   coordinates and every other place in it are discarded as it's read.
 - You sign in to your email and your bank on their own pages. ClawBack never sees those passwords.
