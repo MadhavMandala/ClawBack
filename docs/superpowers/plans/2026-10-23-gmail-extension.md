@@ -1,5 +1,11 @@
 # Gmail Add-on Implementation Plan
 
+> **Built on 2026-10-28, with one change.** The demo now connects Gmail for sending only, so ClawBack has no Gmail
+> message ids to match on. The flags carry each merchant's sender domains instead, and the extension matches the
+> sender's address inside the browser (`backend/clawback/pipeline/email_flags.py`, `extension/gmail.js`). Tasks 0
+> and 7 (the id spike and the staged email) no longer apply: any email from Netflix, Orangetheory or Best Buy in
+> the inbox gets the flag. The rest follows this plan.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 ## Decisions (Ishani, 2026-10-23)

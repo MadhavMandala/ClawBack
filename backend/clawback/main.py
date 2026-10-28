@@ -30,6 +30,7 @@ from .missing import REGISTRY, Missing, missing
 from .pipeline import rights
 from .pipeline.cancel import cancel_prep
 from .pipeline.confirm import mark_done
+from .pipeline.email_flags import email_flags as flags_for
 from .pipeline.recommend import alternatives
 from .pipeline.recovered import history
 from .pipeline.run import best_saving, run, summary
@@ -162,9 +163,9 @@ def addon_token_revoke(user_id: UserId):
 
 @app.get("/api/email-flags")
 def email_flags(user_id: AddonUserId):
-    """Flags for Gmail rows, keyed by Gmail ids. MISSING [gmail-addon]: the flags themselves come in the next step
-    (docs/superpowers/plans/2026-10-23-gmail-extension.md, Task 1); for now the list is empty."""
-    return {"flags": [], "generated_at": datetime.now(timezone.utc).isoformat()}
+    """Flags for Gmail rows: each merchant with money in it and the sender domains its emails come from. The
+    extension matches domains in the browser, so no email data comes back here (pipeline/email_flags.py)."""
+    return {"flags": flags_for(user_id), "generated_at": datetime.now(timezone.utc).isoformat()}
 
 
 @app.get("/api/alerts")

@@ -140,6 +140,30 @@ and other IMAP inboxes.
 
 Restart the backend after editing `.env`. Connecting a real source replaces the demo data.
 
+### Gmail add-on (optional)
+
+A Chrome extension in [`extension/`](extension) puts a small ClawBack flag on Gmail emails from services where
+ClawBack found money, such as Netflix, the gym or Best Buy in the demo month. When one of those emails is on screen, a
+ClawBack card pops up in the corner of Gmail, the toolbar icon shows a count, and the extension's window opens where
+Chrome allows it. Each card says what ClawBack found and how much you could save, and **More info** opens that item
+on the dashboard. Hovering the flag shows the same card.
+
+1. In Chrome, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the
+   `extension` folder. Pin it to the toolbar if you like.
+2. Open ClawBack's settings page (`/settings`) in the same browser and click **Connect** on the Gmail add-on row.
+3. Reload Gmail.
+
+The extension reads one thing from Gmail: each sender's address, from the inbox list. It matches the address's
+domain against the flags inside the browser, so nothing from Gmail is sent anywhere, and it never changes or clicks
+anything in Gmail. It talks to ClawBack with a read-only token that lists flags and nothing else; **Disconnect** on
+the settings page revokes it. The extension works with `localhost` and with a backend on `*.sslip.io`
+([docs/DEPLOY.md](docs/DEPLOY.md)); for another address, add it to `host_permissions` in `extension/manifest.json`
+and to `API_ALLOWED` in `extension/handoff.js`.
+
+For filming, `CLAWBACK_DEMO_SENDERS=Netflix=teammate@example.com` on the backend flags mail from that exact address
+as Netflix, in place of netflix.com, so a teammate can send the email that gets flagged. Separate merchants with
+`;` and addresses with `,`.
+
 ### Settings (`backend/.env` or the server's environment)
 
 | Variable | What it does |

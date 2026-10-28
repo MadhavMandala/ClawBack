@@ -18,7 +18,7 @@ def _token(api, h) -> str:
 def test_token_opens_email_flags(api):
     h = new_session(api)
     r = api.get("/api/email-flags", headers={ADDON: _token(api, h)})
-    assert r.status_code == 200 and r.json()["flags"] == [] and r.json()["generated_at"]
+    assert r.status_code == 200 and isinstance(r.json()["flags"], list) and r.json()["generated_at"]
 
 
 def test_email_flags_needs_a_token(api):

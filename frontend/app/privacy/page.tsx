@@ -98,6 +98,12 @@ export default function Privacy() {
               <li><b>Drafts, if you allow them.</b> The sign-in page then also asks for permission to write drafts. ClawBack uses it only to save a draft you asked for, such as a cancellation email or a refund letter. For Gmail, Google&apos;s draft permission also allows sending mail. ClawBack never sends; you press send in your own mail app.</li>
             </ul>
 
+            <h3>The Gmail add-on, if you install it</h3>
+            <ul>
+              <li>The add-on is a Chrome extension you load yourself. It reads one thing from your Gmail page: each sender&apos;s email address in the inbox list and in an open email. It compares the address with the services ClawBack flagged, inside your browser. No address, subject or email text is sent to ClawBack or anywhere else, and the add-on never changes or clicks anything in Gmail.</li>
+              <li>It fetches the flags with a token that can only list them. Disconnecting it on the settings page, or deleting your data, revokes the token.</li>
+            </ul>
+
             <h3>Bank transactions, through Plaid</h3>
             <p>
               ClawBack reads bank and card transactions through <a href="https://plaid.com">Plaid</a>. The demo only

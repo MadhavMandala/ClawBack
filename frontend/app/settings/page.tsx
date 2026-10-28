@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { call, forgetSession, type Me, type RecapView, type Settings as StateSettings } from "../api";
+import { API, call, forgetSession, type Me, type RecapView, type Settings as StateSettings } from "../api";
 import { bankNotice, connectBank, connectEmail } from "../connect";
 import { shortDate } from "../format";
 import InstallApp from "../components/InstallApp";
@@ -47,6 +47,46 @@ export default function Settings() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // The Gmail add-on (extension/). Its script on this site answers a ping, takes the read-only token and says when
+  // it has it. No answer means it isn't installed in this browser.
+  const [addon, setAddon] = useState<"checking" | "absent" | "off" | "on">("checking");
+  useEffect(() => {
+    const hear = (e: MessageEvent) => {
+      if (e.source !== window || e.data?.source !== "clawback-addon") return;
+      if (e.data.type === "addon-here") setAddon(e.data.connected ? "on" : "off");
+      if (e.data.type === "addon-connected") setAddon("on");
+      if (e.data.type === "addon-disconnected") setAddon("off");
+    };
+    window.addEventListener("message", hear);
+    window.postMessage({ source: "clawback", type: "addon-ping" }, window.location.origin);
+    const t = setTimeout(() => setAddon((a) => (a === "checking" ? "absent" : a)), 800);
+    return () => { window.removeEventListener("message", hear); clearTimeout(t); };
+  }, []);
+
+  const connectAddon = () => run("addon", async () => {
+    const { token } = await call<{ token: string }>("/api/addon-token", { method: "POST" });
+    const answered = new Promise<boolean>((done) => {
+      const hear = (e: MessageEvent) => {
+        if (e.source === window && e.data?.source === "clawback-addon" && e.data.type === "addon-connected") {
+          window.removeEventListener("message", hear); done(true);
+        }
+      };
+      window.addEventListener("message", hear);
+      setTimeout(() => { window.removeEventListener("message", hear); done(false); }, 2000);
+    });
+    window.postMessage({ source: "clawback", type: "addon-token", token, api: API }, window.location.origin);
+    if (await answered) return "Gmail add-on connected. Reload Gmail to see the flags.";
+    await call("/api/addon-token", { method: "DELETE" });
+    setAddon("absent");
+    throw new Error("The Gmail add-on didn't answer. If you just installed or reloaded it, reload this page and click Connect again. Otherwise install it first (steps below).");
+  });
+
+  const disconnectAddon = () => run("addon", async () => {
+    await call("/api/addon-token", { method: "DELETE" });
+    window.postMessage({ source: "clawback", type: "addon-disconnect" }, window.location.origin);
+    return "Gmail add-on disconnected. Its token no longer works.";
+  });
 
   async function run(key: string, job: () => Promise<string | void>) {
     setBusy(key);
@@ -180,8 +220,29 @@ export default function Settings() {
                     ? <button disabled={!!busy} onClick={() => disconnect("plaid")}>{busy === "plaid" ? "Disconnecting" : "Disconnect"}</button>
                     : <button className="solid" disabled={!!busy} onClick={() => run("plaid", async () => { const r = await connectBank(); return r ? bankNotice(r) : undefined; })}>{bank?.needs_reconnect ? "Reconnect bank" : "Connect bank"}</button>}
                 </li>
+                <li>
+                  <div>
+                    <b>Gmail add-on</b>
+                    <span>
+                      {addon === "on"
+                        ? "Connected. In Gmail, emails from services with money in them get a ClawBack flag."
+                        : addon === "absent"
+                          ? "Not found in this browser. Just installed it? Reload this page. Otherwise it's a Chrome extension in the repo's extension folder."
+                          : "Flags emails in Gmail from services where ClawBack found money. It reads only each sender's address, in your browser."}
+                    </span>
+                  </div>
+                  {addon === "on"
+                    ? <button disabled={!!busy} onClick={disconnectAddon}>{busy === "addon" ? "Disconnecting" : "Disconnect"}</button>
+                    : <button className="solid" disabled={!!busy || addon === "checking"} onClick={connectAddon}>{busy === "addon" ? "Connecting" : "Connect"}</button>}
+                </li>
               </ul>
               <p className="fine-print">Disconnecting removes the connection at Nylas or Plaid and drops what came from it.</p>
+              {addon === "absent" && (
+                <p className="fine-print">
+                  To install the Gmail add-on: open chrome://extensions, turn on Developer mode, click Load unpacked and
+                  pick the <code>extension</code> folder from the ClawBack repo. Then come back here and click Connect.
+                </p>
+              )}
             </Sec>
 
             <Sec id="recap" title="Monthly recap">
