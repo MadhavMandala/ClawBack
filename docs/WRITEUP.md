@@ -145,8 +145,9 @@ list of checked pages, never from a model.
 - **Email is untrusted.** Email text is wrapped in tags, the model is told to ignore instructions inside it, and an
   injection screen checks it before a model reads it.
 - **Zero Data Retention** is on for the team's Token Factory organization, so prompts and answers aren't kept.
-- **The person makes the final click.** ClawBack sends one email (a gym cancellation) only after a click and a
-  confirm, and in the demo only to the person's own address. It never cancels, pays or files anything.
+- **The person makes the final click.** ClawBack sends a gym cancellation only after a click and a confirm, and in
+  the demo only to the person's own address. If the person turns it on, it also sends them a monthly recap of what
+  they saved. It never cancels, pays or files anything.
 - **Gym visits, not location history.** From a Timeline export, ClawBack keeps only the dates of visits near gyms on
   its list. Nothing else from the file is stored.
 - **Facts, not email.** The database keeps facts pulled out of email, never email text. Saved bank and email tokens
