@@ -114,7 +114,12 @@
   }
 
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && openFor) hide(); }, true);
-  window.addEventListener("scroll", () => { if (openFor) hide(); }, true);
+  let scrolled;
+  window.addEventListener("scroll", () => {
+    if (openFor) hide();
+    clearTimeout(scrolled);
+    scrolled = setTimeout(() => scan(false), 300); // emails scrolled into view count as seen
+  }, true);
 
   function makeFlag(f) {
     const host = document.createElement("clawback-flag");
@@ -159,22 +164,18 @@
       const row = s.closest("tr, [role='row'], [role='listitem']");
       if (row) rows.add(row);
     }
-    let matched = 0;
+    const seen = new Map(); // target -> flag, for matches in rows the user can see
+    const shown = (el) => el && el.getClientRects().length > 0;
     for (const row of rows) {
       const senders = [...row.querySelectorAll("span[email]")].map((s) => s.getAttribute("email"));
       const match = senders.find((a) => flagFor(a)) || senders[0];
       // Gmail keeps hidden copies of some row parts for its other layouts, so take the first spot that's on screen.
-      const shown = (el) => el && el.getClientRects().length > 0;
       const subjects = [...row.querySelectorAll(".bog")].filter(shown).map((b) => b.parentElement);
       const slot = [...row.querySelectorAll(".y6"), ...subjects, ...row.querySelectorAll(".xT"),
         ...[...row.querySelectorAll("span[email]")].map((s) => s.parentElement)].find(shown);
-      if (flagFor(match)) matched += 1;
       place(slot, match);
-    }
-    if (all) {
-      const senders = document.querySelectorAll("span[email]").length;
-      const drawn = [...document.querySelectorAll("clawback-flag")].filter((f) => f.getClientRects().length).length;
-      console.info(`ClawBack: ${rows.size} rows, ${senders} sender addresses on the page, ${matched} rows flagged, ${drawn} flags visible.`);
+      const f = flagFor(match);
+      if (f && onScreen(row)) seen.set(f.target, f);
     }
     // An open email: the sender's name span.gD carries the address. The flag goes next to the subject.
     const opened = document.querySelector("span.gD[email]");
@@ -187,8 +188,62 @@
         subject.insertAdjacentElement("afterend", slot);
       }
       place(slot, opened && opened.getAttribute("email"));
+      const f = flagFor(opened && opened.getAttribute("email"));
+      if (f && onScreen(subject)) seen.set(f.target, f);
     }
     if (all && openFor && !document.contains(openFor)) hide();
+    announce([...seen.values()]);
+  }
+
+  // --- Announcing a match: a card in the corner, a count on the toolbar icon, the extension's own window --------
+
+  function onScreen(el) {
+    const r = el.getBoundingClientRect();
+    return r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
+  }
+
+  let toastHost, toast, lastKey = "";
+  const dismissed = new Set(); // targets closed on this page; they don't pop up again until Gmail reloads
+
+  function announce(found) {
+    const key = found.map((f) => f.target).sort().join("|");
+    if (key === lastKey) return;
+    lastKey = key;
+    try { chrome.runtime.sendMessage({ type: "matches", flags: found }).catch(() => {}); } catch { /* reloaded */ }
+    const fresh = found.filter((f) => !dismissed.has(f.target));
+    if (!fresh.length) { if (toast) toast.classList.remove("open"); return; }
+    showToast(fresh);
+  }
+
+  function showToast(list) {
+    if (!toastHost || !document.body.contains(toastHost)) {
+      toastHost = document.createElement("clawback-toast");
+      const root = toastHost.attachShadow({ mode: "closed" });
+      root.innerHTML = `<style>${CARD_CSS}
+        :host { top: 72px; left: auto; right: 24px; }
+        .card { width: 320px; padding: 14px 16px 12px; }
+        .head { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-weight: 700; font-size: 13px; }
+        .head svg { width: 18px; height: 18px; }
+        .x { all: unset; margin-left: auto; cursor: pointer; color: #9aaba1; font-size: 18px; line-height: 1; padding: 0 4px; }
+        .x:focus-visible { outline: 2px solid #ffe14d; }
+        .item + .item { border-top: 1px solid rgba(214, 232, 221, 0.09); padding-top: 10px; margin-top: 10px; }
+      </style><div class="card" role="status" aria-live="polite"></div>`;
+      toast = root.querySelector(".card");
+      document.body.appendChild(toastHost);
+    }
+    const n = list.length;
+    toast.innerHTML = `<div class="head">${MARK.replace('stroke="#e8efe9"', 'stroke="#ffe14d"')}
+        <span>ClawBack found ${n === 1 ? "an email" : `${n} emails`} worth a look</span>
+        <button class="x" type="button" aria-label="Close">×</button></div>
+      ${list.slice(0, 3).map((f) => `<div class="item"><b>${esc(f.merchant)}</b>
+        ${f.lines[0] ? `<p>${esc(f.lines[0])}</p>` : ""}
+        <p class="sum">${f.period === "month" ? `You could save <mark>${money(f.amount)}</mark> a month.` : `You could get <mark>${money(f.amount)}</mark> back.`}</p>
+        <a href="${esc(f.link)}" target="_blank" rel="noopener">More info</a></div>`).join("")}`;
+    toast.querySelector(".x").addEventListener("click", () => {
+      list.forEach((f) => dismissed.add(f.target));
+      toast.classList.remove("open");
+    });
+    toast.classList.add("open");
   }
 
   let pending;

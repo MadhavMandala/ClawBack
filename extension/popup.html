@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ClawBack for Gmail</title>
+  <style>
+    body { margin: 0; width: 320px; background: #07110d; color: #e8efe9;
+      font: 400 13px/1.45 "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    header { display: flex; align-items: center; gap: 8px; padding: 14px 16px 10px; font-weight: 700; font-size: 14px; }
+    header svg { width: 18px; height: 18px; }
+    main { padding: 0 16px 14px; }
+    .item { background: #0e1d17; border: 1px solid rgba(214, 232, 221, 0.2); border-radius: 3px; padding: 12px 14px; }
+    .item + .item { margin-top: 8px; }
+    b { display: block; font-weight: 700; font-size: 14px; margin: 0 0 6px; }
+    p { margin: 0 0 6px; color: #9aaba1; }
+    p.sum { color: #e8efe9; margin: 8px 0 10px; }
+    mark { background: #ffe14d; color: #11170c; padding: 0 3px; border-radius: 2px; font-weight: 700; }
+    a { color: #e8efe9; text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+    a:focus-visible { outline: 2px solid #ffe14d; outline-offset: 2px; }
+    .empty { color: #9aaba1; margin: 0; }
+    footer { padding: 10px 16px 14px; border-top: 1px solid rgba(214, 232, 221, 0.09); font-size: 11px; color: #6f8077; }
+  </style>
+</head>
+<body>
+  <header>
+    <svg viewBox="0 0 28 28" aria-hidden="true"><path d="M6 21L12 6.5M12.5 23L18.5 8.5M19 21.5L24 9" stroke="#ffe14d" stroke-width="3.4" stroke-linecap="round" fill="none"/></svg>
+    <span id="title">ClawBack for Gmail</span>
+  </header>
+  <main id="list"></main>
+  <footer>Matched on each sender's address, in your browser. Nothing from Gmail is sent anywhere.</footer>
+  <script src="popup.js"></script>
+</body>
+</html>
