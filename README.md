@@ -143,8 +143,10 @@ Restart the backend after editing `.env`. Connecting a real source replaces the 
 ### Gmail add-on (optional)
 
 A Chrome extension in [`extension/`](extension) puts a small ClawBack flag on Gmail emails from services where
-ClawBack found money, such as Netflix, the gym or Best Buy in the demo month. Hovering shows what ClawBack found
-and how much you could save, and **More info** opens that item on the dashboard.
+ClawBack found money, such as Netflix, the gym or Best Buy in the demo month. When one of those emails is on screen, a
+ClawBack card pops up in the corner of Gmail, the toolbar icon shows a count, and the extension's window opens where
+Chrome allows it. Each card says what ClawBack found and how much you could save, and **More info** opens that item
+on the dashboard. Hovering the flag shows the same card.
 
 1. In Chrome, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the
    `extension` folder. Pin it to the toolbar if you like.
