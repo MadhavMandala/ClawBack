@@ -106,6 +106,9 @@ class Settings:
     frontend_origin: str = field(default_factory=lambda: _env("FRONTEND_ORIGIN") or "http://localhost:3000")
     frontend_origin_regex: str | None = field(default_factory=lambda: _env("FRONTEND_ORIGIN_REGEX"))
     autoseed_demo: bool = field(default_factory=lambda: (_env("CLAWBACK_AUTOSEED") or "1") == "1")
+    # Gmail add-on, for filming: "Netflix=you@example.com;Best Buy=..." flags mail from those addresses as that
+    # merchant, in place of its own domains (pipeline/email_flags.py).
+    demo_senders: str = field(default_factory=lambda: _env("CLAWBACK_DEMO_SENDERS") or "")
 
     @property
     def single_user(self) -> bool:

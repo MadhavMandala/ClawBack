@@ -38,7 +38,17 @@ def test_no_email_text_in_a_flag(client):
     payload = client.get("/api/email-flags").text
     assert texts and not any(t in payload for t in texts)
     for f in client.get("/api/email-flags").json()["flags"]:
-        assert set(f) == {"target", "merchant", "domains", "lines", "amount", "period", "link"}
+        assert set(f) == {"target", "merchant", "domains", "addresses", "lines", "amount", "period", "link"}
+
+
+def test_demo_sender_stands_in_for_the_merchant(client, monkeypatch):
+    from clawback.config import settings
+
+    monkeypatch.setattr(settings, "demo_senders", "Netflix=Teammate@Example.com ; Nobody=x@y.com; bad")
+    client.post("/api/demo/seed")
+    flags = _flags(client)
+    assert flags["Netflix"]["addresses"] == ["teammate@example.com"] and flags["Netflix"]["domains"] == []
+    assert flags["Best Buy"]["addresses"] == [] and flags["Best Buy"]["domains"] == ["bestbuy.com"]
 
 
 def test_kept_cancelled_and_dismissed_give_no_flag(client):

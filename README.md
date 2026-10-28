@@ -158,6 +158,10 @@ the settings page revokes it. The extension works with `localhost` and with a ba
 ([docs/DEPLOY.md](docs/DEPLOY.md)); for another address, add it to `host_permissions` in `extension/manifest.json`
 and to `API_ALLOWED` in `extension/handoff.js`.
 
+For filming, `CLAWBACK_DEMO_SENDERS=Netflix=teammate@example.com` on the backend flags mail from that exact address
+as Netflix, in place of netflix.com, so a teammate can send the email that gets flagged. Separate merchants with
+`;` and addresses with `,`.
+
 ### Settings (`backend/.env` or the server's environment)
 
 | Variable | What it does |
