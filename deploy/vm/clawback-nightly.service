@@ -18,6 +18,8 @@ Environment=PYTHONDONTWRITEBYTECODE=1
 EnvironmentFile=/etc/clawback/clawback.env
 ExecStart=/opt/clawback/venv/bin/python -m clawback.nightly
 TimeoutStartSec=30min
+# Same 14-day journal as the API. Read it with: journalctl --namespace=clawback -u clawback-nightly
+LogNamespace=clawback
 
 NoNewPrivileges=yes
 PrivateTmp=yes

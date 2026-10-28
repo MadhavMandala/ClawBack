@@ -20,6 +20,9 @@ EnvironmentFile=/etc/clawback/clawback.env
 ExecStart=/opt/clawback/venv/bin/python -m uvicorn clawback.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1
 Restart=on-failure
 RestartSec=3
+# Logs go to their own journal, kept for 14 days (journald@clawback.conf), so the limit doesn't touch other
+# services on a shared VM. Read them with: journalctl --namespace=clawback -u clawback
+LogNamespace=clawback
 
 NoNewPrivileges=yes
 PrivateTmp=yes

@@ -68,6 +68,11 @@ as_app "$VENV/bin/pip" install -q -e "$APP_DIR/backend"
 for unit in clawback.service clawback-nightly.service clawback-nightly.timer; do
   install -m 644 "$APP_DIR/deploy/vm/$unit" "/etc/systemd/system/$unit"
 done
+# ClawBack's own 14-day journal (the units log there with LogNamespace=clawback).
+if [[ -f "$APP_DIR/deploy/vm/journald@clawback.conf" ]]; then
+  install -m 644 "$APP_DIR/deploy/vm/journald@clawback.conf" /etc/systemd/journald@clawback.conf
+  systemctl try-restart systemd-journald@clawback.service
+fi
 systemctl daemon-reload
 
 # --- 4. Restart and check -------------------------------------------------------------------------------
@@ -89,6 +94,6 @@ fi
 if [[ $ok == 1 ]]; then
   echo "The API is up."
 else
-  echo "The API didn't answer within 30 seconds. Look at: journalctl -u clawback -n 80"
+  echo "The API didn't answer within 30 seconds. Look at: journalctl --namespace=clawback -u clawback -n 80"
   exit 1
 fi

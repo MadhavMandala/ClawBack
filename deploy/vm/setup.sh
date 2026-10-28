@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # ClawBack backend on one small Ubuntu 24.04 VM. See docs/DEPLOY.md for the whole runbook.
 #
+# Written for a VM that already runs other things (the hosted demo shares oracle-hermes, an Oracle Cloud VM):
+# it installs only missing packages, restarts no other service, keeps its logs in their own journal, and adds
+# firewall rules next to the ones already there.
+#
 # Run as root on the VM. Safe to run again: each step checks what is already there.
 #
 #   sudo bash setup.sh
@@ -17,6 +21,10 @@
 #   DATA_DEVICE    a separate data disk for the database, such as /dev/vdb. Formatted ONLY if it has no
 #                  filesystem yet, then mounted at /var/lib/clawback. Leave unset to keep the data on the boot disk.
 #   SKIP_CLONE=1   the code was copied to /opt/clawback/app by hand (scp), so don't use git.
+#   BIND_ADDR      the address Caddy listens on. Default: every address, unless another program already listens
+#                  on port 443; then the VM's private address (the one Oracle forwards the public IP to).
+#   FIREWALL       iptables, ufw or none. Default: iptables on Oracle's Ubuntu images (they come with iptables
+#                  rules saved in /etc/iptables/rules.v4, and Oracle warns against ufw), ufw anywhere else.
 #
 # Example:  sudo DATA_DEVICE=/dev/vdb BRANCH=main bash setup.sh
 
@@ -26,6 +34,8 @@ REPO="${REPO:-git@github.com:MadhavMandala/ClawBack.git}"
 BRANCH="${BRANCH:-main}"
 SKIP_CLONE="${SKIP_CLONE:-0}"
 DATA_DEVICE="${DATA_DEVICE:-}"
+FIREWALL="${FIREWALL:-auto}"
+RULES_V4=/etc/iptables/rules.v4
 
 APP_USER=clawback
 HOME_DIR=/opt/clawback
@@ -45,12 +55,25 @@ as_app() { sudo -u "$APP_USER" -H "$@"; }
 . /etc/os-release
 [[ "${ID:-}" == "ubuntu" ]] || echo "Warning: written for Ubuntu 24.04; this is ${PRETTY_NAME:-unknown}."
 
+if [[ "$FIREWALL" == "auto" ]]; then
+  if [[ -f "$RULES_V4" && "$(iptables -S INPUT 2>/dev/null || true)" == *"-j REJECT"* ]]; then
+    FIREWALL=iptables
+  else
+    FIREWALL=ufw
+  fi
+fi
+[[ "$FIREWALL" =~ ^(iptables|ufw|none)$ ]] || { echo "FIREWALL must be iptables, ufw or none."; exit 1; }
+
 # --- 1. Packages ----------------------------------------------------------------------------------------
 say "Installing packages"
 export DEBIAN_FRONTEND=noninteractive
+# Don't let needrestart restart other services after the install, and don't upgrade what's already installed.
+export NEEDRESTART_MODE=l
 apt-get update -q
-apt-get install -y -q python3 python3-venv python3-pip git sqlite3 curl ufw \
-  debian-keyring debian-archive-keyring apt-transport-https gnupg
+packages=(python3 python3-venv python3-pip git sqlite3 curl
+  debian-keyring debian-archive-keyring apt-transport-https gnupg)
+[[ "$FIREWALL" == "ufw" ]] && packages+=(ufw)
+apt-get install -y -q --no-upgrade "${packages[@]}"
 
 python3 - <<'PY' || { echo "ClawBack needs Python 3.12 or newer. Use an Ubuntu 24.04 image."; exit 1; }
 import sys
@@ -154,10 +177,9 @@ say "Installing the systemd units"
 install -m 644 "$APP_DIR/deploy/vm/clawback.service" /etc/systemd/system/clawback.service
 install -m 644 "$APP_DIR/deploy/vm/clawback-nightly.service" /etc/systemd/system/clawback-nightly.service
 install -m 644 "$APP_DIR/deploy/vm/clawback-nightly.timer" /etc/systemd/system/clawback-nightly.timer
-# Keep request logs short-lived, as the privacy policy says.
-install -d /etc/systemd/journald.conf.d
-printf '[Journal]\nMaxRetentionSec=14day\n' > /etc/systemd/journald.conf.d/clawback.conf
-systemctl restart systemd-journald
+# Keep request logs for 14 days, as the privacy policy says: ClawBack's own journal only, not the whole VM's.
+install -m 644 "$APP_DIR/deploy/vm/journald@clawback.conf" /etc/systemd/journald@clawback.conf
+systemctl try-restart systemd-journald@clawback.service
 systemctl daemon-reload
 systemctl enable clawback.service
 systemctl restart clawback.service
@@ -168,21 +190,70 @@ else
   echo "clawback.nightly isn't in this branch yet, so the nightly timer stays off. update.sh turns it on later."
 fi
 
+# --- 7. Firewall (before Caddy, which needs ports 80 and 443 to get its certificate) --------------------
+# Adds a rule only where it's missing, both live and in the saved rules, so it survives a reboot.
+open_port_iptables() {
+  local port=$1 rule pos
+  rule=(-p tcp -m state --state NEW -m tcp --dport "$port" -j ACCEPT)
+  if ! iptables -C INPUT "${rule[@]}" 2>/dev/null; then
+    # just above the first REJECT, which turns away everything not allowed before it
+    pos=$(iptables -L INPUT -n --line-numbers | awk '$2 == "REJECT" { print $1; exit }')
+    iptables -I INPUT "${pos:-1}" "${rule[@]}"
+  fi
+  local line="-A INPUT ${rule[*]}"
+  if ! grep -qxF -- "$line" "$RULES_V4"; then
+    [[ -f "$RULES_V4.before-clawback" ]] || cp -p "$RULES_V4" "$RULES_V4.before-clawback"
+    awk -v add="$line" '!done && /^-A INPUT .*-j REJECT/ { print add; done = 1 } { print }' "$RULES_V4" > "$RULES_V4.new"
+    if grep -qxF -- "$line" "$RULES_V4.new" && iptables-restore --test < "$RULES_V4.new"; then
+      cat "$RULES_V4.new" > "$RULES_V4"
+    else
+      echo "Couldn't add port $port to $RULES_V4. It's open now, but closes again after a reboot."
+    fi
+    rm -f "$RULES_V4.new"
+  fi
+}
+
+case "$FIREWALL" in
+  iptables)
+    say "Opening ports 80 and 443 in iptables, next to the rules already there"
+    open_port_iptables 80
+    open_port_iptables 443
+    echo "On Oracle Cloud, also open TCP 80 and 443 in the VCN's security list (docs/DEPLOY.md, step 1)."
+    ;;
+  ufw)
+    say "Opening ports 22, 80 and 443 with ufw"
+    ufw allow OpenSSH >/dev/null
+    ufw allow 80/tcp >/dev/null
+    ufw allow 443/tcp >/dev/null
+    ufw --force enable >/dev/null
+    ;;
+  none)
+    say "Leaving the firewall alone (FIREWALL=none). Ports 80 and 443 must be open for HTTPS."
+    ;;
+esac
+
+# --- 8. HTTPS -------------------------------------------------------------------------------------------
+if [[ -z "${BIND_ADDR+set}" ]]; then
+  BIND_ADDR=""
+  # Another program (not Caddy itself, on a re-run) on port 443: listen on the private address only.
+  if [[ -n "$(ss -tlnpH 'sport = :443' | grep -v '"caddy"' || true)" ]]; then
+    BIND_ADDR=$(ip -4 route get 1.1.1.1 | awk '{ for (i = 1; i < NF; i++) if ($i == "src") { print $(i + 1); exit } }')
+    [[ -n "$BIND_ADDR" ]] || { echo "Port 443 is taken and the private address wasn't found. Set BIND_ADDR."; exit 1; }
+    echo "Port 443 is already in use on this VM, so Caddy listens on $BIND_ADDR only."
+  fi
+fi
+
 say "Configuring Caddy for https://$CLAWBACK_HOST"
-sed "s|__HOST__|$CLAWBACK_HOST|g" "$APP_DIR/deploy/vm/Caddyfile" > /etc/caddy/Caddyfile
-install -d -o caddy -g caddy /var/log/caddy
+if [[ -n "$BIND_ADDR" ]]; then
+  sed -e "s|__HOST__|$CLAWBACK_HOST|g" -e "s|__BIND__|$BIND_ADDR|" "$APP_DIR/deploy/vm/Caddyfile" > /etc/caddy/Caddyfile
+else
+  sed -e "s|__HOST__|$CLAWBACK_HOST|g" -e '/__BIND__/d' "$APP_DIR/deploy/vm/Caddyfile" > /etc/caddy/Caddyfile
+fi
 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 systemctl enable caddy
 systemctl reload-or-restart caddy
 
-# --- 7. Firewall ----------------------------------------------------------------------------------------
-say "Opening ports 22, 80 and 443"
-ufw allow OpenSSH >/dev/null
-ufw allow 80/tcp >/dev/null
-ufw allow 443/tcp >/dev/null
-ufw --force enable >/dev/null
-
-# --- 8. Check -------------------------------------------------------------------------------------------
+# --- 9. Check -------------------------------------------------------------------------------------------
 say "Checking the API"
 for _ in $(seq 1 20); do
   curl -fsS http://127.0.0.1:8000/api/health >/dev/null 2>&1 && break
@@ -191,7 +262,7 @@ done
 if curl -fsS http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
   echo "The API answers on 127.0.0.1:8000."
 else
-  echo "The API isn't answering yet. Look at: journalctl -u clawback -n 50"
+  echo "The API isn't answering yet. Look at: journalctl --namespace=clawback -u clawback -n 50"
 fi
 
 cat <<EOF
@@ -201,7 +272,7 @@ Done.
   Health check:  curl https://$CLAWBACK_HOST/api/health
   Settings:      $ENV_FILE
   Database:      $DATA_DIR
-  Logs:          journalctl -u clawback -f
+  Logs:          journalctl --namespace=clawback -u clawback -f
 EOF
 if [[ "${NEW_ENV:-0}" == "1" ]]; then
   cat <<EOF

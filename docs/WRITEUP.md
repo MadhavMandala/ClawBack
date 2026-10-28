@@ -1,7 +1,7 @@
 # ClawBack: project write-up
 
 Draft for the submission page. Before submitting, fill the three links below (after the deploy and the video
-upload), and check the Nebius AI Cloud line under "The rest of the stack" against the actual deploy. Numbers come
+upload), and check the hosting line under "The rest of the stack" against the actual deploy. Numbers come
 from `docs/EVAL.md` or the live app.
 
 **Track:** Best Apps and Agents.
@@ -159,7 +159,7 @@ list of checked pages, never from a model.
 
 ### The rest of the stack
 
-- Backend: Python, FastAPI, SQLite. It deploys to a CPU virtual machine on Nebius AI Cloud, behind Caddy for HTTPS
+- Backend: Python, FastAPI, SQLite. It runs on an Oracle Cloud virtual machine, behind Caddy for HTTPS
   (`docs/DEPLOY.md`).
 - Frontend: Next.js on Vercel.
 - Email: Nylas v3, from any provider. Bank: Plaid (Sandbox).
@@ -265,8 +265,8 @@ and the date math got the most care.
 ## Built with
 
 NVIDIA Nemotron 3.5 Lightning, NVIDIA Nemotron 3 Nano, NVIDIA Nemotron 3 Super, NVIDIA Nemotron 3 Ultra, Nebius
-Token Factory, Nebius AI Cloud, Tavily, Nylas, Plaid, Google Maps Timeline (export), Python, FastAPI, SQLite, Next.js, React, TypeScript, Vercel,
-Caddy.
+Token Factory, Tavily, Nylas, Plaid, Google Maps Timeline (export), Python, FastAPI, SQLite, Next.js, React, TypeScript, Vercel,
+Oracle Cloud, Caddy.
 
 ## Made during the hackathon
 

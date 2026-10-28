@@ -128,7 +128,8 @@ P0 = needed for the hackathon demo. P1 = needed for a convincing submission. P2 
    than keeping a classifier server running.
 5. **Decided on 2026-10-23:**
    - **Demo access:** each visitor gets their own session with no login.
-   - **Hosting:** the backend goes on Nebius AI Cloud.
+   - **Hosting:** the backend goes on Nebius AI Cloud. Changed on 2026-10-28: it runs on `oracle-hermes`, an Oracle
+     Cloud VM the team already runs (docs/DEPLOY.md).
    - **Banks:** Plaid stays on the test bank.
    - **Build:** Nylas drafts, the Tavily cancel-page lookup, and Apple and Google Play matching.
    - **Eval:** a synthetic labelled set, disclosed as synthetic.

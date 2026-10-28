@@ -44,11 +44,12 @@ Timeline, Netflix, Best Buy), the vision model is described the same way everywh
 items are filled. What's left:
 
 - [ ] Paste the demo, video and repo links in for `[DEMO URL]`, `[VIDEO URL]` and `[REPO URL]` (WRITEUP.md, README).
-- [ ] Check the Nebius AI Cloud line under "The rest of the stack" in WRITEUP.md matches the actual deploy.
+- [ ] Check the hosting line under "The rest of the stack" in WRITEUP.md matches the actual deploy (an Oracle
+      Cloud VM since Oct 28; see DEPLOY.md).
 - [ ] [token-factory-feedback.md](token-factory-feedback.md): the team's own words for the four opinion items
       (onboarding time, "would we build with it again" twice, whether Ultra's thinking was worth it), and the
-      Nebius AI Cloud section after the deploy. The feedback is required, judged, and counts toward the feedback
-      prize.
+      Nebius AI Cloud section (planned, then not used: see DEPLOY.md section 14). The feedback is required,
+      judged, and counts toward the feedback prize.
 
 ## 6. Devpost form
 

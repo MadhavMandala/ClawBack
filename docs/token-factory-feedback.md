@@ -101,13 +101,13 @@ behind one API, made the tier split simple to build and to explain.
 
 ## Nebius AI Cloud
 
-To finish after the deploy. Notes from planning it, from the docs before creating anything, are below;
-**[confirm]** each one once the VM is running.
+**What we used it for.** Nothing at runtime, in the end. We planned the hosted backend on one small CPU VM
+(`cpu-d3`, 2 vCPU, 8 GB) and wrote the runbook and scripts for it. On Oct 28 we moved the backend to an Oracle
+Cloud VM the team already runs. No hackathon or Token Factory credit covers AI Cloud, and the VM would have cost
+about $81 through judging, starting with a $25 first payment. Every model call still goes through Token Factory.
+The plan is kept in `docs/DEPLOY.md`, section 14.
 
-**What we used it for.** One small CPU VM (`cpu-d3`, 2 vCPU, 8 GB) that runs the ClawBack API, its SQLite database
-and the nightly job, behind Caddy for HTTPS.
-
-**What we found while planning.**
+**What we found while planning.** These come from the docs, read before creating anything.
 - **No Windows CLI.** The CLI installer supports Linux and macOS only. We planned the whole deploy in the web
   console, with Cloud Shell as the fallback for CLI steps.
 - **Default CPU quota is 0 in some regions.** A new account has no CPU quota in `eu-north1` and `us-central1`, but
@@ -121,12 +121,11 @@ and the nightly job, behind Caddy for HTTPS.
   the VM.
 - **Clear prices.** Per-second billing, per-vCPU and per-GiB prices, and free public IPs and traffic made the cost
   easy to work out before creating anything.
+- **No credit for hackathon demos.** The Builders Program credit covers Token Factory and Tavily only. A demo has to
+  stay up for the whole judging period, so even the smallest CPU VM was the largest cost in our plan.
 
-**Onboarding (zero to hello world).** `[AFTER DEPLOY: time from sign-up to the API answering over HTTPS]`
-
-**What surprised us.** `[AFTER DEPLOY]`
-
-**Would we build with it again?** `[AFTER DEPLOY]`
+**Would we use it next time?** `[TEAM: your own words: what would make AI Cloud the obvious host for the next
+project?]`
 
 ## Running notes
 
@@ -159,3 +158,8 @@ and the nightly job, behind Caddy for HTTPS.
 ### 2026-10-23: planning the deploy
 
 - The notes under "Nebius AI Cloud" above come from the docs, read while planning the deploy (`docs/DEPLOY.md`).
+
+### 2026-10-28: the backend moves to an Oracle Cloud VM
+
+- The team already runs an Oracle Cloud VM, so the hosted backend went there and AI Cloud wasn't used. The hackathon
+  rule is met by the runtime calls to Token Factory.

@@ -59,9 +59,10 @@ held-out eval set, the whole pipeline cost about $0.057 per 1,000 emails ([docs/
 
 ### Other Nebius services
 
-- Nebius AI Cloud: the hosted backend is set up for one CPU VM (`cpu-d3`, 2 vCPU, 8 GB) with Caddy for HTTPS. We
-  picked a VM over Serverless endpoints because the email sign-in and webhooks need a fixed URL. The runbook is
-  [docs/DEPLOY.md](docs/DEPLOY.md), and the scripts are in `deploy/vm/`.
+- Nebius AI Cloud: we planned the hosted backend for one CPU VM there, then moved it to an Oracle Cloud VM the
+  team already runs, because no hackathon credit covers AI Cloud. Token Factory is the Nebius service ClawBack runs
+  on. The runbook is [docs/DEPLOY.md](docs/DEPLOY.md) (section 14 keeps the AI Cloud plan), and the scripts are in
+  `deploy/vm/`.
 - Our notes on Token Factory, the Nemotron models and AI Cloud, including what we'd change, are in
   [docs/token-factory-feedback.md](docs/token-factory-feedback.md).
 
@@ -206,7 +207,7 @@ money arithmetic. Every step is logged with its engine, time and cost, and the d
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): the full design
 - [docs/DESIGN.md](docs/DESIGN.md): visual design rules
 - [docs/EVAL.md](docs/EVAL.md): the labelled eval set, its results and every failure case
-- [docs/DEPLOY.md](docs/DEPLOY.md): deploy runbook (Nebius VM + Vercel), and the cleanup before going public
+- [docs/DEPLOY.md](docs/DEPLOY.md): deploy runbook (Oracle Cloud VM + Vercel), and the cleanup before going public
 - [docs/PRIVACY.md](docs/PRIVACY.md): the prototype privacy policy
 - [docs/MOBILE.md](docs/MOBILE.md): ClawBack on your phone: the installable web app now, a native app later
 - [docs/WRITEUP.md](docs/WRITEUP.md): the submission write-up draft
@@ -239,7 +240,7 @@ backend/clawback/
   tools/             tavily.py (web search), prices.py (current-price checks)
   missing.py         the list of everything not built yet; features.py the build-status board
 backend/evals/       the labelled eval set and its scorer
-deploy/vm/           Nebius VM setup, update script, systemd units and Caddy config
+deploy/vm/           VM setup and update scripts, systemd units and Caddy config
 frontend/app/        front page (page.tsx), dashboard/, built/, settings/, privacy/
 docs/                architecture, design, eval, deploy, privacy, write-up, video, feedback
 STATUS.md            what works / what's MISSING

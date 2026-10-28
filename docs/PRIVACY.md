@@ -1,12 +1,12 @@
 # ClawBack privacy policy
 
-Last updated: 2026-10-23.
+Last updated: 2026-10-28.
 
 **This is a prototype policy for a hackathon demo.** ClawBack is a student hackathon project, not a company. This
 page says plainly what the demo does with your data. It is not legal advice, and it will be reviewed before
 ClawBack is offered to anyone outside the demo. The page at `/privacy` in the app shows the same text.
 
-Before publishing, fill in the two placeholders: `[contact email]` and `[server region]`.
+Before publishing, fill in the placeholder `[contact email]`.
 
 ## The short version
 
@@ -111,7 +111,8 @@ address, your account numbers or any email text.
 
 ## What ClawBack stores, and where
 
-ClawBack keeps your session's data in one database on a server on Nebius AI Cloud, in `[server region]`.
+ClawBack keeps your session's data in one database on a server on Oracle Cloud Infrastructure, in its US East
+(Ashburn, Virginia) region.
 
 It stores:
 - the facts pulled out of each email (kind, merchant, amounts, dates), with the sender, subject and date;
@@ -130,7 +131,7 @@ It does not store:
 The Plaid access token and the Nylas grant id are **encrypted** in the database. The key that decrypts them stays on
 the server, outside the database and outside the code.
 
-The server also keeps short-lived request logs (time, address, path) to keep it running and secure. They don't
+The server also keeps request logs (time, address, path) for 14 days, to keep it running and secure. They don't
 contain email text.
 
 The front end runs on [Vercel](https://vercel.com), which sees standard request data such as your IP address and
@@ -177,7 +178,7 @@ In practice, for Gmail data reached through Nylas:
 | [Nylas](https://www.nylas.com/privacy-policy/) | Email sign-in, reading mail, saving drafts | Your mailbox access, as you grant it |
 | [Plaid](https://plaid.com/legal/#end-user-privacy-policy) | Bank sign-in and transactions | What you share on Plaid's page |
 | [Nebius Token Factory](https://docs.tokenfactory.nebius.com/legal/privacy-policy) | The AI models | Email text for the models, with Zero Data Retention |
-| [Nebius AI Cloud](https://docs.nebius.com/legal/privacy) | The server and its database | The database, on its disk |
+| [Oracle Cloud Infrastructure](https://www.oracle.com/legal/privacy/) | The server and its database | The database, on its disk |
 | [Tavily](https://www.tavily.com/privacy) | Web search | Merchant, bill type and product names in search text |
 | [Vercel](https://vercel.com/legal/privacy-policy) | Hosts the web pages | Standard request data |
 

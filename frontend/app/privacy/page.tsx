@@ -4,10 +4,10 @@ import SiteNav from "../components/SiteNav";
 import "./privacy.css";
 
 // The same policy as docs/PRIVACY.md. Change both together.
-// Fill these two in before the demo goes public.
+// Fill CONTACT in before the demo goes public.
 const CONTACT = "[contact email]";
-const REGION = "[server region]";
-const UPDATED = "2026-10-23";
+const REGION = "its US East (Ashburn, Virginia) region";
+const UPDATED = "2026-10-28";
 
 export const metadata: Metadata = {
   title: "Privacy policy | ClawBack",
@@ -18,7 +18,7 @@ const PROVIDERS = [
   { name: "Nylas", href: "https://www.nylas.com/privacy-policy/", does: "Email sign-in, reading mail, saving drafts", gets: "Your mailbox access, as you grant it" },
   { name: "Plaid", href: "https://plaid.com/legal/#end-user-privacy-policy", does: "Bank sign-in and transactions", gets: "What you share on Plaid's page" },
   { name: "Nebius Token Factory", href: "https://docs.tokenfactory.nebius.com/legal/privacy-policy", does: "The AI models", gets: "Email text for the models, with Zero Data Retention" },
-  { name: "Nebius AI Cloud", href: "https://docs.nebius.com/legal/privacy", does: "The server and its database", gets: "The database, on its disk" },
+  { name: "Oracle Cloud Infrastructure", href: "https://www.oracle.com/legal/privacy/", does: "The server and its database", gets: "The database, on its disk" },
   { name: "Tavily", href: "https://www.tavily.com/privacy", does: "Web search", gets: "Merchant, bill type and product names in search text" },
   { name: "Vercel", href: "https://vercel.com/legal/privacy-policy", does: "Hosts the web pages", gets: "Standard request data" },
 ];
@@ -141,7 +141,7 @@ export default function Privacy() {
           </Sec>
 
           <Sec id="stores" title="What ClawBack stores, and where">
-            <p>ClawBack keeps your session&apos;s data in one database on a server on Nebius AI Cloud, in {REGION}.</p>
+            <p>ClawBack keeps your session&apos;s data in one database on a server on Oracle Cloud Infrastructure, in {REGION}.</p>
             <p>It stores:</p>
             <ul>
               <li>the facts pulled out of each email (kind, merchant, amounts, dates), with the sender, subject and date;</li>
@@ -161,7 +161,7 @@ export default function Privacy() {
               them stays on the server, outside the database and outside the code.
             </p>
             <p>
-              The server also keeps short-lived request logs (time, address, path) to keep it running and secure. They
+              The server also keeps request logs (time, address, path) for 14 days, to keep it running and secure. They
               don&apos;t contain email text.
             </p>
             <p>
