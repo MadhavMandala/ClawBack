@@ -148,10 +148,16 @@
   }
 
   function scan(all) {
-    // Inbox and label lists: one <tr class="zA"> per thread; the sender's address is on a span[email].
-    for (const row of document.querySelectorAll("tr.zA")) {
-      const sender = row.querySelector("span[email]");
-      place(row.querySelector(".y6") || row.querySelector(".xT"), sender && sender.getAttribute("email"));
+    // Inbox and label lists: one row per thread; each sender's address is on a span[email]. A thread can list
+    // several senders, so any of them can match. The flag goes before the subject, wherever this layout puts it
+    // (the wide one-line layout and the narrow multi-line one differ), or before the sender as a last resort.
+    for (const row of document.querySelectorAll("tr.zA, [role='main'] tr[role='row']")) {
+      const senders = [...row.querySelectorAll("span[email]")].map((s) => s.getAttribute("email"));
+      const match = senders.find((a) => flagFor(a)) || senders[0];
+      const subject = row.querySelector(".bog");
+      const slot = row.querySelector(".y6") || (subject && subject.parentElement) || row.querySelector(".xT")
+        || (row.querySelector("span[email]") || {}).parentElement;
+      place(slot, match);
     }
     // An open email: the sender's name span.gD carries the address. The flag goes next to the subject.
     const opened = document.querySelector("span.gD[email]");
