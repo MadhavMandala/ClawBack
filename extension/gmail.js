@@ -9,12 +9,26 @@
   // --- Flags from the worker --------------------------------------------------------------------------------
 
   function load() {
-    chrome.runtime.sendMessage({ type: "flags" }, (res) => {
-      if (chrome.runtime.lastError || !res) return;
-      if (res.reason) console.info(`ClawBack: no flags (${res.reason}).`);
-      flags = res.flags || [];
-      scan(true);
-    });
+    // After the extension is reloaded or removed, this copy of the script lives on in open Gmail tabs but can't
+    // reach the extension any more. Stop quietly; reloading Gmail starts the new copy.
+    if (!chrome.runtime?.id) return stop();
+    try {
+      chrome.runtime.sendMessage({ type: "flags" }, (res) => {
+        if (chrome.runtime.lastError || !res) return;
+        console.info(res.reason ? `ClawBack: no flags (${res.reason}).` : `ClawBack: ${(res.flags || []).length} flags.`);
+        flags = res.flags || [];
+        scan(true);
+      });
+    } catch {
+      stop();
+    }
+  }
+
+  let timer, observer;
+  function stop() {
+    clearInterval(timer);
+    if (observer) observer.disconnect();
+    console.info("ClawBack: the extension was reloaded. Reload Gmail to see flags.");
   }
 
   // An exact address first (a stand-in sender set for the demo), then the merchant's own domains.
@@ -155,12 +169,13 @@
   }
 
   let pending;
-  new MutationObserver(() => {
+  observer = new MutationObserver(() => {
     clearTimeout(pending);
     pending = setTimeout(() => scan(false), 300);
-  }).observe(document.body, { childList: true, subtree: true });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 
   load();
-  setInterval(load, REFRESH);
+  timer = setInterval(load, REFRESH);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
 })();
